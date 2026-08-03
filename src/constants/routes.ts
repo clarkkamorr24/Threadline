@@ -21,7 +21,7 @@ export const ROUTES = {
   },
 } as const;
 
-export const PROTECTED_PREFIXES = ['/account', '/checkout', '/admin'] as const;
+export const PROTECTED_PREFIXES = ['/account', '/cart', '/checkout', '/admin'] as const;
 
 export const ADMIN_PREFIX = '/admin';
 

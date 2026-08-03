@@ -55,21 +55,26 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  // `asChild` delegates rendering to the child, which has no room for a
-  // spinner; loading state is therefore only meaningful on a real button.
-  const Component = asChild ? Slot : 'button';
+  const classes = cn(buttonVariants({ variant, size, className }));
+  if (asChild) {
+    return (
+      <Slot data-slot="button" className={classes} {...props}>
+        {children}
+      </Slot>
+    );
+  }
 
   return (
-    <Component
+    <button
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={classes}
       disabled={disabled || isLoading}
       aria-busy={isLoading || undefined}
       {...props}
     >
-      {isLoading && !asChild ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
+      {isLoading ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
       {children}
-    </Component>
+    </button>
   );
 }
 
