@@ -1,0 +1,48 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+/dist
+
+# testing
+/coverage
+
+# misc
+.DS_Store
+*.pem
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files — only the example is tracked
+.env
+.env.*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+
+# prisma
+/prisma/*.db
+/prisma/*.db-journal
+# The Prisma 7 client is generated into the source tree. It is build output,
+# not source — `npm run build` and the container entrypoint both regenerate it.
+/src/generated/
+
+# docker volumes
+/docker/volumes/
