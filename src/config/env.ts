@@ -11,7 +11,7 @@ const clientSchema = z.object({
   NEXT_PUBLIC_AUTH_GITHUB_ENABLED: booleanFromString.default('false'),
   NEXT_PUBLIC_AUTH_GOOGLE_ENABLED: booleanFromString.default('false'),
   NEXT_PUBLIC_AUTH_AZURE_ENABLED: booleanFromString.default('false'),
-  NEXT_PUBLIC_STORAGE_PROVIDER: z.enum(['url', 's3']).default('url'),
+  NEXT_PUBLIC_STORAGE_PROVIDER: z.enum(['url', 'cloudinary']).default('url'),
 });
 
 const serverSchema = z.object({
@@ -26,13 +26,9 @@ const serverSchema = z.object({
         .map((email) => email.trim().toLowerCase())
         .filter(Boolean),
     ),
-  AWS_REGION: z.string().optional(),
-  AWS_ACCESS_KEY_ID: z.string().optional(),
-  AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  AWS_S3_BUCKET: z.string().optional(),
-  AWS_S3_ENDPOINT: z.string().optional(),
-  AWS_S3_FORCE_PATH_STYLE: booleanFromString.default('false'),
-  AWS_S3_PUBLIC_URL: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
 });
 
 export type ClientEnv = Readonly<z.infer<typeof clientSchema>>;

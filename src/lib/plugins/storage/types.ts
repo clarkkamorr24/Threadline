@@ -1,4 +1,4 @@
-export const STORAGE_PROVIDER_IDS = ['url', 's3'] as const;
+export const STORAGE_PROVIDER_IDS = ['url', 'cloudinary'] as const;
 
 export type StorageProviderId = (typeof STORAGE_PROVIDER_IDS)[number];
 
@@ -24,6 +24,8 @@ export interface CreateUploadTicketInput {
 export interface UploadTicket {
   readonly key: string;
   readonly uploadUrl: string;
+  readonly method: 'POST' | 'PUT';
+  readonly fields: Readonly<Record<string, string>>;
   readonly headers: Readonly<Record<string, string>>;
   readonly publicUrl: string;
   readonly expiresInSeconds: number;

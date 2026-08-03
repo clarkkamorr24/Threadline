@@ -8,7 +8,7 @@ interface StorageCapabilities {
 
 const CAPABILITIES: Readonly<Record<StorageProviderId, boolean>> = {
   url: false,
-  s3: true,
+  cloudinary: true,
 };
 
 export function getStorageCapabilities(): StorageCapabilities {

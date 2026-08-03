@@ -1,12 +1,12 @@
 import 'server-only';
 import { clientEnv } from '@/config/env';
-import { s3StoragePlugin } from './s3';
+import { cloudinaryStoragePlugin } from './cloudinary';
 import type { StoragePlugin, StorageProviderId } from './types';
 import { urlStoragePlugin } from './url';
 
 const REGISTRY: Readonly<Record<StorageProviderId, StoragePlugin>> = {
   url: urlStoragePlugin,
-  s3: s3StoragePlugin,
+  cloudinary: cloudinaryStoragePlugin,
 };
 
 export function getStoragePlugin(): StoragePlugin {

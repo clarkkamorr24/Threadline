@@ -7,7 +7,7 @@ function buildRemotePatterns(): NonNullable<NextConfig['images']>['remotePattern
     .filter(Boolean);
 
   return hosts.map((hostname) => ({
-    protocol: hostname === 'localhost' || hostname === 'minio' ? 'http' : 'https',
+    protocol: hostname === 'localhost' ? 'http' : 'https',
     hostname,
   }));
 }
@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '2mb',
     },
   },
-  serverExternalPackages: ['@prisma/adapter-pg', 'pg', '@aws-sdk/client-s3'],
+  serverExternalPackages: ['@prisma/adapter-pg', 'pg', 'cloudinary'],
 };
 
 export default nextConfig;
