@@ -55,6 +55,7 @@ function getConfig(): CloudinaryConfig {
     api_key: cachedConfig.apiKey,
     api_secret: cachedConfig.apiSecret,
     secure: true,
+    analytics: false,
   });
 
   return cachedConfig;

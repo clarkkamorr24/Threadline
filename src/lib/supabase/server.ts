@@ -1,5 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
+import type { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -23,6 +24,28 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient> {
             }
           } catch {
            //
+          }
+        },
+      },
+    },
+  );
+}
+
+export function createSupabaseRouteClient(
+  request: NextRequest,
+  response: NextResponse,
+): SupabaseClient {
+  return createServerClient(
+    clientEnv.NEXT_PUBLIC_SUPABASE_URL,
+    clientEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet: Parameters<SetAllCookies>[0]) {
+          for (const { name, value, options } of cookiesToSet) {
+            response.cookies.set(name, value, options);
           }
         },
       },

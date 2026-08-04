@@ -66,8 +66,32 @@ export const getCurrentUser = cache(async (): Promise<AuthenticatedUser | null> 
     select: { id: true, email: true, name: true, avatarUrl: true, role: true },
   });
 
-  return profile ?? provisionProfile(user);
+  if (!profile) {
+    return provisionProfile(user);
+  }
+
+  return applyAdminAllowList(profile);
 });
+
+async function applyAdminAllowList(
+  profile: AuthenticatedUser,
+): Promise<AuthenticatedUser> {
+  const { ADMIN_EMAILS } = getServerEnv();
+
+  if (profile.role === 'ADMIN' || !ADMIN_EMAILS.includes(profile.email.toLowerCase())) {
+    return profile;
+  }
+
+  const promoted = await db.user.update({
+    where: { id: profile.id },
+    data: { role: 'ADMIN' },
+    select: { id: true, email: true, name: true, avatarUrl: true, role: true },
+  });
+
+  console.info(`[auth] Promoted ${promoted.email} to ADMIN via ADMIN_EMAILS.`);
+
+  return promoted;
+}
 
 
 export async function requireUser(): Promise<AuthenticatedUser> {

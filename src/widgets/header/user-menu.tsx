@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRef } from 'react';
 import { LayoutDashboard, LogOut, Package, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +21,8 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
+  const signOutFormRef = useRef<HTMLFormElement>(null);
+
   if (!user) {
     return (
       <Button asChild variant="ghost" size="sm">
@@ -75,14 +78,19 @@ export function UserMenu({ user }: UserMenuProps) {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild variant="destructive">
-          <form action="/auth/sign-out" method="post" className="w-full">
-            <button type="submit" className="flex w-full items-center gap-2">
-              <LogOut aria-hidden="true" />
-              Sign out
-            </button>
-          </form>
-        </DropdownMenuItem>
+        <form ref={signOutFormRef} action="/auth/sign-out" method="post">
+          <DropdownMenuItem
+            variant="destructive"
+            className="w-full"
+            onSelect={(event) => {
+              event.preventDefault();
+              signOutFormRef.current?.requestSubmit();
+            }}
+          >
+            <LogOut aria-hidden="true" />
+            Sign out
+          </DropdownMenuItem>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );
