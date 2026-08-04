@@ -113,6 +113,17 @@ export async function getProductForEdit(id: string) {
         select: { id: true, url: true, alt: true, storageKey: true, isPrimary: true },
         orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
       },
+      variants: {
+        select: {
+          id: true,
+          size: true,
+          color: true,
+          sku: true,
+          stock: true,
+          priceOverrideCents: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      },
     },
   });
 
@@ -141,7 +152,7 @@ function toConflictError(error: unknown): never {
 }
 
 export async function createProduct(input: ProductWriteModel): Promise<{ id: string }> {
-  const { images, ...productData } = input;
+  const { images, variants, ...productData } = input;
 
   try {
     const created = await db.product.create({
@@ -156,6 +167,19 @@ export async function createProduct(input: ProductWriteModel): Promise<{ id: str
       select: { id: true },
     });
 
+    if (variants.length > 0) {
+      await db.productVariant.createMany({
+        data: variants.map((variant) => ({
+          productId: created.id,
+          size: variant.size,
+          color: variant.color,
+          sku: variant.sku,
+          stock: variant.stock,
+          priceOverrideCents: variant.priceOverrideCents,
+        })),
+      });
+    }
+
     return created;
   } catch (error) {
     toConflictError(error);
@@ -166,7 +190,7 @@ export async function updateProduct(
   id: string,
   input: ProductWriteModel,
 ): Promise<{ id: string }> {
-  const { images, ...productData } = input;
+  const { images, variants, ...productData } = input;
 
   const existing = await db.product.findUnique({
     where: { id },
@@ -189,6 +213,30 @@ export async function updateProduct(
           isPrimary: index === 0,
         })),
       });
+
+      const keptVariantIds = variants
+        .map((variant) => variant.id)
+        .filter((variantId): variantId is string => variantId !== null);
+
+      await tx.productVariant.deleteMany({
+        where: { productId: id, id: { notIn: keptVariantIds.length > 0 ? keptVariantIds : [''] } },
+      });
+
+      for (const variant of variants) {
+        const data = {
+          size: variant.size,
+          color: variant.color,
+          sku: variant.sku,
+          stock: variant.stock,
+          priceOverrideCents: variant.priceOverrideCents,
+        };
+
+        if (variant.id) {
+          await tx.productVariant.update({ where: { id: variant.id }, data });
+        } else {
+          await tx.productVariant.create({ data: { ...data, productId: id } });
+        }
+      }
     });
   } catch (error) {
     toConflictError(error);

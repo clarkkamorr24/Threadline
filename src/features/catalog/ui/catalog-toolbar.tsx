@@ -19,12 +19,15 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 interface CatalogToolbarProps {
   readonly categories: readonly CategoryModel[];
+  readonly sizes: readonly string[];
+  readonly colors: readonly string[];
   readonly resultCount: number;
 }
 
 const ALL_CATEGORIES = '__all__';
+const ANY_VALUE = '__any__';
 
-export function CatalogToolbar({ categories, resultCount }: CatalogToolbarProps) {
+export function CatalogToolbar({ categories, sizes, colors, resultCount }: CatalogToolbarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -139,6 +142,87 @@ export function CatalogToolbar({ categories, resultCount }: CatalogToolbarProps)
           </SelectContent>
         </Select>
       </div>
+
+      {sizes.length > 0 || colors.length > 0 ? (
+        <div className="flex flex-col gap-3 sm:flex-row">
+          {sizes.length > 0 ? (
+            <Select
+              value={searchParams.get('size') ?? ANY_VALUE}
+              onValueChange={(value) =>
+                router.push(
+                  buildUrl((params) => {
+                    if (value === ANY_VALUE) {
+                      params.delete('size');
+                    } else {
+                      params.set('size', value);
+                    }
+                  }),
+                )
+              }
+            >
+              <SelectTrigger className="sm:w-40" aria-label="Filter by size">
+                <SelectValue placeholder="Any size" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ANY_VALUE}>Any size</SelectItem>
+                {sizes.map((size) => (
+                  <SelectItem key={size} value={size}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+
+          {colors.length > 0 ? (
+            <Select
+              value={searchParams.get('color') ?? ANY_VALUE}
+              onValueChange={(value) =>
+                router.push(
+                  buildUrl((params) => {
+                    if (value === ANY_VALUE) {
+                      params.delete('color');
+                    } else {
+                      params.set('color', value);
+                    }
+                  }),
+                )
+              }
+            >
+              <SelectTrigger className="sm:w-40" aria-label="Filter by colour">
+                <SelectValue placeholder="Any colour" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ANY_VALUE}>Any colour</SelectItem>
+                {colors.map((color) => (
+                  <SelectItem key={color} value={color}>
+                    {color}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+
+          <Button
+            variant={searchParams.get('inStock') === 'true' ? 'default' : 'outline'}
+            size="sm"
+            className="sm:ml-auto"
+            onClick={() =>
+              router.push(
+                buildUrl((params) => {
+                  if (params.get('inStock') === 'true') {
+                    params.delete('inStock');
+                  } else {
+                    params.set('inStock', 'true');
+                  }
+                }),
+              )
+            }
+          >
+            In stock only
+          </Button>
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-between gap-3">
         {/* aria-live so screen readers hear the count change after filtering. */}

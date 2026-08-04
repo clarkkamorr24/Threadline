@@ -1,0 +1,211 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CircleAlert, Wand2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  applyServerIssues,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { ROUTES } from '@/constants/routes';
+import { slugify } from '@/features/admin-products/model/schema';
+import { useToast } from '@/hooks/useToast';
+import { createCategoryAction, updateCategoryAction } from '../api/actions';
+import { categorySchema } from '../model/schema';
+import type { CategoryInput } from '../model/schema';
+
+const NO_PARENT = '__none__';
+
+interface CategoryFormProps {
+  readonly parentOptions: readonly { id: string; name: string }[];
+  readonly categoryId?: string;
+  readonly defaultValues: CategoryInput;
+}
+
+export function CategoryForm({ parentOptions, categoryId, defaultValues }: CategoryFormProps) {
+  const router = useRouter();
+  const toast = useToast();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const isEditing = categoryId !== undefined;
+
+  const form = useForm<CategoryInput>({
+    resolver: zodResolver(categorySchema),
+    defaultValues,
+  });
+
+  const isSubmitting = form.formState.isSubmitting;
+
+  async function onSubmit(values: CategoryInput): Promise<void> {
+    setSubmitError(null);
+
+    const result = isEditing
+      ? await updateCategoryAction({ ...values, id: categoryId })
+      : await createCategoryAction(values);
+
+    if (!result.success) {
+      if (result.error.issues.length > 0) {
+        applyServerIssues(form, result.error.issues);
+      } else {
+        setSubmitError(result.error.message);
+      }
+      return;
+    }
+
+    toast.success(isEditing ? 'Category updated' : 'Category created', values.name);
+    router.push(ROUTES.admin.categories);
+    router.refresh();
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex max-w-2xl flex-col gap-4" noValidate>
+        {submitError ? (
+          <Alert variant="destructive">
+            <CircleAlert aria-hidden="true" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Outerwear" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Slug</FormLabel>
+              <div className="flex gap-2">
+                <FormControl>
+                  <Input placeholder="outerwear" {...field} />
+                </FormControl>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => field.onChange(slugify(form.getValues('name')))}
+                >
+                  <Wand2 aria-hidden="true" />
+                  Generate
+                </Button>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="parentId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Parent category</FormLabel>
+              <Select
+                value={field.value ?? NO_PARENT}
+                onValueChange={(value) => field.onChange(value === NO_PARENT ? null : value)}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="None (top level)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={NO_PARENT}>None (top level)</SelectItem>
+                  {parentOptions.map((option) => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {option.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>Categories nest one level deep.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  rows={3}
+                  value={field.value ?? ''}
+                  onChange={(event) => field.onChange(event.target.value || null)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="imageUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Image URL</FormLabel>
+              <FormControl>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/image.jpg"
+                  value={field.value ?? ''}
+                  onChange={(event) => field.onChange(event.target.value || null)}
+                />
+              </FormControl>
+              <FormDescription>Optional. Shown on the home page tile.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="mt-2 flex gap-3">
+          <Button type="submit" isLoading={isSubmitting}>
+            {isEditing ? 'Save changes' : 'Create category'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push(ROUTES.admin.categories)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}

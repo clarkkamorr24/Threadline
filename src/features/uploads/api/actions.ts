@@ -1,24 +1,37 @@
 'use server';
 
 import { z } from 'zod';
-import { requireAdmin } from '@/lib/auth/session';
+import { requireAdmin, requireUser } from '@/lib/auth/session';
+import { StorageError } from '@/lib/errors';
 import { getStoragePlugin } from '@/lib/plugins/storage/registry';
 import type { UploadTicket } from '@/lib/plugins/storage/types';
-import { StorageError } from '@/lib/errors';
 import { createAction } from '@/lib/serverAction';
+
+const UPLOAD_FOLDERS = ['products', 'categories', 'avatars'] as const;
+
+type UploadFolder = (typeof UPLOAD_FOLDERS)[number];
 
 const uploadTicketSchema = z.object({
   fileName: z.string().min(1).max(255),
   contentType: z.string().min(1).max(100),
   sizeBytes: z.number().int().positive(),
-  folder: z.enum(['products', 'categories']).default('products'),
+  folder: z.enum(UPLOAD_FOLDERS).default('products'),
 });
+
+async function authorizeFolder(folder: UploadFolder): Promise<void> {
+  if (folder === 'avatars') {
+    await requireUser();
+    return;
+  }
+
+  await requireAdmin();
+}
 
 export const createUploadTicketAction = createAction(
   'storage.createUploadTicket',
   uploadTicketSchema,
   async (input): Promise<UploadTicket> => {
-    await requireAdmin();
+    await authorizeFolder(input.folder);
 
     const storage = getStoragePlugin();
 

@@ -1,6 +1,6 @@
 import 'server-only';
 import type { Prisma } from '@/generated/prisma/client';
-import type { AdminUserRow, UserRoleValue } from '@/entities/user/model/types';
+import type { AdminUserRow, AuthenticatedUser, UserRoleValue } from '@/entities/user/model/types';
 import type { Paginated } from '@/entities/product/model/types';
 import { db } from '@/lib/db';
 import { NotFoundError, ValidationError } from '@/lib/errors';
@@ -149,4 +149,22 @@ export async function setUserActive(userId: string, isActive: boolean): Promise<
   });
 
   return toAdminUserRow(updated);
+}
+
+export interface ProfileUpdate {
+  readonly name: string | null;
+  readonly avatarUrl: string | null;
+}
+
+export async function updateProfile(
+  userId: string,
+  input: ProfileUpdate,
+): Promise<AuthenticatedUser> {
+  const updated = await db.user.update({
+    where: { id: userId },
+    data: { name: input.name, avatarUrl: input.avatarUrl },
+    select: { id: true, email: true, name: true, avatarUrl: true, role: true },
+  });
+
+  return updated;
 }

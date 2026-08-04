@@ -4,7 +4,7 @@ import { CatalogToolbar } from '@/features/catalog/ui/catalog-toolbar';
 import { parseProductQuery } from '@/features/catalog/model/searchParams';
 import type { RawSearchParams } from '@/features/catalog/model/searchParams';
 import { ProductGrid } from '@/entities/product/ui/product-grid';
-import { listCategories, listProducts } from '@/services/productService';
+import { listCategories, listProducts, listVariantFacets } from '@/services/productService';
 
 export const metadata: Metadata = {
   title: 'All products',
@@ -22,7 +22,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const query = parseProductQuery(params);
 
-  const [result, categories] = await Promise.all([listProducts(query), listCategories()]);
+  const [result, categories, facets] = await Promise.all([
+    listProducts(query),
+    listCategories(),
+    listVariantFacets(),
+  ]);
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-10">
@@ -32,7 +36,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </h1>
       </header>
 
-      <CatalogToolbar categories={categories} resultCount={result.total} />
+      <CatalogToolbar
+        categories={categories}
+        sizes={facets.sizes}
+        colors={facets.colors}
+        resultCount={result.total}
+      />
 
       <ProductGrid
         products={result.items}

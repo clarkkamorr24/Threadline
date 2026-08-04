@@ -8,7 +8,7 @@ import type { AdminUserRow } from '@/entities/user/model/types';
 import { requireAdmin } from '@/lib/auth/session';
 import { ValidationError } from '@/lib/errors';
 import { createAction } from '@/lib/serverAction';
-import { updateUserRole } from '@/services/userService';
+import { setUserActive, updateUserRole } from '@/services/userService';
 
 const updateRoleSchema = z.object({
   userId: z.string().uuid('That is not a valid user id.'),
@@ -26,6 +26,28 @@ export const updateUserRoleAction = createAction(
     }
 
     const updated = await updateUserRole(input.userId, input.role);
+    revalidatePath(ROUTES.admin.users);
+
+    return updated;
+  },
+);
+
+const setActiveSchema = z.object({
+  userId: z.string().uuid('That is not a valid user id.'),
+  isActive: z.boolean(),
+});
+
+export const setUserActiveAction = createAction(
+  'admin.user.setActive',
+  setActiveSchema,
+  async (input): Promise<AdminUserRow> => {
+    const admin = await requireAdmin();
+
+    if (admin.id === input.userId && !input.isActive) {
+      throw new ValidationError('You cannot disable your own account.');
+    }
+
+    const updated = await setUserActive(input.userId, input.isActive);
     revalidatePath(ROUTES.admin.users);
 
     return updated;

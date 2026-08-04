@@ -51,6 +51,15 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
       alt: image.alt ?? undefined,
       storageKey: image.storageKey,
     })),
+    variants: product.variants.map((variant) => ({
+      id: variant.id,
+      size: variant.size,
+      color: variant.color,
+      sku: variant.sku,
+      stock: variant.stock,
+      priceOverride:
+        variant.priceOverrideCents === null ? null : toMajorUnits(variant.priceOverrideCents),
+    })),
   };
 
   return (

@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { MAX_IMAGE_BYTES, isAllowedImageType } from '@/lib/plugins/storage/types';
 import type { UploadTicket } from '@/lib/plugins/storage/types';
-import { createUploadTicketAction } from '@/features/admin-products/api/uploadActions';
+import { createUploadTicketAction } from '@/features/uploads/api/actions';
 
 export interface UploadedImage {
   readonly storageKey: string;
@@ -17,7 +17,9 @@ interface UseImageUploadResult {
   readonly reset: () => void;
 }
 
-export function useImageUpload(folder: 'products' | 'categories' = 'products'): UseImageUploadResult {
+export function useImageUpload(
+  folder: 'products' | 'categories' | 'avatars' = 'products',
+): UseImageUploadResult {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

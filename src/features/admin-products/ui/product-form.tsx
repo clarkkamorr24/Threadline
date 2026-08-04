@@ -36,6 +36,7 @@ import { createProductAction, updateProductAction } from '../api/actions';
 import { createProductSchema, slugify } from '../model/schema';
 import type { CreateProductInput } from '../model/schema';
 import { ProductImageField } from './product-image-field';
+import { VariantEditor } from './variant-editor';
 import type { DraftImage } from './product-image-field';
 
 interface ProductFormProps {
@@ -330,6 +331,25 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
                   <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <FormLabel className="font-normal">Feature on the home page</FormLabel>
+              </FormItem>
+            )}
+          />
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="font-semibold">Variants</h2>
+          <FormField
+            control={form.control}
+            name="variants"
+            render={({ field }) => (
+              <FormItem>
+                <VariantEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  baseSku={form.watch('sku')}
+                  disabled={isSubmitting}
+                />
+                <FormMessage />
               </FormItem>
             )}
           />

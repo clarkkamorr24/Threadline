@@ -10,6 +10,33 @@ const priceField = z
   .nonnegative('Price cannot be negative.')
   .max(1_000_000, 'Price is unrealistically high.');
 
+export const variantSchema = z.object({
+  id: z.string().nullish(),
+  size: z
+    .string()
+    .max(30)
+    .nullable()
+    .default(null)
+    .transform((value) => value?.trim() || null),
+  color: z
+    .string()
+    .max(40)
+    .nullable()
+    .default(null)
+    .transform((value) => value?.trim() || null),
+  sku: z
+    .string()
+    .min(1, 'Each variant needs a SKU.')
+    .max(60)
+    .transform((value) => value.trim().toUpperCase()),
+  stock: z
+    .number({ invalid_type_error: 'Enter a stock quantity.' })
+    .int()
+    .min(0, 'Stock cannot be negative.')
+    .max(1_000_000),
+  priceOverride: priceField.nullish(),
+});
+
 export const productImageSchema = z.object({
   url: z.string().url('Each image must be a valid URL.'),
   alt: z.string().max(160).optional(),
@@ -56,6 +83,43 @@ const baseProductSchema = z.object({
     .array(productImageSchema)
     .max(MAX_PRODUCT_IMAGES, `At most ${MAX_PRODUCT_IMAGES} images.`)
     .default([]),
+  variants: z
+    .array(variantSchema)
+    .max(50, 'At most 50 variants.')
+    .default([])
+    .superRefine((variants, ctx) => {
+      const seenSku = new Set<string>();
+      const seenCombo = new Set<string>();
+
+      variants.forEach((variant, index) => {
+        if (variant.size === null && variant.color === null) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [index, 'size'],
+            message: 'A variant needs at least a size or a colour.',
+          });
+        }
+
+        if (seenSku.has(variant.sku)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [index, 'sku'],
+            message: 'Duplicate SKU.',
+          });
+        }
+        seenSku.add(variant.sku);
+
+        const combo = `${variant.size ?? ''}|${variant.color ?? ''}`;
+        if (seenCombo.has(combo)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [index, 'color'],
+            message: 'Duplicate size and colour combination.',
+          });
+        }
+        seenCombo.add(combo);
+      });
+    }),
 });
 
 export const createProductSchema = baseProductSchema;
@@ -79,6 +143,14 @@ export interface ProductWriteModel {
   readonly featured: boolean;
   readonly categoryId: string;
   readonly images: readonly { url: string; alt: string | null; storageKey: string | null }[];
+  readonly variants: readonly {
+    id: string | null;
+    size: string | null;
+    color: string | null;
+    sku: string;
+    stock: number;
+    priceOverrideCents: number | null;
+  }[];
 }
 
 export function toProductWriteModel(input: CreateProductInput): ProductWriteModel {
@@ -97,6 +169,17 @@ export function toProductWriteModel(input: CreateProductInput): ProductWriteMode
       url: image.url,
       alt: image.alt ?? null,
       storageKey: image.storageKey ?? null,
+    })),
+    variants: input.variants.map((variant) => ({
+      id: variant.id ?? null,
+      size: variant.size,
+      color: variant.color,
+      sku: variant.sku,
+      stock: variant.stock,
+      priceOverrideCents:
+        variant.priceOverride === null || variant.priceOverride === undefined
+          ? null
+          : toCents(variant.priceOverride),
     })),
   };
 }

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
@@ -16,6 +17,7 @@ import { ADMIN_ROWS_PER_PAGE } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
 import { USER_ROLES, getUserInitials } from '@/entities/user/model/types';
 import type { UserRoleValue } from '@/entities/user/model/types';
+import { UserActiveToggle } from '@/features/admin-users/ui/user-active-toggle';
 import { UserRoleSelect } from '@/features/admin-users/ui/user-role-select';
 import { requireAdmin } from '@/lib/auth/session';
 import { listUsers } from '@/services/userService';
@@ -76,6 +78,9 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 <TableHead className="text-right">Orders</TableHead>
                 <TableHead className="text-right">Spent</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>
+                  <span className="sr-only">Account</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -104,6 +109,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                           ) : null}
                         </p>
                         <p className="text-muted-foreground truncate text-xs">{user.email}</p>
+                        {!user.isActive ? (
+                          <Badge variant="secondary" className="mt-1">
+                            Disabled
+                          </Badge>
+                        ) : null}
                       </div>
                     </div>
                   </TableCell>
@@ -123,6 +133,14 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                       userId={user.id}
                       userEmail={user.email}
                       role={user.role}
+                      isSelf={user.id === admin.id}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <UserActiveToggle
+                      userId={user.id}
+                      userEmail={user.email}
+                      isActive={user.isActive}
                       isSelf={user.id === admin.id}
                     />
                   </TableCell>

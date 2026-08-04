@@ -44,6 +44,7 @@ export default async function NewProductPage() {
     featured: false,
     categoryId: firstCategory.id,
     images: [],
+    variants: [],
   };
 
   return (
