@@ -1,13 +1,3 @@
-/**
- * Typed application errors.
- *
- * Services throw these; the transport layer (Route Handlers, Server Actions)
- * translates them into a status code and a message that is safe to show a user.
- * Anything that is *not* an AppError is treated as an unexpected failure: it is
- * logged in full and reported to the user as a generic message, so internal
- * details never leak.
- */
-
 export const ERROR_CODES = {
   VALIDATION: 'VALIDATION_ERROR',
   UNAUTHORIZED: 'UNAUTHORIZED',

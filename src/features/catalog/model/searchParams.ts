@@ -34,6 +34,14 @@ const searchParamsSchema = z.object({
     .string()
     .optional()
     .transform((value) => value?.trim() || null),
+  size: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() || null),
+  color: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() || null),
   minPrice: optionalPositiveNumber,
   maxPrice: optionalPositiveNumber,
   inStock: z
@@ -63,6 +71,8 @@ export function parseProductQuery(params: RawSearchParams): ProductQuery {
   const parsed = searchParamsSchema.parse({
     q: firstValue(params.q),
     category: firstValue(params.category),
+    size: firstValue(params.size),
+    color: firstValue(params.color),
     minPrice: firstValue(params.minPrice),
     maxPrice: firstValue(params.maxPrice),
     inStock: firstValue(params.inStock),
@@ -78,6 +88,8 @@ export function parseProductQuery(params: RawSearchParams): ProductQuery {
   return {
     search: parsed.q,
     categorySlug: parsed.category,
+    size: parsed.size,
+    color: parsed.color,
     minPriceCents: swap ? maxPriceCents : minPriceCents,
     maxPriceCents: swap ? minPriceCents : maxPriceCents,
     inStockOnly: parsed.inStock,

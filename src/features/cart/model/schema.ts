@@ -9,6 +9,7 @@ const quantityField = z
 
 export const addToCartSchema = z.object({
   productId: z.string().min(1, 'A product is required.'),
+  variantId: z.string().min(1).nullable().default(null),
   quantity: quantityField.default(1),
 });
 

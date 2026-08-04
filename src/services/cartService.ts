@@ -2,13 +2,14 @@ import 'server-only';
 import type { Prisma } from '@/generated/prisma/client';
 import { MAX_CART_ITEM_QUANTITY } from '@/constants/catalog';
 import type { Cart, CartLineItem } from '@/entities/cart/model/types';
-import { EMPTY_CART_TOTALS } from '@/entities/cart/model/types';
+import { EMPTY_CART } from '@/entities/cart/model/types';
 import { db } from '@/lib/db';
 import { InsufficientStockError, NotFoundError, ValidationError } from '@/lib/errors';
 import { calculateTotals } from '@/utils/pricing';
 
 const cartInclude = {
   items: {
+    // Stable ordering, otherwise rows shuffle whenever a quantity changes.
     orderBy: { createdAt: 'asc' },
     include: {
       product: {
@@ -16,15 +17,26 @@ const cartInclude = {
           id: true,
           name: true,
           slug: true,
-          priceCents: true,
-          currency: true,
-          stock: true,
+          basePriceCents: true,
+          baseStock: true,
+          sku: true,
           status: true,
           images: {
             select: { url: true },
-            orderBy: { position: 'asc' },
+            orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
             take: 1,
           },
+        },
+      },
+      variant: {
+        select: {
+          id: true,
+          size: true,
+          color: true,
+          sku: true,
+          stock: true,
+          priceOverrideCents: true,
+          image: { select: { url: true } },
         },
       },
     },
@@ -32,29 +44,57 @@ const cartInclude = {
 } satisfies Prisma.CartInclude;
 
 type CartRow = Prisma.CartGetPayload<{ include: typeof cartInclude }>;
+type CartItemRow = CartRow['items'][number];
+
+function resolveUnit(item: CartItemRow) {
+  if (item.variant) {
+    return {
+      unitPriceCents: item.variant.priceOverrideCents ?? item.product.basePriceCents,
+      availableStock: item.variant.stock,
+      sku: item.variant.sku,
+      size: item.variant.size,
+      color: item.variant.color,
+      imageUrl: item.variant.image?.url ?? item.product.images[0]?.url ?? null,
+    };
+  }
+
+  return {
+    unitPriceCents: item.product.basePriceCents,
+    availableStock: item.product.baseStock,
+    sku: item.product.sku,
+    size: null,
+    color: null,
+    imageUrl: item.product.images[0]?.url ?? null,
+  };
+}
 
 function toCart(row: CartRow): Cart {
   const items: CartLineItem[] = row.items
     .filter((item) => item.product.status === 'ACTIVE')
-    .map((item) => ({
-      id: item.id,
-      productId: item.product.id,
-      name: item.product.name,
-      slug: item.product.slug,
-      imageUrl: item.product.images[0]?.url ?? null,
-      unitPriceCents: item.product.priceCents,
-      currency: item.product.currency,
-      quantity: item.quantity,
-      availableStock: item.product.stock,
-      lineTotalCents: item.product.priceCents * item.quantity,
-    }));
+    .map((item) => {
+      const unit = resolveUnit(item);
 
-  const currency = items[0]?.currency ?? EMPTY_CART_TOTALS.currency;
+      return {
+        id: item.id,
+        productId: item.product.id,
+        variantId: item.variantId,
+        name: item.product.name,
+        slug: item.product.slug,
+        size: unit.size,
+        color: unit.color,
+        sku: unit.sku,
+        imageUrl: unit.imageUrl,
+        unitPriceCents: unit.unitPriceCents,
+        quantity: item.quantity,
+        availableStock: unit.availableStock,
+        lineTotalCents: unit.unitPriceCents * item.quantity,
+      };
+    });
 
   return {
     id: row.id,
     items,
-    totals: calculateTotals(items, currency),
+    totals: calculateTotals(items),
     itemCount: items.reduce((count, item) => count + item.quantity, 0),
     hasStockIssues: items.some((item) => item.quantity > item.availableStock),
   };
@@ -72,22 +112,8 @@ async function getOrCreateCartId(userId: string): Promise<string> {
 }
 
 export async function getCart(userId: string): Promise<Cart> {
-  const row = await db.cart.findUnique({
-    where: { userId },
-    include: cartInclude,
-  });
-
-  if (!row) {
-    return {
-      id: '',
-      items: [],
-      totals: EMPTY_CART_TOTALS,
-      itemCount: 0,
-      hasStockIssues: false,
-    };
-  }
-
-  return toCart(row);
+  const row = await db.cart.findUnique({ where: { userId }, include: cartInclude });
+  return row ? toCart(row) : EMPTY_CART;
 }
 
 export async function getCartItemCount(userId: string): Promise<number> {
@@ -109,44 +135,78 @@ function assertQuantityInRange(quantity: number): void {
   }
 }
 
-export async function addItemToCart(
-  userId: string,
-  productId: string,
-  quantity: number,
-): Promise<Cart> {
-  assertQuantityInRange(quantity);
-
+async function resolveRequestedUnit(productId: string, variantId: string | null) {
   const product = await db.product.findFirst({
     where: { id: productId, status: 'ACTIVE' },
-    select: { id: true, name: true, stock: true },
+    select: {
+      id: true,
+      name: true,
+      baseStock: true,
+      variants: { select: { id: true, stock: true }, take: 1 },
+      _count: { select: { variants: true } },
+    },
   });
 
   if (!product) {
     throw new NotFoundError('Product');
   }
 
-  const cartId = await getOrCreateCartId(userId);
+  const hasVariants = product._count.variants > 0;
 
-  const existing = await db.cartItem.findUnique({
-    where: { cartId_productId: { cartId, productId } },
-    select: { quantity: true },
+  if (hasVariants && !variantId) {
+    throw new ValidationError('Choose a size and colour before adding to the cart.');
+  }
+
+  if (!hasVariants && variantId) {
+    throw new ValidationError('That product has no variants to choose from.');
+  }
+
+  if (!variantId) {
+    return { name: product.name, stock: product.baseStock };
+  }
+
+  const variant = await db.productVariant.findFirst({
+    where: { id: variantId, productId },
+    select: { stock: true },
+  });
+
+  if (!variant) {
+    throw new NotFoundError('Variant');
+  }
+
+  return { name: product.name, stock: variant.stock };
+}
+
+export async function addItemToCart(
+  userId: string,
+  productId: string,
+  variantId: string | null,
+  quantity: number,
+): Promise<Cart> {
+  assertQuantityInRange(quantity);
+
+  const unit = await resolveRequestedUnit(productId, variantId);
+  const cartId = await getOrCreateCartId(userId);
+  const existing = await db.cartItem.findFirst({
+    where: { cartId, productId, variantId },
+    select: { id: true, quantity: true },
   });
 
   const requested = (existing?.quantity ?? 0) + quantity;
 
-  if (requested > product.stock) {
-    throw new InsufficientStockError(product.name, product.stock);
+  if (requested > unit.stock) {
+    throw new InsufficientStockError(unit.name, unit.stock);
   }
 
   if (requested > MAX_CART_ITEM_QUANTITY) {
     throw new ValidationError(`You can order at most ${MAX_CART_ITEM_QUANTITY} of an item.`);
   }
 
-  await db.cartItem.upsert({
-    where: { cartId_productId: { cartId, productId } },
-    update: { quantity: requested },
-    create: { cartId, productId, quantity },
-  });
+  if (existing) {
+    await db.cartItem.update({ where: { id: existing.id }, data: { quantity: requested } });
+  } else {
+    await db.cartItem.create({ data: { cartId, productId, variantId, quantity } });
+  }
 
   return getCart(userId);
 }
@@ -160,15 +220,21 @@ export async function updateCartItemQuantity(
 
   const item = await db.cartItem.findFirst({
     where: { id: cartItemId, cart: { userId } },
-    select: { id: true, product: { select: { name: true, stock: true } } },
+    select: {
+      id: true,
+      product: { select: { name: true, baseStock: true } },
+      variant: { select: { stock: true } },
+    },
   });
 
   if (!item) {
     throw new NotFoundError('Cart item');
   }
 
-  if (quantity > item.product.stock) {
-    throw new InsufficientStockError(item.product.name, item.product.stock);
+  const available = item.variant ? item.variant.stock : item.product.baseStock;
+
+  if (quantity > available) {
+    throw new InsufficientStockError(item.product.name, available);
   }
 
   await db.cartItem.update({ where: { id: item.id }, data: { quantity } });

@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { LayoutDashboard, Package, Users } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 import { getCurrentUser } from '@/lib/auth/session';
 
 const NAV_ITEMS = [
   { href: ROUTES.admin.root, label: 'Overview', icon: LayoutDashboard },
   { href: ROUTES.admin.products, label: 'Products', icon: Package },
+  { href: ROUTES.admin.orders, label: 'Orders', icon: ShoppingCart },
   { href: ROUTES.admin.users, label: 'Users', icon: Users },
 ] as const;
 

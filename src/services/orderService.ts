@@ -2,23 +2,23 @@ import 'server-only';
 import { randomInt } from 'node:crypto';
 import { Prisma } from '@/generated/prisma/client';
 import type {
+  AdminOrderRow,
   OrderDetail,
   OrderLineItem,
   OrderStatusValue,
+  OrderSummary,
   ShippingAddress,
 } from '@/entities/order/model/types';
-import type { OrderSummary } from '@/entities/order/model/types';
+import { canTransition } from '@/entities/order/model/types';
 import type { Paginated } from '@/entities/product/model/types';
 import { db } from '@/lib/db';
 import { ConflictError, InsufficientStockError, NotFoundError, ValidationError } from '@/lib/errors';
 import { calculateTotals } from '@/utils/pricing';
 
-
 const orderDetailSelect = {
   id: true,
   orderNumber: true,
   status: true,
-  currency: true,
   subtotalCents: true,
   shippingCents: true,
   taxCents: true,
@@ -29,8 +29,12 @@ const orderDetailSelect = {
     select: {
       id: true,
       productId: true,
+      variantId: true,
       productName: true,
       productSlug: true,
+      variantSize: true,
+      variantColor: true,
+      sku: true,
       imageUrl: true,
       unitPriceCents: true,
       quantity: true,
@@ -44,8 +48,12 @@ function toOrderLineItem(row: OrderDetailRow['items'][number]): OrderLineItem {
   return {
     id: row.id,
     productId: row.productId,
+    variantId: row.variantId,
     productName: row.productName,
     productSlug: row.productSlug,
+    size: row.variantSize,
+    color: row.variantColor,
+    sku: row.sku,
     imageUrl: row.imageUrl,
     unitPriceCents: row.unitPriceCents,
     quantity: row.quantity,
@@ -58,7 +66,6 @@ function toOrderDetail(row: OrderDetailRow): OrderDetail {
     id: row.id,
     orderNumber: row.orderNumber,
     status: row.status as OrderStatusValue,
-    currency: row.currency,
     subtotalCents: row.subtotalCents,
     shippingCents: row.shippingCents,
     taxCents: row.taxCents,
@@ -99,10 +106,24 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
                   id: true,
                   name: true,
                   slug: true,
-                  priceCents: true,
-                  currency: true,
+                  sku: true,
+                  basePriceCents: true,
                   status: true,
-                  images: { select: { url: true }, orderBy: { position: 'asc' }, take: 1 },
+                  images: {
+                    select: { url: true },
+                    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+                    take: 1,
+                  },
+                },
+              },
+              variant: {
+                select: {
+                  id: true,
+                  size: true,
+                  color: true,
+                  sku: true,
+                  priceOverrideCents: true,
+                  image: { select: { url: true } },
                 },
               },
             },
@@ -123,40 +144,56 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
       }
 
       for (const item of cart.items) {
-        const { count } = await tx.product.updateMany({
-          where: { id: item.productId, stock: { gte: item.quantity } },
-          data: { stock: { decrement: item.quantity } },
-        });
+        const reserved = item.variantId
+          ? await tx.productVariant.updateMany({
+              where: { id: item.variantId, stock: { gte: item.quantity } },
+              data: { stock: { decrement: item.quantity } },
+            })
+          : await tx.product.updateMany({
+              where: { id: item.productId, baseStock: { gte: item.quantity } },
+              data: { baseStock: { decrement: item.quantity } },
+            });
 
-        if (count === 0) {
-          const current = await tx.product.findUnique({
-            where: { id: item.productId },
-            select: { stock: true },
-          });
+        if (reserved.count === 0) {
+          const available = item.variantId
+            ? ((
+                await tx.productVariant.findUnique({
+                  where: { id: item.variantId },
+                  select: { stock: true },
+                })
+              )?.stock ?? 0)
+            : ((
+                await tx.product.findUnique({
+                  where: { id: item.productId },
+                  select: { baseStock: true },
+                })
+              )?.baseStock ?? 0);
 
-          throw new InsufficientStockError(item.product.name, current?.stock ?? 0);
+          throw new InsufficientStockError(item.product.name, available);
         }
       }
 
       const lines = cart.items.map((item) => ({
-        unitPriceCents: item.product.priceCents,
+        unitPriceCents: item.variant?.priceOverrideCents ?? item.product.basePriceCents,
         quantity: item.quantity,
       }));
 
-      const currency = cart.items[0]?.product.currency ?? 'USD';
-      const totals = calculateTotals(lines, currency);
+      const totals = calculateTotals(lines);
 
       const order = await createOrderWithUniqueNumber(tx, {
         userId: input.userId,
-        currency,
         totals,
         shippingAddress: input.shippingAddress,
         items: cart.items.map((item) => ({
           productId: item.productId,
+          variantId: item.variantId,
           productName: item.product.name,
           productSlug: item.product.slug,
-          imageUrl: item.product.images[0]?.url ?? null,
-          unitPriceCents: item.product.priceCents,
+          variantSize: item.variant?.size ?? null,
+          variantColor: item.variant?.color ?? null,
+          sku: item.variant?.sku ?? item.product.sku,
+          imageUrl: item.variant?.image?.url ?? item.product.images[0]?.url ?? null,
+          unitPriceCents: item.variant?.priceOverrideCents ?? item.product.basePriceCents,
           quantity: item.quantity,
         })),
       });
@@ -174,13 +211,16 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
 
 interface CreateOrderData {
   readonly userId: string;
-  readonly currency: string;
   readonly totals: ReturnType<typeof calculateTotals>;
   readonly shippingAddress: ShippingAddress;
   readonly items: readonly {
     readonly productId: string;
+    readonly variantId: string | null;
     readonly productName: string;
     readonly productSlug: string;
+    readonly variantSize: string | null;
+    readonly variantColor: string | null;
+    readonly sku: string;
     readonly imageUrl: string | null;
     readonly unitPriceCents: number;
     readonly quantity: number;
@@ -199,8 +239,7 @@ async function createOrderWithUniqueNumber(
         data: {
           orderNumber: generateOrderNumber(),
           userId: data.userId,
-          status: 'PAID',
-          currency: data.currency,
+          status: 'PENDING',
           subtotalCents: data.totals.subtotalCents,
           shippingCents: data.totals.shippingCents,
           taxCents: data.totals.taxCents,
@@ -238,7 +277,6 @@ export async function listOrders(
         orderNumber: true,
         status: true,
         totalCents: true,
-        currency: true,
         createdAt: true,
         items: { select: { quantity: true } },
       },
@@ -255,7 +293,6 @@ export async function listOrders(
       orderNumber: row.orderNumber,
       status: row.status as OrderStatusValue,
       totalCents: row.totalCents,
-      currency: row.currency,
       itemCount: row.items.reduce((count, item) => count + item.quantity, 0),
       placedAt: row.createdAt.toISOString(),
     })),
@@ -268,6 +305,8 @@ export async function listOrders(
 
 export async function getOrderById(userId: string, orderId: string): Promise<OrderDetail> {
   const row = await db.order.findFirst({
+    // Scoped by userId so an order id from another account resolves to a 404
+    // rather than disclosing that the order exists.
     where: { id: orderId, userId },
     select: orderDetailSelect,
   });
@@ -277,4 +316,110 @@ export async function getOrderById(userId: string, orderId: string): Promise<Ord
   }
 
   return toOrderDetail(row);
+}
+
+export interface AdminOrderQuery {
+  readonly status: OrderStatusValue | null;
+  readonly search: string | null;
+  readonly page: number;
+  readonly pageSize: number;
+}
+
+export async function listAllOrders(query: AdminOrderQuery): Promise<Paginated<AdminOrderRow>> {
+  const conditions: Prisma.OrderWhereInput[] = [];
+
+  if (query.status) {
+    conditions.push({ status: query.status });
+  }
+
+  if (query.search) {
+    conditions.push({
+      OR: [
+        { orderNumber: { contains: query.search, mode: 'insensitive' } },
+        { user: { email: { contains: query.search, mode: 'insensitive' } } },
+      ],
+    });
+  }
+
+  const where: Prisma.OrderWhereInput = conditions.length > 0 ? { AND: conditions } : {};
+
+  const [rows, total] = await db.$transaction([
+    db.order.findMany({
+      where,
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        totalCents: true,
+        createdAt: true,
+        user: { select: { email: true, name: true } },
+        items: { select: { quantity: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: (query.page - 1) * query.pageSize,
+      take: query.pageSize,
+    }),
+    db.order.count({ where }),
+  ]);
+
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      orderNumber: row.orderNumber,
+      status: row.status as OrderStatusValue,
+      totalCents: row.totalCents,
+      itemCount: row.items.reduce((count, item) => count + item.quantity, 0),
+      placedAt: row.createdAt.toISOString(),
+      customerEmail: row.user.email,
+      customerName: row.user.name,
+    })),
+    total,
+    page: query.page,
+    pageSize: query.pageSize,
+    totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
+  };
+}
+
+export async function getOrderForAdmin(orderId: string): Promise<OrderDetail> {
+  const row = await db.order.findUnique({ where: { id: orderId }, select: orderDetailSelect });
+
+  if (!row) {
+    throw new NotFoundError('Order');
+  }
+
+  return toOrderDetail(row);
+}
+
+export async function updateOrderStatus(
+  orderId: string,
+  nextStatus: OrderStatusValue,
+): Promise<OrderDetail> {
+  const existing = await db.order.findUnique({
+    where: { id: orderId },
+    select: { status: true },
+  });
+
+  if (!existing) {
+    throw new NotFoundError('Order');
+  }
+
+  const current = existing.status as OrderStatusValue;
+
+  if (current === nextStatus) {
+    return getOrderForAdmin(orderId);
+  }
+
+  if (!canTransition(current, nextStatus)) {
+    throw new ValidationError(
+      `An order cannot move from ${current.toLowerCase()} to ${nextStatus.toLowerCase()}.`,
+    );
+  }
+
+  const updated = await db.order.update({
+    where: { id: orderId },
+    data: { status: nextStatus },
+    select: orderDetailSelect,
+  });
+
+  return toOrderDetail(updated);
 }

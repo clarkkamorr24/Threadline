@@ -37,10 +37,11 @@ const adminUserSelect = {
   name: true,
   avatarUrl: true,
   role: true,
+  isActive: true,
   createdAt: true,
   _count: { select: { orders: true } },
   orders: {
-    where: { status: { in: ['PAID', 'FULFILLED'] } },
+    where: { status: { not: 'CANCELLED' } },
     select: { totalCents: true },
   },
 } satisfies Prisma.UserSelect;
@@ -54,6 +55,7 @@ function toAdminUserRow(row: AdminUserSelection): AdminUserRow {
     name: row.name,
     avatarUrl: row.avatarUrl,
     role: row.role as UserRoleValue,
+    isActive: row.isActive,
     orderCount: row._count.orders,
     totalSpentCents: row.orders.reduce((sum, order) => sum + order.totalCents, 0),
     createdAt: row.createdAt.toISOString(),
@@ -127,19 +129,23 @@ export async function updateUserRole(
   const updated = await db.user.update({
     where: { id: userId },
     data: { role },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      avatarUrl: true,
-      role: true,
-      createdAt: true,
-      _count: { select: { orders: true } },
-      orders: {
-        where: { status: { in: ['PAID', 'FULFILLED'] } },
-        select: { totalCents: true },
-      },
-    },
+    select: adminUserSelect,
+  });
+
+  return toAdminUserRow(updated);
+}
+
+export async function setUserActive(userId: string, isActive: boolean): Promise<AdminUserRow> {
+  const target = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
+
+  if (!target) {
+    throw new NotFoundError('User');
+  }
+
+  const updated = await db.user.update({
+    where: { id: userId },
+    data: { isActive },
+    select: adminUserSelect,
   });
 
   return toAdminUserRow(updated);

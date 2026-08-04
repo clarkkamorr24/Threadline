@@ -104,6 +104,18 @@ export async function requireUser(): Promise<AuthenticatedUser> {
   return user;
 }
 
+export async function requireShopper(): Promise<AuthenticatedUser> {
+  const user = await requireUser();
+
+  if (user.role !== 'USER') {
+    throw new ForbiddenError(
+      'Shopping is a storefront feature. Sign in with a customer account to continue.',
+    );
+  }
+
+  return user;
+}
+
 export async function requireAdmin(): Promise<AuthenticatedUser> {
   const user = await requireUser();
 

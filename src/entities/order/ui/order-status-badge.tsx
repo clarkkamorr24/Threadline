@@ -6,10 +6,10 @@ const STATUS_PRESENTATION: Readonly<
   Record<OrderStatusValue, { label: string; variant: BadgeProps['variant'] }>
 > = {
   PENDING: { label: 'Pending', variant: 'warning' },
-  PAID: { label: 'Paid', variant: 'success' },
-  FULFILLED: { label: 'Fulfilled', variant: 'default' },
+  PROCESSING: { label: 'Processing', variant: 'default' },
+  SHIPPED: { label: 'Shipped', variant: 'default' },
+  DELIVERED: { label: 'Delivered', variant: 'success' },
   CANCELLED: { label: 'Cancelled', variant: 'secondary' },
-  REFUNDED: { label: 'Refunded', variant: 'outline' },
 };
 
 export function OrderStatusBadge({ status }: { readonly status: OrderStatusValue }) {

@@ -1,6 +1,12 @@
+import { STORE_CURRENCY, STORE_LOCALE } from '@/constants/store';
+
 const MINOR_UNITS_PER_MAJOR = 100;
 
-export function formatMoney(cents: number, currency = 'USD', locale = 'en-US'): string {
+export function formatMoney(
+  cents: number,
+  currency: string = STORE_CURRENCY,
+  locale: string = STORE_LOCALE,
+): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,

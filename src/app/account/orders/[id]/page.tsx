@@ -95,11 +95,11 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                       </Link>
                     </h2>
                     <p className="text-muted-foreground text-sm">
-                      {formatMoney(item.unitPriceCents, order.currency)} × {item.quantity}
+                      {formatMoney(item.unitPriceCents)} × {item.quantity}
                     </p>
                   </div>
                   <p className="text-sm font-medium whitespace-nowrap">
-                    {formatMoney(item.lineTotalCents, order.currency)}
+                    {formatMoney(item.lineTotalCents)}
                   </p>
                 </div>
               </li>
@@ -117,7 +117,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                   <dd>
                     {row.label === 'Shipping' && row.value === 0
                       ? 'Free'
-                      : formatMoney(row.value, order.currency)}
+                      : formatMoney(row.value)}
                   </dd>
                 </div>
               ))}
@@ -125,7 +125,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <Separator className="my-4" />
             <div className="flex justify-between font-medium">
               <span>Total</span>
-              <span>{formatMoney(order.totalCents, order.currency)}</span>
+              <span>{formatMoney(order.totalCents)}</span>
             </div>
           </div>
 

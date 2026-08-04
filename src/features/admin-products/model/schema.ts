@@ -32,15 +32,19 @@ const baseProductSchema = z.object({
     .min(1, 'Description is required.')
     .max(5_000, 'Description must be 5000 characters or fewer.')
     .transform((value) => value.trim()),
-  price: priceField,
-  compareAtPrice: priceField.nullish(),
-  currency: z.string().length(3, 'Use a 3-letter currency code.').default('USD'),
+  material: z
+    .string()
+    .max(200, 'Material must be 200 characters or fewer.')
+    .transform((value) => value.trim())
+    .nullable()
+    .default(null),
+  basePrice: priceField,
   sku: z
     .string()
     .min(1, 'SKU is required.')
     .max(60)
     .transform((value) => value.trim().toUpperCase()),
-  stock: z
+  baseStock: z
     .number({ invalid_type_error: 'Enter a stock quantity.' })
     .int('Stock must be a whole number.')
     .min(0, 'Stock cannot be negative.')
@@ -54,28 +58,9 @@ const baseProductSchema = z.object({
     .default([]),
 });
 
-function checkPriceOrdering(
-  product: { readonly price: number; readonly compareAtPrice?: number | null },
-  ctx: z.RefinementCtx,
-): void {
-  if (
-    product.compareAtPrice !== null &&
-    product.compareAtPrice !== undefined &&
-    product.compareAtPrice <= product.price
-  ) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['compareAtPrice'],
-      message: 'Compare-at price must be higher than the price.',
-    });
-  }
-}
+export const createProductSchema = baseProductSchema;
 
-export const createProductSchema = baseProductSchema.superRefine(checkPriceOrdering);
-
-export const updateProductSchema = baseProductSchema
-  .extend({ id: z.string().min(1) })
-  .superRefine(checkPriceOrdering);
+export const updateProductSchema = baseProductSchema.extend({ id: z.string().min(1) });
 
 export type CreateProductFormInput = z.input<typeof baseProductSchema>;
 export type CreateProductInput = z.infer<typeof createProductSchema>;
@@ -86,11 +71,10 @@ export interface ProductWriteModel {
   readonly name: string;
   readonly slug: string;
   readonly description: string;
-  readonly priceCents: number;
-  readonly compareAtCents: number | null;
-  readonly currency: string;
+  readonly material: string | null;
+  readonly basePriceCents: number;
+  readonly baseStock: number;
   readonly sku: string;
-  readonly stock: number;
   readonly status: (typeof PRODUCT_STATUSES)[number];
   readonly featured: boolean;
   readonly categoryId: string;
@@ -102,14 +86,10 @@ export function toProductWriteModel(input: CreateProductInput): ProductWriteMode
     name: input.name,
     slug: input.slug,
     description: input.description,
-    priceCents: toCents(input.price),
-    compareAtCents:
-      input.compareAtPrice === null || input.compareAtPrice === undefined
-        ? null
-        : toCents(input.compareAtPrice),
-    currency: input.currency.toUpperCase(),
+    material: input.material,
+    basePriceCents: toCents(input.basePrice),
+    baseStock: input.baseStock,
     sku: input.sku,
-    stock: input.stock,
     status: input.status,
     featured: input.featured,
     categoryId: input.categoryId,

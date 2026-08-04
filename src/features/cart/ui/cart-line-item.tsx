@@ -72,11 +72,11 @@ export function CartLineItem({ item }: CartLineItemProps) {
               </Link>
             </h3>
             <p className="text-muted-foreground text-sm">
-              {formatMoney(item.unitPriceCents, item.currency)} each
+              {formatMoney(item.unitPriceCents)} each
             </p>
           </div>
           <p className="text-sm font-medium whitespace-nowrap">
-            {formatMoney(item.lineTotalCents, item.currency)}
+            {formatMoney(item.lineTotalCents)}
           </p>
         </div>
 

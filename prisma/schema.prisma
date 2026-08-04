@@ -20,10 +20,10 @@ enum ProductStatus {
 
 enum OrderStatus {
   PENDING
-  PAID
-  FULFILLED
+  PROCESSING
+  SHIPPED
+  DELIVERED
   CANCELLED
-  REFUNDED
 }
 
 model User {
@@ -32,12 +32,14 @@ model User {
   name      String?
   avatarUrl String?
   role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   cart      Cart?
   orders    Order[]
   addresses Address[]
+  favorites Favorite[]
 
   @@index([role])
   @@index([createdAt])
@@ -50,54 +52,84 @@ model Category {
   slug        String   @unique
   description String?
   imageUrl    String?
+  parentId    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children Category[] @relation("CategoryTree")
   products Product[]
 
+  @@index([parentId])
   @@map("categories")
 }
 
 model Product {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
-  description String
-  priceCents  Int
-  compareAtCents Int?
-  currency    String        @default("USD")
-  sku         String        @unique
-  stock       Int           @default(0)
-  status      ProductStatus @default(DRAFT)
-  featured    Boolean       @default(false)
-  categoryId  String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  name           String
+  slug           String        @unique
+  description    String
+  material       String?
+  basePriceCents Int
+  baseStock      Int           @default(0)
+  sku            String        @unique
+  status         ProductStatus @default(DRAFT)
+  featured       Boolean       @default(false)
+  categoryId     String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  category   Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category   Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   images     ProductImage[]
+  variants   ProductVariant[]
   cartItems  CartItem[]
   orderItems OrderItem[]
+  favorites  Favorite[]
 
   @@index([status, categoryId])
   @@index([status, createdAt])
-  @@index([status, priceCents])
+  @@index([status, basePriceCents])
   @@index([featured, status])
   @@map("products")
 }
 
 model ProductImage {
-  id        String  @id @default(cuid())
-  productId String
+  id         String  @id @default(cuid())
+  productId  String
   storageKey String?
-  url       String
-  alt       String?
-  position  Int     @default(0)
+  url        String
+  alt        String?
+  position   Int     @default(0)
+  isPrimary  Boolean @default(false)
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product  Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variants ProductVariant[]
 
   @@index([productId, position])
   @@map("product_images")
+}
+
+model ProductVariant {
+  id                 String   @id @default(cuid())
+  productId          String
+  size               String?
+  color              String?
+  sku                String   @unique
+  stock              Int      @default(0)
+  priceOverrideCents Int?
+  imageId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  image      ProductImage? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  favorites  Favorite[]
+
+  @@unique([productId, size, color])
+  @@index([productId])
+  @@map("product_variants")
 }
 
 model Cart {
@@ -116,16 +148,34 @@ model CartItem {
   id        String   @id @default(cuid())
   cartId    String
   productId String
+  variantId String?
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cart    Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
 
-  @@unique([cartId, productId])
   @@index([cartId])
+  @@index([cartId, productId, variantId])
   @@map("cart_items")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  productId String
+  variantId String?
+  createdAt DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, productId, variantId])
+  @@map("favorites")
 }
 
 model Address {
@@ -148,18 +198,16 @@ model Address {
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  orderNumber String      @unique
-  userId      String      @db.Uuid
-  status      OrderStatus @default(PENDING)
-  currency    String      @default("USD")
-  subtotalCents Int
-  shippingCents Int       @default(0)
-  taxCents      Int       @default(0)
-  totalCents    Int
+  id              String      @id @default(cuid())
+  userId          String      @db.Uuid
+  status          OrderStatus @default(PENDING)
+  subtotalCents   Int
+  shippingCents   Int         @default(0)
+  taxCents        Int         @default(0)
+  totalCents      Int
   shippingAddress Json
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   user  User        @relation(fields: [userId], references: [id], onDelete: Restrict)
   items OrderItem[]
@@ -170,17 +218,22 @@ model Order {
 }
 
 model OrderItem {
-  id        String @id @default(cuid())
-  orderId   String
-  productId String
-  productName String
-  productSlug String
-  imageUrl    String?
+  id             String  @id @default(cuid())
+  orderId        String
+  productId      String
+  variantId      String?
+  productName    String
+  productSlug    String
+  variantSize    String?
+  variantColor   String?
+  sku            String?
+  imageUrl       String?
   unitPriceCents Int
-  quantity    Int
+  quantity       Int
 
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@map("order_items")

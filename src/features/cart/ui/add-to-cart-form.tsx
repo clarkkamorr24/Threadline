@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react';
 import { Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MAX_CART_ITEM_QUANTITY } from '@/constants/catalog';
+import type { ProductVariantModel } from '@/entities/product/model/types';
 import { ROUTES } from '@/constants/routes';
 import { useToast } from '@/hooks/useToast';
 import { addToCartAction } from '../api/actions';
@@ -12,19 +13,28 @@ import { addToCartAction } from '../api/actions';
 interface AddToCartFormProps {
   readonly productId: string;
   readonly productName: string;
-  readonly availableStock: number;
+  readonly variants: readonly ProductVariantModel[];
+  readonly baseStock: number;
   readonly isAuthenticated: boolean;
 }
 
 export function AddToCartForm({
   productId,
   productName,
-  availableStock,
+  variants,
+  baseStock,
   isAuthenticated,
 }: AddToCartFormProps) {
   const router = useRouter();
   const toast = useToast();
   const [quantity, setQuantity] = useState(1);
+  const [variantId, setVariantId] = useState<string | null>(
+    variants.length === 1 ? (variants[0]?.id ?? null) : null,
+  );
+
+  const selectedVariant = variants.find((variant) => variant.id === variantId) ?? null;
+  const availableStock = variants.length > 0 ? (selectedVariant?.stock ?? 0) : baseStock;
+  const needsSelection = variants.length > 0 && selectedVariant === null;
   const [isPending, startTransition] = useTransition();
 
   const isSoldOut = availableStock <= 0;
@@ -37,7 +47,7 @@ export function AddToCartForm({
     }
 
     startTransition(async () => {
-      const result = await addToCartAction({ productId, quantity });
+      const result = await addToCartAction({ productId, variantId, quantity });
 
       if (!result.success) {
         toast.error('Could not add to cart', result.error.message);
@@ -49,16 +59,54 @@ export function AddToCartForm({
     });
   }
 
-  if (isSoldOut) {
+  // Rendered above the stepper so the stock figure always reflects the choice.
+  const variantPicker =
+    variants.length > 0 ? (
+      <div className="flex flex-col gap-2">
+        <span id="variant-label" className="text-sm font-medium">
+          Size and colour
+        </span>
+        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="variant-label">
+          {variants.map((variant) => {
+            const label = [variant.size, variant.color].filter(Boolean).join(' · ');
+            const isSelected = variant.id === variantId;
+
+            return (
+              <Button
+                key={variant.id}
+                type="button"
+                variant={isSelected ? 'default' : 'outline'}
+                size="sm"
+                // Out-of-stock combinations stay visible but unselectable, so
+                // the customer can see the option exists.
+                disabled={!variant.inStock || isPending}
+                onClick={() => setVariantId(variant.id)}
+                aria-pressed={isSelected}
+              >
+                {label}
+                {!variant.inStock ? ' — sold out' : ''}
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+    ) : null;
+
+  if (isSoldOut && !needsSelection) {
     return (
-      <Button disabled size="lg" className="w-full">
-        Sold out
-      </Button>
+      <div className="flex flex-col gap-3">
+        {variantPicker}
+        <Button disabled size="lg" className="w-full">
+          Sold out
+        </Button>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
+      {variantPicker}
+
       <div className="flex items-center gap-3">
         <span id="quantity-label" className="text-sm font-medium">
           Quantity
@@ -98,9 +146,15 @@ export function AddToCartForm({
         ) : null}
       </div>
 
-      <Button size="lg" className="w-full" onClick={handleAdd} isLoading={isPending}>
+      <Button
+        size="lg"
+        className="w-full"
+        onClick={handleAdd}
+        isLoading={isPending}
+        disabled={needsSelection}
+      >
         {isPending ? null : <ShoppingBag aria-hidden="true" />}
-        Add to cart
+        {needsSelection ? 'Select an option' : 'Add to cart'}
       </Button>
     </div>
   );

@@ -8,10 +8,12 @@ import { Separator } from '@/components/ui/separator';
 import { ROUTES } from '@/constants/routes';
 import { ProductGrid } from '@/entities/product/ui/product-grid';
 import { AddToCartForm } from '@/features/cart/ui/add-to-cart-form';
+import { FavoriteButton } from '@/features/favorites/ui/favorite-button';
 import { getCurrentUser } from '@/lib/auth/session';
 import { isAppError } from '@/lib/errors';
+import { isFavorited } from '@/services/favoriteService';
 import { getProductBySlug, getRelatedProducts } from '@/services/productService';
-import { calculateDiscountPercent, formatMoney } from '@/utils/money';
+import { formatMoney } from '@/utils/money';
 
 interface ProductPageProps {
   readonly params: Promise<{ slug: string }>;
@@ -56,8 +58,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     getCurrentUser(),
     getRelatedProducts(product.id, product.category.id, 4),
   ]);
-
-  const discount = calculateDiscountPercent(product.priceCents, product.compareAtCents);
+  
+  const favorited =
+    user?.role === 'USER' ? await isFavorited(user.id, product.id, null) : false;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
@@ -124,19 +127,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </h1>
 
             <div className="flex items-center gap-3">
-              <p className="flex items-baseline gap-2">
-                <span className="text-2xl font-medium">
-                  {formatMoney(product.priceCents, product.currency)}
-                </span>
-                {product.compareAtCents !== null ? (
-                  <span className="text-muted-foreground text-base line-through">
-                    {formatMoney(product.compareAtCents, product.currency)}
-                  </span>
+              <p className="text-2xl font-medium">
+                {product.hasPriceRange ? (
+                  <span className="text-muted-foreground text-base">from </span>
                 ) : null}
+                {formatMoney(product.priceCents)}
               </p>
-              {discount !== null ? (
-                <Badge variant="destructive">{discount}% off</Badge>
-              ) : null}
+              {!product.inStock ? <Badge variant="secondary">Sold out</Badge> : null}
             </div>
           </div>
 
@@ -146,20 +143,36 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <Separator />
 
-          <AddToCartForm
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <AddToCartForm
             productId={product.id}
             productName={product.name}
-            availableStock={product.stock}
-            isAuthenticated={user !== null}
-          />
+            variants={product.variants}
+            baseStock={product.baseStock}
+                isAuthenticated={user !== null}
+              />
+            </div>
+
+            <FavoriteButton
+              productId={product.id}
+              productName={product.name}
+              initialIsFavorited={favorited}
+              canFavorite={user?.role === 'USER'}
+              isAuthenticated={user !== null}
+              className="mt-7 shrink-0"
+            />
+          </div>
 
           <dl className="text-muted-foreground grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
             <dt className="font-medium">SKU</dt>
             <dd>{product.sku}</dd>
+            <dt className="font-medium">Material</dt>
+            <dd>{product.material ?? '—'}</dd>
             <dt className="font-medium">Category</dt>
             <dd>{product.category.name}</dd>
             <dt className="font-medium">Availability</dt>
-            <dd>{product.inStock ? `${product.stock} in stock` : 'Out of stock'}</dd>
+            <dd>{product.inStock ? 'In stock' : 'Out of stock'}</dd>
           </dl>
         </div>
       </div>

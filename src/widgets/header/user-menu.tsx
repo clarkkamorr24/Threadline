@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRef } from 'react';
-import { LayoutDashboard, LogOut, Package, User as UserIcon } from 'lucide-react';
+import { Heart, LayoutDashboard, LogOut, Package, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -57,6 +57,15 @@ export function UserMenu({ user }: UserMenuProps) {
             Your orders
           </Link>
         </DropdownMenuItem>
+
+        {user.role === 'USER' ? (
+          <DropdownMenuItem asChild>
+            <Link href={ROUTES.favorites}>
+              <Heart aria-hidden="true" />
+              Wishlist
+            </Link>
+          </DropdownMenuItem>
+        ) : null}
 
         <DropdownMenuItem asChild>
           <Link href={ROUTES.account}>

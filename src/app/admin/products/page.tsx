@@ -133,14 +133,20 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {formatMoney(product.priceCents, product.currency)}
+                    {formatMoney(product.basePriceCents)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {product.stock === 0 ? (
+                    {product.totalStock === 0 ? (
                       <span className="text-destructive">0</span>
                     ) : (
-                      product.stock
+                      product.totalStock
                     )}
+                    {product.variantCount > 0 ? (
+                      <span className="text-muted-foreground block text-xs">
+                        {product.variantCount} variant
+                        {product.variantCount === 1 ? '' : 's'}
+                      </span>
+                    ) : null}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">

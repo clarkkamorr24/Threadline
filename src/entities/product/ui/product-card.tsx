@@ -4,7 +4,7 @@ import { ImageOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ROUTES } from '@/constants/routes';
 import type { ProductSummary } from '@/entities/product/model/types';
-import { calculateDiscountPercent, formatMoney } from '@/utils/money';
+import { formatMoney } from '@/utils/money';
 
 interface ProductCardProps {
   readonly product: ProductSummary;
@@ -12,7 +12,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
-  const discount = calculateDiscountPercent(product.priceCents, product.compareAtCents);
 
   return (
     <article className="group flex flex-col gap-3">
@@ -42,10 +41,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           <Badge variant="secondary" className="absolute top-2 left-2">
             Sold out
           </Badge>
-        ) : discount !== null ? (
-          <Badge variant="destructive" className="absolute top-2 left-2">
-            {discount}% off
-          </Badge>
         ) : null}
       </Link>
 
@@ -56,15 +51,11 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </Link>
         </h3>
         <p className="text-muted-foreground text-xs">{product.category.name}</p>
-        <p className="flex items-baseline gap-2 text-sm">
-          <span className="font-medium">
-            {formatMoney(product.priceCents, product.currency)}
-          </span>
-          {product.compareAtCents !== null ? (
-            <span className="text-muted-foreground text-xs line-through">
-              {formatMoney(product.compareAtCents, product.currency)}
-            </span>
+        <p className="text-sm">
+          {product.hasPriceRange ? (
+            <span className="text-muted-foreground text-xs">from </span>
           ) : null}
+          <span className="font-medium">{formatMoney(product.priceCents)}</span>
         </p>
       </div>
     </article>

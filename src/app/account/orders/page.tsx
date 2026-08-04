@@ -92,7 +92,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   <OrderStatusBadge status={order.status} />
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  {formatMoney(order.totalCents, order.currency)}
+                  {formatMoney(order.totalCents)}
                 </TableCell>
               </TableRow>
             ))}

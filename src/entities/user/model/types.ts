@@ -15,6 +15,7 @@ export interface AdminUserRow {
   readonly name: string | null;
   readonly avatarUrl: string | null;
   readonly role: UserRoleValue;
+  readonly isActive: boolean;
   readonly orderCount: number;
   readonly totalSpentCents: number;
   readonly createdAt: string;

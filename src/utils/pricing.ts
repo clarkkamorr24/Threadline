@@ -27,10 +27,7 @@ export function calculateTaxCents(subtotalCents: number): number {
   return Math.round((subtotalCents * TAX_RATE_BASIS_POINTS) / BASIS_POINTS_DIVISOR);
 }
 
-export function calculateTotals(
-  lines: readonly PriceableLine[],
-  currency = 'USD',
-): CartTotals {
+export function calculateTotals(lines: readonly PriceableLine[]): CartTotals {
   const subtotalCents = calculateSubtotalCents(lines);
   const shippingCents = calculateShippingCents(subtotalCents);
   const taxCents = calculateTaxCents(subtotalCents);
@@ -42,7 +39,6 @@ export function calculateTotals(
     shippingCents,
     taxCents,
     totalCents: subtotalCents + shippingCents + taxCents,
-    currency,
     freeShippingRemainingCents: subtotalCents > 0 && remaining > 0 ? remaining : null,
   };
 }

@@ -193,10 +193,10 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
           <div className="grid gap-4 sm:grid-cols-3">
             <FormField
               control={form.control}
-              name="price"
+              name="basePrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Base price</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -207,7 +207,7 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
                       value={Number.isNaN(field.value) ? '' : field.value}
                     />
                   </FormControl>
-                  <FormDescription>In major units, e.g. 38.00</FormDescription>
+                  <FormDescription>Used when the product has no variants.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -215,24 +215,18 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
 
             <FormField
               control={form.control}
-              name="compareAtPrice"
+              name="material"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Compare-at price</FormLabel>
+                  <FormLabel>Material</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      placeholder="100% organic cotton"
                       value={field.value ?? ''}
-                      onChange={(event) =>
-                        field.onChange(
-                          event.target.value === '' ? null : event.target.valueAsNumber,
-                        )
-                      }
+                      onChange={(event) => field.onChange(event.target.value || null)}
                     />
                   </FormControl>
-                  <FormDescription>Optional. Shown struck through.</FormDescription>
+                  <FormDescription>Optional.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -240,10 +234,10 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
 
             <FormField
               control={form.control}
-              name="stock"
+              name="baseStock"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Stock</FormLabel>
+                  <FormLabel>Base stock</FormLabel>
                   <FormControl>
                     <Input
                       type="number"

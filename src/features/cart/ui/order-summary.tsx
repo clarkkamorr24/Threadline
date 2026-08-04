@@ -26,7 +26,7 @@ export function OrderSummary({ totals, children }: OrderSummaryProps) {
         {rows.map((row) => (
           <div key={row.label} className="flex justify-between">
             <dt className="text-muted-foreground">{row.label}</dt>
-            <dd>{row.display ?? formatMoney(row.value, totals.currency)}</dd>
+            <dd>{row.display ?? formatMoney(row.value)}</dd>
           </div>
         ))}
       </dl>
@@ -35,12 +35,12 @@ export function OrderSummary({ totals, children }: OrderSummaryProps) {
 
       <div className="flex justify-between font-medium">
         <span>Total</span>
-        <span>{formatMoney(totals.totalCents, totals.currency)}</span>
+        <span>{formatMoney(totals.totalCents)}</span>
       </div>
 
       {totals.freeShippingRemainingCents !== null ? (
         <p className="text-muted-foreground text-sm">
-          Spend {formatMoney(totals.freeShippingRemainingCents, totals.currency)} more for free
+          Spend {formatMoney(totals.freeShippingRemainingCents)} more for free
           shipping.
         </p>
       ) : null}

@@ -13,7 +13,7 @@ export const manualPaymentPlugin: PaymentPlugin = {
       reference: `manual_${randomUUID()}`,
       requiresAction: false,
       redirectUrl: null,
-      initialOrderStatus: 'PAID',
+      initialOrderStatus: 'PENDING',
     });
   },
 };

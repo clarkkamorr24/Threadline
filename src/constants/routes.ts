@@ -5,6 +5,7 @@ export const ROUTES = {
   category: (slug: string) => `/products?category=${encodeURIComponent(slug)}`,
   cart: '/cart',
   checkout: '/checkout',
+  favorites: '/account/favorites',
   orders: '/account/orders',
   order: (id: string) => `/account/orders/${id}`,
   account: '/account',
@@ -18,6 +19,7 @@ export const ROUTES = {
     editProduct: (id: string) => `/admin/products/${id}`,
     users: '/admin/users',
     orders: '/admin/orders',
+    order: (id: string) => `/admin/orders/${id}`,
   },
 } as const;
 
