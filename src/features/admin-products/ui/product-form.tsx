@@ -33,11 +33,11 @@ import { PRODUCT_STATUSES } from '@/entities/product/model/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/useToast';
 import { createProductAction, updateProductAction } from '../api/actions';
-import { createProductSchema, slugify } from '../model/schema';
+import { productDetailsSchema, slugify, validateVariants } from '../model/schema';
+import type { ProductDetailsInput, VariantIssue } from '../model/schema';
 import type { CreateProductInput } from '../model/schema';
-import { ProductImageField } from './product-image-field';
-import { VariantEditor } from './variant-editor';
-import type { DraftImage } from './product-image-field';
+import { VariantEditor, createEmptyVariant } from './variant-editor';
+import type { VariantDraft } from './variant-editor';
 
 interface ProductFormProps {
   readonly categories: readonly CategoryModel[];
@@ -52,56 +52,100 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { upload } = useImageUpload('products');
 
-  const [draftImages, setDraftImages] = useState<readonly DraftImage[]>(() =>
-    defaultValues.images.map((image) => ({
-      kind: 'uploaded' as const,
-      url: image.url,
-      storageKey: image.storageKey ?? null,
-      alt: image.alt,
-    })),
+  const [variants, setVariants] = useState<readonly VariantDraft[]>(() =>
+    defaultValues.variants.length > 0
+      ? defaultValues.variants.map((variant) => ({
+          id: variant.id ?? null,
+          size: variant.size,
+          color: variant.color,
+          sku: variant.sku,
+          stock: variant.stock,
+          priceOverride: variant.priceOverride ?? null,
+          images: variant.images.map((image) => ({
+            kind: 'uploaded' as const,
+            url: image.url,
+            storageKey: image.storageKey ?? null,
+          })),
+        }))
+      : [createEmptyVariant('', 0)],
   );
 
   const isEditing = productId !== undefined;
 
-  const form = useForm<CreateProductInput>({
-    resolver: zodResolver(createProductSchema),
-    defaultValues,
+  const [variantIssues, setVariantIssues] = useState<readonly VariantIssue[]>([]);
+
+  const form = useForm<ProductDetailsInput>({
+    resolver: zodResolver(productDetailsSchema),
+    defaultValues: {
+      name: defaultValues.name,
+      slug: defaultValues.slug,
+      description: defaultValues.description,
+      material: defaultValues.material,
+      basePrice: defaultValues.basePrice,
+      status: defaultValues.status,
+      featured: defaultValues.featured,
+      categoryId: defaultValues.categoryId,
+    },
   });
 
   const isSubmitting = form.formState.isSubmitting;
 
-  async function resolveImages(): Promise<CreateProductInput['images'] | null> {
-    const resolved: { url: string; alt?: string; storageKey?: string | null }[] = [];
+  async function resolveVariants(): Promise<CreateProductInput['variants'] | null> {
+    const resolved: CreateProductInput['variants'] = [];
 
-    for (const image of draftImages) {
-      if (image.kind === 'uploaded') {
-        resolved.push({ url: image.url, alt: image.alt, storageKey: image.storageKey });
-        continue;
+    for (const variant of variants) {
+      const images: { url: string; storageKey?: string | null }[] = [];
+
+      for (const image of variant.images) {
+        if (image.kind === 'uploaded') {
+          images.push({ url: image.url, storageKey: image.storageKey });
+          continue;
+        }
+
+        const uploaded = await upload(image.file);
+
+        if (!uploaded) {
+          setSubmitError(`"${image.file.name}" could not be uploaded. Nothing was saved.`);
+          return null;
+        }
+
+        images.push({ url: uploaded.url, storageKey: uploaded.storageKey });
       }
 
-      const uploaded = await upload(image.file);
-
-      if (!uploaded) {
-        setSubmitError(`"${image.file.name}" could not be uploaded. Nothing was saved.`);
-        return null;
-      }
-
-      resolved.push({ url: uploaded.url, storageKey: uploaded.storageKey });
+      resolved.push({
+        id: variant.id ?? null,
+        size: variant.size,
+        color: variant.color,
+        sku: variant.sku,
+        stock: variant.stock,
+        priceOverride: variant.priceOverride ?? null,
+        images,
+      });
     }
 
     return resolved;
   }
 
-  async function onSubmit(values: CreateProductInput): Promise<void> {
+  async function onSubmit(values: ProductDetailsInput): Promise<void> {
     setSubmitError(null);
 
-    const images = await resolveImages();
+    const issues = validateVariants(variants);
+    setVariantIssues(issues);
 
-    if (!images) {
+    if (issues.length > 0) {
+      setSubmitError(
+        `Fix ${issues.length} problem${issues.length === 1 ? '' : 's'} in the variants below.`,
+      );
       return;
     }
 
-    const payload = { ...values, images };
+    const resolvedVariants = await resolveVariants();
+
+    if (!resolvedVariants) {
+      return;
+    }
+
+    const payload = { ...values, variants: resolvedVariants };
 
     const result = isEditing
       ? await updateProductAction({ ...payload, id: productId })
@@ -233,42 +277,9 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="baseStock"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Base stock</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="1"
-                      min="0"
-                      {...field}
-                      onChange={(event) => field.onChange(event.target.valueAsNumber)}
-                      value={Number.isNaN(field.value) ? '' : field.value}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <FormField
-              control={form.control}
-              name="sku"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>SKU</FormLabel>
-                  <FormControl>
-                    <Input placeholder="TL-TOP-001" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <FormField
               control={form.control}
@@ -338,31 +349,26 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
 
         <section className="flex flex-col gap-4">
           <h2 className="font-semibold">Variants</h2>
-          <FormField
-            control={form.control}
-            name="variants"
-            render={({ field }) => (
-              <FormItem>
-                <VariantEditor
-                  value={field.value}
-                  onChange={field.onChange}
-                  baseSku={form.watch('sku')}
-                  disabled={isSubmitting}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </section>
-
-        <section className="flex flex-col gap-4">
-          <h2 className="font-semibold">Images</h2>
-          <ProductImageField
-            value={draftImages}
-            onChange={setDraftImages}
+          <VariantEditor
+            value={variants}
+            onChange={(next) => {
+              setVariants(next);
+              setVariantIssues([]);
+            }}
+            issues={variantIssues}
+            baseSku={form.watch('slug').toUpperCase().replace(/-/g, '').slice(0, 10)}
             disabled={isSubmitting}
           />
         </section>
+
+        {Object.keys(form.formState.errors).length > 0 ? (
+          <Alert variant="destructive">
+            <CircleAlert aria-hidden="true" />
+            <AlertDescription>
+              Some required fields are missing or invalid. Check the highlighted fields above.
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
         <div className="flex gap-3">
           <Button type="submit" isLoading={isSubmitting}>

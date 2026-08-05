@@ -25,7 +25,7 @@ export const addToCartAction = createAction(
   addToCartSchema,
   async (input): Promise<Cart> => {
     const user = await requireShopper();
-    const cart = await addItemToCart(user.id, input.productId, input.variantId, input.quantity);
+    const cart = await addItemToCart(user.id, input.variantId, input.quantity);
     revalidateCartViews();
     return cart;
   },

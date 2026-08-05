@@ -21,14 +21,19 @@ const favoriteInclude = {
       name: true,
       slug: true,
       basePriceCents: true,
-      baseStock: true,
       category: { select: { id: true, name: true, slug: true } },
-      images: {
-        select: { id: true, url: true, alt: true, isPrimary: true },
-        orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-        take: 1,
+      variants: {
+        select: {
+          stock: true,
+          priceOverrideCents: true,
+          images: {
+            select: { id: true, url: true, alt: true, isPrimary: true },
+            orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+            take: 1,
+          },
+        },
+        orderBy: { position: 'asc' },
       },
-      variants: { select: { stock: true, priceOverrideCents: true } },
     },
   },
 } satisfies Prisma.FavoriteInclude;
@@ -41,17 +46,14 @@ export async function listFavorites(userId: string): Promise<readonly FavoriteIt
   });
 
   return rows.map((row) => {
-    const image = row.product.images[0];
+    const image = row.product.variants.flatMap((variant) => variant.images)[0];
     const variantPrices = row.product.variants.map(
       (variant) => variant.priceOverrideCents ?? row.product.basePriceCents,
     );
 
     const priceCents =
       variantPrices.length > 0 ? Math.min(...variantPrices) : row.product.basePriceCents;
-    const inStock =
-      row.product.variants.length > 0
-        ? row.product.variants.some((variant) => variant.stock > 0)
-        : row.product.baseStock > 0;
+    const inStock = row.product.variants.some((variant) => variant.stock > 0);
 
     return {
       id: row.id,

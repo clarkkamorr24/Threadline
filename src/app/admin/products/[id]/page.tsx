@@ -41,16 +41,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     description: product.description,
     material: product.material,
     basePrice: toMajorUnits(product.basePriceCents),
-    sku: product.sku,
-    baseStock: product.baseStock,
     status: product.status as ProductStatusValue,
     featured: product.featured,
     categoryId: product.categoryId,
-    images: product.images.map((image) => ({
-      url: image.url,
-      alt: image.alt ?? undefined,
-      storageKey: image.storageKey,
-    })),
     variants: product.variants.map((variant) => ({
       id: variant.id,
       size: variant.size,
@@ -59,6 +52,11 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
       stock: variant.stock,
       priceOverride:
         variant.priceOverrideCents === null ? null : toMajorUnits(variant.priceOverrideCents),
+      images: variant.images.map((image) => ({
+        url: image.url,
+        alt: image.alt,
+        storageKey: image.storageKey,
+      })),
     })),
   };
 
@@ -71,7 +69,6 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
           </Link>
         </nav>
         <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
-        <p className="text-muted-foreground font-mono text-xs">{product.sku}</p>
       </header>
 
       <ProductForm

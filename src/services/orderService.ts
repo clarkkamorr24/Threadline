@@ -102,19 +102,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
           items: {
             include: {
               product: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  sku: true,
-                  basePriceCents: true,
-                  status: true,
-                  images: {
-                    select: { url: true },
-                    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-                    take: 1,
-                  },
-                },
+                select: { id: true, name: true, slug: true, basePriceCents: true, status: true },
               },
               variant: {
                 select: {
@@ -123,7 +111,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
                   color: true,
                   sku: true,
                   priceOverrideCents: true,
-                  image: { select: { url: true } },
+                  images: {
+                    select: { url: true },
+                    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+                    take: 1,
+                  },
                 },
               },
             },
@@ -144,37 +136,23 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
       }
 
       for (const item of cart.items) {
-        const reserved = item.variantId
-          ? await tx.productVariant.updateMany({
-              where: { id: item.variantId, stock: { gte: item.quantity } },
-              data: { stock: { decrement: item.quantity } },
-            })
-          : await tx.product.updateMany({
-              where: { id: item.productId, baseStock: { gte: item.quantity } },
-              data: { baseStock: { decrement: item.quantity } },
-            });
+        const reserved = await tx.productVariant.updateMany({
+          where: { id: item.variantId, stock: { gte: item.quantity } },
+          data: { stock: { decrement: item.quantity } },
+        });
 
         if (reserved.count === 0) {
-          const available = item.variantId
-            ? ((
-                await tx.productVariant.findUnique({
-                  where: { id: item.variantId },
-                  select: { stock: true },
-                })
-              )?.stock ?? 0)
-            : ((
-                await tx.product.findUnique({
-                  where: { id: item.productId },
-                  select: { baseStock: true },
-                })
-              )?.baseStock ?? 0);
+          const current = await tx.productVariant.findUnique({
+            where: { id: item.variantId },
+            select: { stock: true },
+          });
 
-          throw new InsufficientStockError(item.product.name, available);
+          throw new InsufficientStockError(item.product.name, current?.stock ?? 0);
         }
       }
 
       const lines = cart.items.map((item) => ({
-        unitPriceCents: item.variant?.priceOverrideCents ?? item.product.basePriceCents,
+        unitPriceCents: item.variant.priceOverrideCents ?? item.product.basePriceCents,
         quantity: item.quantity,
       }));
 
@@ -189,11 +167,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
           variantId: item.variantId,
           productName: item.product.name,
           productSlug: item.product.slug,
-          variantSize: item.variant?.size ?? null,
-          variantColor: item.variant?.color ?? null,
-          sku: item.variant?.sku ?? item.product.sku,
-          imageUrl: item.variant?.image?.url ?? item.product.images[0]?.url ?? null,
-          unitPriceCents: item.variant?.priceOverrideCents ?? item.product.basePriceCents,
+          variantSize: item.variant.size,
+          variantColor: item.variant.color,
+          sku: item.variant.sku,
+          imageUrl: item.variant.images[0]?.url ?? null,
+          unitPriceCents: item.variant.priceOverrideCents ?? item.product.basePriceCents,
           quantity: item.quantity,
         })),
       });
@@ -269,7 +247,7 @@ export async function listOrders(
 ): Promise<Paginated<OrderSummary>> {
   const where = { userId } satisfies Prisma.OrderWhereInput;
 
-  const [rows, total] = await db.$transaction([
+  const [rows, total] = await Promise.all([
     db.order.findMany({
       where,
       select: {
@@ -343,7 +321,7 @@ export async function listAllOrders(query: AdminOrderQuery): Promise<Paginated<A
 
   const where: Prisma.OrderWhereInput = conditions.length > 0 ? { AND: conditions } : {};
 
-  const [rows, total] = await db.$transaction([
+  const [rows, total] = await Promise.all([
     db.order.findMany({
       where,
       select: {

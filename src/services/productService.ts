@@ -21,7 +21,10 @@ const variantSelect = {
   sku: true,
   stock: true,
   priceOverrideCents: true,
-  imageId: true,
+  images: {
+    select: { id: true, url: true, alt: true, isPrimary: true },
+    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+  },
 } satisfies Prisma.ProductVariantSelect;
 
 const productSummarySelect = {
@@ -29,26 +32,14 @@ const productSummarySelect = {
   name: true,
   slug: true,
   basePriceCents: true,
-  baseStock: true,
-  sku: true,
   category: { select: { id: true, name: true, slug: true } },
-  images: {
-    select: { id: true, url: true, alt: true, isPrimary: true },
-    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-    take: 1,
-  },
-  variants: { select: variantSelect },
+  variants: { select: variantSelect, orderBy: { position: 'asc' } },
 } satisfies Prisma.ProductSelect;
 
 const productDetailSelect = {
   ...productSummarySelect,
   description: true,
   material: true,
-  images: {
-    select: { id: true, url: true, alt: true, isPrimary: true },
-    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-  },
-  variants: { select: variantSelect, orderBy: { createdAt: 'asc' } },
 } satisfies Prisma.ProductSelect;
 
 type ProductSummaryRow = Prisma.ProductGetPayload<{ select: typeof productSummarySelect }>;
@@ -56,39 +47,36 @@ type ProductDetailRow = Prisma.ProductGetPayload<{ select: typeof productDetailS
 type VariantRow = Prisma.ProductVariantGetPayload<{ select: typeof variantSelect }>;
 
 function toVariant(row: VariantRow, basePriceCents: number): ProductVariantModel {
-  const priceCents = row.priceOverrideCents ?? basePriceCents;
-
   return {
     id: row.id,
     size: row.size,
     color: row.color,
     sku: row.sku,
     stock: row.stock,
-    priceCents,
-    imageId: row.imageId,
+    priceCents: row.priceOverrideCents ?? basePriceCents,
+    images: row.images.map((image) => ({
+      id: image.id,
+      url: image.url,
+      alt: image.alt ?? '',
+      isPrimary: image.isPrimary,
+    })),
     inStock: row.stock > 0,
   };
 }
 
 function toProductSummary(row: ProductSummaryRow): ProductSummary {
-  const image = row.images[0];
   const variants = row.variants.map((variant) => toVariant(variant, row.basePriceCents));
   const prices = variants.map((variant) => variant.priceCents);
-  const priceCents = prices.length > 0 ? Math.min(...prices) : row.basePriceCents;
-  const hasPriceRange = prices.length > 0 && Math.min(...prices) !== Math.max(...prices);
-  const inStock =
-    variants.length > 0 ? variants.some((variant) => variant.inStock) : row.baseStock > 0;
+  const image = variants.flatMap((variant) => variant.images)[0] ?? null;
 
   return {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    priceCents,
-    hasPriceRange,
-    inStock,
-    primaryImage: image
-      ? { id: image.id, url: image.url, alt: image.alt ?? row.name, isPrimary: image.isPrimary }
-      : null,
+    priceCents: prices.length > 0 ? Math.min(...prices) : row.basePriceCents,
+    hasPriceRange: prices.length > 0 && Math.min(...prices) !== Math.max(...prices),
+    inStock: variants.some((variant) => variant.inStock),
+    primaryImage: image ? { ...image, alt: image.alt || row.name } : null,
     category: row.category,
   };
 }
@@ -104,15 +92,7 @@ function toProductDetail(row: ProductDetailRow): ProductDetail {
     ...toProductSummary(row),
     description: row.description,
     material: row.material,
-    sku: row.sku,
     basePriceCents: row.basePriceCents,
-    baseStock: row.baseStock,
-    images: row.images.map((image) => ({
-      id: image.id,
-      url: image.url,
-      alt: image.alt ?? row.name,
-      isPrimary: image.isPrimary,
-    })),
     variants,
     sizes: distinct(variants.map((variant) => variant.size)),
     colors: distinct(variants.map((variant) => variant.color)),
@@ -168,9 +148,7 @@ function buildWhere(query: ProductQuery): Prisma.ProductWhereInput {
   }
 
   if (query.inStockOnly) {
-    conditions.push({
-      OR: [{ variants: { some: { stock: { gt: 0 } } } }, { variants: { none: {} }, baseStock: { gt: 0 } }],
-    });
+    conditions.push({ variants: { some: { stock: { gt: 0 } } } });
   }
 
   return { AND: conditions };
@@ -179,7 +157,7 @@ function buildWhere(query: ProductQuery): Prisma.ProductWhereInput {
 export async function listProducts(query: ProductQuery): Promise<Paginated<ProductSummary>> {
   const pageSize = Math.min(query.pageSize, MAX_PAGE_SIZE);
   const where = buildWhere(query);
-  const [rows, total] = await db.$transaction([
+  const [rows, total] = await Promise.all([
     db.product.findMany({
       where,
       select: productSummarySelect,

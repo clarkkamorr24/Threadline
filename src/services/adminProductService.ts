@@ -10,19 +10,22 @@ const adminRowSelect = {
   id: true,
   name: true,
   slug: true,
-  sku: true,
   basePriceCents: true,
-  baseStock: true,
   status: true,
   featured: true,
   updatedAt: true,
   category: { select: { name: true } },
-  images: {
-    select: { url: true },
-    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-    take: 1,
+  variants: {
+    select: {
+      stock: true,
+      images: {
+        select: { url: true },
+        orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+        take: 1,
+      },
+    },
+    orderBy: { position: 'asc' },
   },
-  variants: { select: { stock: true } },
 } satisfies Prisma.ProductSelect;
 
 type AdminRow = Prisma.ProductGetPayload<{ select: typeof adminRowSelect }>;
@@ -32,17 +35,13 @@ function toAdminProductRow(row: AdminRow): AdminProductRow {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    sku: row.sku,
     basePriceCents: row.basePriceCents,
-    totalStock:
-      row.variants.length > 0
-        ? row.variants.reduce((sum, variant) => sum + variant.stock, 0)
-        : row.baseStock,
+    totalStock: row.variants.reduce((sum, variant) => sum + variant.stock, 0),
     variantCount: row.variants.length,
     status: row.status as ProductStatusValue,
     featured: row.featured,
     categoryName: row.category.name,
-    primaryImageUrl: row.images[0]?.url ?? null,
+    primaryImageUrl: row.variants.flatMap((variant) => variant.images)[0]?.url ?? null,
     updatedAt: row.updatedAt.toISOString(),
   };
 }
@@ -63,7 +62,7 @@ export async function listAdminProducts(
     conditions.push({
       OR: [
         { name: { contains: query.search, mode: 'insensitive' } },
-        { sku: { contains: query.search, mode: 'insensitive' } },
+        { variants: { some: { sku: { contains: query.search, mode: 'insensitive' } } } },
       ],
     });
   }
@@ -74,7 +73,7 @@ export async function listAdminProducts(
 
   const where: Prisma.ProductWhereInput = conditions.length > 0 ? { AND: conditions } : {};
 
-  const [rows, total] = await db.$transaction([
+  const [rows, total] = await Promise.all([
     db.product.findMany({
       where,
       select: adminRowSelect,
@@ -103,16 +102,10 @@ export async function getProductForEdit(id: string) {
       slug: true,
       description: true,
       basePriceCents: true,
-      baseStock: true,
       material: true,
-      sku: true,
       status: true,
       featured: true,
       categoryId: true,
-      images: {
-        select: { id: true, url: true, alt: true, storageKey: true, isPrimary: true },
-        orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-      },
       variants: {
         select: {
           id: true,
@@ -121,8 +114,12 @@ export async function getProductForEdit(id: string) {
           sku: true,
           stock: true,
           priceOverrideCents: true,
+          images: {
+            select: { id: true, url: true, alt: true, storageKey: true },
+            orderBy: { position: 'asc' },
+          },
         },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { position: 'asc' },
       },
     },
   });
@@ -152,31 +149,33 @@ function toConflictError(error: unknown): never {
 }
 
 export async function createProduct(input: ProductWriteModel): Promise<{ id: string }> {
-  const { images, variants, ...productData } = input;
+  const { variants, ...productData } = input;
 
   try {
-    const created = await db.product.create({
-      data: {
-        ...productData,
-        images: {
-          createMany: {
-            data: images.map((image, index) => ({ ...image, position: index, isPrimary: index === 0 })),
-          },
-        },
-      },
-      select: { id: true },
-    });
+    const created = await db.product.create({ data: productData, select: { id: true } });
 
-    if (variants.length > 0) {
-      await db.productVariant.createMany({
-        data: variants.map((variant) => ({
+    for (const [index, variant] of variants.entries()) {
+      await db.productVariant.create({
+        data: {
           productId: created.id,
           size: variant.size,
           color: variant.color,
           sku: variant.sku,
           stock: variant.stock,
           priceOverrideCents: variant.priceOverrideCents,
-        })),
+          position: index,
+          images: {
+            createMany: {
+              data: variant.images.map((image, imageIndex) => ({
+                url: image.url,
+                alt: image.alt,
+                storageKey: image.storageKey,
+                position: imageIndex,
+                isPrimary: imageIndex === 0,
+              })),
+            },
+          },
+        },
       });
     }
 
@@ -190,64 +189,61 @@ export async function updateProduct(
   id: string,
   input: ProductWriteModel,
 ): Promise<{ id: string }> {
-  const { images, variants, ...productData } = input;
+  const { variants, ...productData } = input;
 
   const existing = await db.product.findUnique({
     where: { id },
-    select: { images: { select: { storageKey: true, url: true } } },
+    select: { variants: { select: { images: { select: { storageKey: true } } } } },
   });
 
   if (!existing) {
     throw new NotFoundError('Product');
   }
 
+  const previousKeys = existing.variants
+    .flatMap((variant) => variant.images)
+    .map((image) => image.storageKey)
+    .filter((key): key is string => Boolean(key));
+
   try {
     await db.$transaction(async (tx) => {
       await tx.product.update({ where: { id }, data: productData });
-      await tx.productImage.deleteMany({ where: { productId: id } });
-      await tx.productImage.createMany({
-        data: images.map((image, index) => ({
-          ...image,
-          productId: id,
-          position: index,
-          isPrimary: index === 0,
-        })),
-      });
+      await tx.productVariant.deleteMany({ where: { productId: id } });
 
-      const keptVariantIds = variants
-        .map((variant) => variant.id)
-        .filter((variantId): variantId is string => variantId !== null);
-
-      await tx.productVariant.deleteMany({
-        where: { productId: id, id: { notIn: keptVariantIds.length > 0 ? keptVariantIds : [''] } },
-      });
-
-      for (const variant of variants) {
-        const data = {
-          size: variant.size,
-          color: variant.color,
-          sku: variant.sku,
-          stock: variant.stock,
-          priceOverrideCents: variant.priceOverrideCents,
-        };
-
-        if (variant.id) {
-          await tx.productVariant.update({ where: { id: variant.id }, data });
-        } else {
-          await tx.productVariant.create({ data: { ...data, productId: id } });
-        }
+      for (const [index, variant] of variants.entries()) {
+        await tx.productVariant.create({
+          data: {
+            productId: id,
+            size: variant.size,
+            color: variant.color,
+            sku: variant.sku,
+            stock: variant.stock,
+            priceOverrideCents: variant.priceOverrideCents,
+            position: index,
+            images: {
+              createMany: {
+                data: variant.images.map((image, imageIndex) => ({
+                  url: image.url,
+                  alt: image.alt,
+                  storageKey: image.storageKey,
+                  position: imageIndex,
+                  isPrimary: imageIndex === 0,
+                })),
+              },
+            },
+          },
+        });
       }
     });
   } catch (error) {
     toConflictError(error);
   }
 
-  const keptKeys = new Set(images.map((image) => image.storageKey).filter(Boolean));
-  const orphaned = existing.images
-    .map((image) => image.storageKey)
-    .filter((key): key is string => Boolean(key) && !keptKeys.has(key));
+  const keptKeys = new Set(
+    variants.flatMap((variant) => variant.images.map((image) => image.storageKey)).filter(Boolean),
+  );
 
-  await removeAssets(orphaned);
+  await removeAssets(previousKeys.filter((key) => !keptKeys.has(key)));
 
   return { id };
 }
@@ -256,7 +252,7 @@ export async function deleteProduct(id: string): Promise<void> {
   const existing = await db.product.findUnique({
     where: { id },
     select: {
-      images: { select: { storageKey: true } },
+      variants: { select: { images: { select: { storageKey: true } } } },
       _count: { select: { orderItems: true } },
     },
   });
@@ -274,7 +270,10 @@ export async function deleteProduct(id: string): Promise<void> {
   await db.product.delete({ where: { id } });
 
   await removeAssets(
-    existing.images.map((image) => image.storageKey).filter((key): key is string => Boolean(key)),
+    existing.variants
+      .flatMap((variant) => variant.images)
+      .map((image) => image.storageKey)
+      .filter((key): key is string => Boolean(key)),
   );
 }
 
@@ -306,16 +305,13 @@ export interface CatalogStats {
 }
 
 export async function getCatalogStats(): Promise<CatalogStats> {
-  const [totalProducts, activeProducts, outOfStock, totalOrders, revenue] = await db.$transaction([
+  const [totalProducts, activeProducts, outOfStock, totalOrders, revenue] = await Promise.all([
     db.product.count(),
     db.product.count({ where: { status: 'ACTIVE' } }),
     db.product.count({
       where: {
         status: 'ACTIVE',
-        OR: [
-          { variants: { none: {} }, baseStock: 0 },
-          { variants: { some: {} }, NOT: { variants: { some: { stock: { gt: 0 } } } } },
-        ],
+        NOT: { variants: { some: { stock: { gt: 0 } } } },
       },
     }),
     db.order.count(),

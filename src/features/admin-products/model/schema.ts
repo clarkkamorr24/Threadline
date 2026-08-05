@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MAX_PRODUCT_IMAGES } from '@/constants/catalog';
+import { MAX_VARIANTS, MAX_VARIANT_IMAGES } from '@/constants/catalog';
 import { PRODUCT_STATUSES } from '@/entities/product/model/types';
 import { toCents } from '@/utils/money';
 
@@ -9,6 +9,12 @@ const priceField = z
   .number({ invalid_type_error: 'Enter a valid price.' })
   .nonnegative('Price cannot be negative.')
   .max(1_000_000, 'Price is unrealistically high.');
+
+export const variantImageSchema = z.object({
+  url: z.string().url('Each image must be a valid URL.'),
+  alt: z.string().max(160).nullish(),
+  storageKey: z.string().nullish(),
+});
 
 export const variantSchema = z.object({
   id: z.string().nullish(),
@@ -35,12 +41,10 @@ export const variantSchema = z.object({
     .min(0, 'Stock cannot be negative.')
     .max(1_000_000),
   priceOverride: priceField.nullish(),
-});
-
-export const productImageSchema = z.object({
-  url: z.string().url('Each image must be a valid URL.'),
-  alt: z.string().max(160).optional(),
-  storageKey: z.string().nullish(),
+  images: z
+    .array(variantImageSchema)
+    .max(MAX_VARIANT_IMAGES, `At most ${MAX_VARIANT_IMAGES} images per variant.`)
+    .default([]),
 });
 
 const baseProductSchema = z.object({
@@ -62,44 +66,22 @@ const baseProductSchema = z.object({
   material: z
     .string()
     .max(200, 'Material must be 200 characters or fewer.')
-    .transform((value) => value.trim())
     .nullable()
-    .default(null),
+    .default(null)
+    .transform((value) => value?.trim() || null),
   basePrice: priceField,
-  sku: z
-    .string()
-    .min(1, 'SKU is required.')
-    .max(60)
-    .transform((value) => value.trim().toUpperCase()),
-  baseStock: z
-    .number({ invalid_type_error: 'Enter a stock quantity.' })
-    .int('Stock must be a whole number.')
-    .min(0, 'Stock cannot be negative.')
-    .max(1_000_000),
   status: z.enum(PRODUCT_STATUSES),
   featured: z.boolean().default(false),
   categoryId: z.string().min(1, 'Choose a category.'),
-  images: z
-    .array(productImageSchema)
-    .max(MAX_PRODUCT_IMAGES, `At most ${MAX_PRODUCT_IMAGES} images.`)
-    .default([]),
   variants: z
     .array(variantSchema)
-    .max(50, 'At most 50 variants.')
-    .default([])
+    .min(1, 'A product needs at least one variant.')
+    .max(MAX_VARIANTS, `At most ${MAX_VARIANTS} variants.`)
     .superRefine((variants, ctx) => {
       const seenSku = new Set<string>();
       const seenCombo = new Set<string>();
 
       variants.forEach((variant, index) => {
-        if (variant.size === null && variant.color === null) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: [index, 'size'],
-            message: 'A variant needs at least a size or a colour.',
-          });
-        }
-
         if (seenSku.has(variant.sku)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -122,27 +104,77 @@ const baseProductSchema = z.object({
     }),
 });
 
-export const createProductSchema = baseProductSchema;
+export const productDetailsSchema = baseProductSchema.omit({ variants: true });
+export type ProductDetailsInput = z.infer<typeof productDetailsSchema>;
 
+export interface VariantIssue {
+  readonly index: number;
+  readonly field: 'sku' | 'size' | 'color' | 'stock';
+  readonly message: string;
+}
+
+export function validateVariants(
+  variants: readonly {
+    size: string | null;
+    color: string | null;
+    sku: string;
+    stock: number;
+  }[],
+): readonly VariantIssue[] {
+  const issues: VariantIssue[] = [];
+  const seenSku = new Map<string, number>();
+  const seenCombo = new Map<string, number>();
+
+  variants.forEach((variant, index) => {
+    const sku = variant.sku.trim().toUpperCase();
+
+    if (!sku) {
+      issues.push({ index, field: 'sku', message: 'SKU is required.' });
+    } else if (seenSku.has(sku)) {
+      issues.push({
+        index,
+        field: 'sku',
+        message: `Duplicate SKU (also on variant ${(seenSku.get(sku) ?? 0) + 1}).`,
+      });
+    } else {
+      seenSku.set(sku, index);
+    }
+
+    if (!Number.isFinite(variant.stock) || variant.stock < 0) {
+      issues.push({ index, field: 'stock', message: 'Enter a stock quantity of 0 or more.' });
+    }
+
+    const combo = `${variant.size ?? ''}|${variant.color ?? ''}`;
+
+    if (seenCombo.has(combo)) {
+      issues.push({
+        index,
+        field: 'color',
+        message: `Same size and colour as variant ${(seenCombo.get(combo) ?? 0) + 1}.`,
+      });
+    } else {
+      seenCombo.set(combo, index);
+    }
+  });
+
+  return issues;
+}
+
+export const createProductSchema = baseProductSchema;
 export const updateProductSchema = baseProductSchema.extend({ id: z.string().min(1) });
 
-export type CreateProductFormInput = z.input<typeof baseProductSchema>;
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 
-/** Form values converted to the persistence shape the service expects. */
 export interface ProductWriteModel {
   readonly name: string;
   readonly slug: string;
   readonly description: string;
   readonly material: string | null;
   readonly basePriceCents: number;
-  readonly baseStock: number;
-  readonly sku: string;
   readonly status: (typeof PRODUCT_STATUSES)[number];
   readonly featured: boolean;
   readonly categoryId: string;
-  readonly images: readonly { url: string; alt: string | null; storageKey: string | null }[];
   readonly variants: readonly {
     id: string | null;
     size: string | null;
@@ -150,6 +182,7 @@ export interface ProductWriteModel {
     sku: string;
     stock: number;
     priceOverrideCents: number | null;
+    images: readonly { url: string; alt: string | null; storageKey: string | null }[];
   }[];
 }
 
@@ -160,16 +193,9 @@ export function toProductWriteModel(input: CreateProductInput): ProductWriteMode
     description: input.description,
     material: input.material,
     basePriceCents: toCents(input.basePrice),
-    baseStock: input.baseStock,
-    sku: input.sku,
     status: input.status,
     featured: input.featured,
     categoryId: input.categoryId,
-    images: input.images.map((image) => ({
-      url: image.url,
-      alt: image.alt ?? null,
-      storageKey: image.storageKey ?? null,
-    })),
     variants: input.variants.map((variant) => ({
       id: variant.id ?? null,
       size: variant.size,
@@ -180,6 +206,11 @@ export function toProductWriteModel(input: CreateProductInput): ProductWriteMode
         variant.priceOverride === null || variant.priceOverride === undefined
           ? null
           : toCents(variant.priceOverride),
+      images: variant.images.map((image) => ({
+        url: image.url,
+        alt: image.alt ?? null,
+        storageKey: image.storageKey ?? null,
+      })),
     })),
   };
 }

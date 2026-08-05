@@ -65,7 +65,7 @@ function toAdminUserRow(row: AdminUserSelection): AdminUserRow {
 export async function listUsers(query: AdminUserQuery): Promise<Paginated<AdminUserRow>> {
   const where = buildUserWhere(query);
 
-  const [rows, total] = await db.$transaction([
+  const [rows, total] = await Promise.all([
     db.user.findMany({
       where,
       select: adminUserSelect,
@@ -96,7 +96,7 @@ export async function getUserStats(): Promise<UserStats> {
   startOfMonth.setUTCDate(1);
   startOfMonth.setUTCHours(0, 0, 0, 0);
 
-  const [totalUsers, adminCount, newThisMonth] = await db.$transaction([
+  const [totalUsers, adminCount, newThisMonth] = await Promise.all([
     db.user.count(),
     db.user.count({ where: { role: 'ADMIN' } }),
     db.user.count({ where: { createdAt: { gte: startOfMonth } } }),

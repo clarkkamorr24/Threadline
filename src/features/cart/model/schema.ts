@@ -8,8 +8,7 @@ const quantityField = z
   .max(MAX_CART_ITEM_QUANTITY, `Quantity cannot exceed ${MAX_CART_ITEM_QUANTITY}.`);
 
 export const addToCartSchema = z.object({
-  productId: z.string().min(1, 'A product is required.'),
-  variantId: z.string().min(1).nullable().default(null),
+  variantId: z.string().min(1, 'Choose an option first.'),
   quantity: quantityField.default(1),
 });
 

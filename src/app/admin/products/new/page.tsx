@@ -38,13 +38,10 @@ export default async function NewProductPage() {
     description: '',
     material: null,
     basePrice: 0,
-    sku: '',
-    baseStock: 0,
     status: 'DRAFT',
     featured: false,
     categoryId: firstCategory.id,
-    images: [],
-    variants: [],
+    variants: [{ id: null, size: null, color: null, sku: '', stock: 0, priceOverride: null, images: [] }],
   };
 
   return (

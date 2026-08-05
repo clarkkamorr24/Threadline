@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { Heart, LayoutDashboard, LogOut, Package, User as UserIcon } from 'lucide-react';
@@ -35,9 +36,19 @@ export function UserMenu({ user }: UserMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="Account menu">
-          <span className="bg-secondary text-secondary-foreground flex size-7 items-center justify-center rounded-full text-xs font-medium">
-            {getUserInitials(user)}
-          </span>
+          {user.avatarUrl ? (
+            <Image
+              src={user.avatarUrl}
+              alt=""
+              width={28}
+              height={28}
+              className="size-7 rounded-full object-cover"
+            />
+          ) : (
+            <span className="bg-secondary text-secondary-foreground flex size-7 items-center justify-center rounded-full text-xs font-medium">
+              {getUserInitials(user)}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
 

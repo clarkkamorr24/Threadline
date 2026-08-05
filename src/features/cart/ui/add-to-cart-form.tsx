@@ -11,18 +11,14 @@ import { useToast } from '@/hooks/useToast';
 import { addToCartAction } from '../api/actions';
 
 interface AddToCartFormProps {
-  readonly productId: string;
   readonly productName: string;
   readonly variants: readonly ProductVariantModel[];
-  readonly baseStock: number;
   readonly isAuthenticated: boolean;
 }
 
 export function AddToCartForm({
-  productId,
   productName,
   variants,
-  baseStock,
   isAuthenticated,
 }: AddToCartFormProps) {
   const router = useRouter();
@@ -33,8 +29,8 @@ export function AddToCartForm({
   );
 
   const selectedVariant = variants.find((variant) => variant.id === variantId) ?? null;
-  const availableStock = variants.length > 0 ? (selectedVariant?.stock ?? 0) : baseStock;
-  const needsSelection = variants.length > 0 && selectedVariant === null;
+  const availableStock = selectedVariant?.stock ?? 0;
+  const needsSelection = selectedVariant === null;
   const [isPending, startTransition] = useTransition();
 
   const isSoldOut = availableStock <= 0;
@@ -47,7 +43,7 @@ export function AddToCartForm({
     }
 
     startTransition(async () => {
-      const result = await addToCartAction({ productId, variantId, quantity });
+      const result = await addToCartAction({ variantId: variantId ?? '', quantity });
 
       if (!result.success) {
         toast.error('Could not add to cart', result.error.message);

@@ -31,8 +31,6 @@ interface SeedProduct {
   readonly description: string;
   readonly material: string;
   readonly basePriceCents: number;
-  readonly baseStock: number;
-  readonly sku: string;
   readonly featured: boolean;
   readonly categorySlug: string;
   readonly images: readonly string[];
@@ -99,8 +97,6 @@ const PRODUCTS: readonly SeedProduct[] = [
       'A 240gsm organic cotton tee with a boxy body and ribbed collar that holds its shape wash after wash. Garment dyed for a soft, lived-in hand.',
     material: '100% organic cotton',
     basePriceCents: 3800,
-    baseStock: 0,
-    sku: 'TL-TOP-001',
     featured: true,
     categorySlug: 't-shirts',
     images: [`${IMAGE_BASE}-1521572163474-6864f9cf17ab?w=1200&q=80`],
@@ -120,8 +116,6 @@ const PRODUCTS: readonly SeedProduct[] = [
       'Fine-gauge extra-fine merino in a clean crew neck. Breathable enough for indoors, warm enough under a jacket.',
     material: '100% extra-fine merino wool',
     basePriceCents: 11500,
-    baseStock: 0,
-    sku: 'TL-TOP-002',
     featured: true,
     categorySlug: 'knitwear',
     images: [`${IMAGE_BASE}-1576871337622-98d48d1cf531?w=1200&q=80`],
@@ -139,12 +133,10 @@ const PRODUCTS: readonly SeedProduct[] = [
       'Woven from Japanese oxford cloth with a soft roll collar and single-needle side seams. Cut slightly relaxed through the body.',
     material: '100% cotton oxford',
     basePriceCents: 8900,
-    baseStock: 60,
-    sku: 'TL-TOP-003',
     featured: false,
     categorySlug: 'tops',
     images: [`${IMAGE_BASE}-1602810318383-e386cc2a3ccf?w=1200&q=80`],
-    variants: [],
+    variants: [{ size: 'M', color: 'White', sku: 'TL-TOP-003-M-WHT', stock: 60 }],
   },
   {
     name: 'Waxed Chore Jacket',
@@ -153,8 +145,6 @@ const PRODUCTS: readonly SeedProduct[] = [
       'A four-pocket chore coat in waxed British cotton. Weathers to a personal patina and shrugs off light rain.',
     material: 'Waxed British cotton',
     basePriceCents: 24900,
-    baseStock: 0,
-    sku: 'TL-OUT-001',
     featured: true,
     categorySlug: 'outerwear',
     images: [`${IMAGE_BASE}-1551028719-00167b16eac5?w=1200&q=80`],
@@ -171,12 +161,10 @@ const PRODUCTS: readonly SeedProduct[] = [
       'Diamond-quilted recycled fill in a trim vest that layers cleanly under a coat without bulk at the shoulder.',
     material: 'Recycled polyester shell and fill',
     basePriceCents: 13900,
-    baseStock: 34,
-    sku: 'TL-OUT-002',
     featured: false,
     categorySlug: 'outerwear',
     images: [`${IMAGE_BASE}-1544022613-e87ca75a784a?w=1200&q=80`],
-    variants: [],
+    variants: [{ size: 'M', color: 'Black', sku: 'TL-OUT-002-M-BLK', stock: 34 }],
   },
   {
     name: 'Selvedge Straight Denim',
@@ -185,8 +173,6 @@ const PRODUCTS: readonly SeedProduct[] = [
       '13.5oz selvedge denim from a Japanese mill, cut straight from hip to hem with a mid rise. Raw and unsanforized.',
     material: '13.5oz Japanese selvedge denim',
     basePriceCents: 16500,
-    baseStock: 0,
-    sku: 'TL-BOT-001',
     featured: true,
     categorySlug: 'denim',
     images: [`${IMAGE_BASE}-1542272604-787c3835535d?w=1200&q=80`],
@@ -203,12 +189,10 @@ const PRODUCTS: readonly SeedProduct[] = [
       'A single-pleat trouser in tropical wool with a tailored waistband and clean drape to the ankle.',
     material: 'Tropical wool',
     basePriceCents: 18900,
-    baseStock: 28,
-    sku: 'TL-BOT-002',
     featured: false,
     categorySlug: 'bottoms',
     images: [`${IMAGE_BASE}-1473966968600-fa801b869a1a?w=1200&q=80`],
-    variants: [],
+    variants: [{ size: '32', color: 'Charcoal', sku: 'TL-BOT-002-32-CHR', stock: 28 }],
   },
   {
     name: 'Canvas Weekender',
@@ -217,12 +201,10 @@ const PRODUCTS: readonly SeedProduct[] = [
       'A 20oz cotton canvas holdall with bridle leather handles and a brass zip. Sized for two nights away.',
     material: '20oz cotton canvas, bridle leather',
     basePriceCents: 19500,
-    baseStock: 18,
-    sku: 'TL-ACC-001',
     featured: true,
     categorySlug: 'accessories',
     images: [`${IMAGE_BASE}-1553062407-98eeb64c6a62?w=1200&q=80`],
-    variants: [],
+    variants: [{ color: 'Sand', sku: 'TL-ACC-001-SND', stock: 18 }],
   },
   {
     name: 'Bridle Leather Belt',
@@ -231,8 +213,6 @@ const PRODUCTS: readonly SeedProduct[] = [
       'Vegetable-tanned bridle leather with a solid brass buckle. Stiff at first, moulds to you within a month.',
     material: 'Vegetable-tanned bridle leather',
     basePriceCents: 8500,
-    baseStock: 0,
-    sku: 'TL-ACC-002',
     featured: false,
     categorySlug: 'accessories',
     images: [`${IMAGE_BASE}-1624222247344-550fb60583dc?w=1200&q=80`],
@@ -249,12 +229,10 @@ const PRODUCTS: readonly SeedProduct[] = [
     description: 'A chunky ribbed beanie in lambswool with a deep cuff. Warm without the itch.',
     material: '100% lambswool',
     basePriceCents: 4500,
-    baseStock: 0,
-    sku: 'TL-ACC-003',
     featured: false,
     categorySlug: 'accessories',
     images: [`${IMAGE_BASE}-1576871337632-b9aef4c17ab9?w=1200&q=80`],
-    variants: [],
+    variants: [{ color: 'Charcoal', sku: 'TL-ACC-003-CHR', stock: 12 }],
   },
 ];
 
@@ -331,22 +309,25 @@ async function main(): Promise<void> {
         create: { ...productData, categoryId, status: ProductStatus.ACTIVE },
       });
 
-      await tx.productImage.deleteMany({ where: { productId: record.id } });
-      await tx.productImage.createMany({
-        data: images.map((url, index) => ({
-          productId: record.id,
-          url,
-          alt: product.name,
-          position: index,
-          isPrimary: index === 0,
-        })),
-      });
-
       await tx.productVariant.deleteMany({ where: { productId: record.id } });
 
-      if (variants.length > 0) {
-        await tx.productVariant.createMany({
-          data: variants.map((variant) => ({ ...variant, productId: record.id })),
+      for (const [index, variant] of variants.entries()) {
+        await tx.productVariant.create({
+          data: {
+            ...variant,
+            productId: record.id,
+            position: index,
+            images: {
+              createMany: {
+                data: images.map((url, imageIndex) => ({
+                  url,
+                  alt: product.name,
+                  position: imageIndex,
+                  isPrimary: imageIndex === 0,
+                })),
+              },
+            },
+          },
         });
       }
     });

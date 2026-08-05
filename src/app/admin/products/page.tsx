@@ -86,7 +86,6 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
-                <TableHead>SKU</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Stock</TableHead>
@@ -123,9 +122,6 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
                         </p>
                       </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs">
-                    {product.sku}
                   </TableCell>
                   <TableCell>
                     <Badge variant={STATUS_VARIANT[product.status]}>

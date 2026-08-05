@@ -1,6 +1,5 @@
 import type { ProductSort } from '@/constants/catalog';
 
-
 export interface ProductImageModel {
   readonly id: string;
   readonly url: string;
@@ -29,7 +28,7 @@ export interface ProductVariantModel {
   readonly sku: string;
   readonly stock: number;
   readonly priceCents: number;
-  readonly imageId: string | null;
+  readonly images: readonly ProductImageModel[];
   readonly inStock: boolean;
 }
 
@@ -47,10 +46,7 @@ export interface ProductSummary {
 export interface ProductDetail extends ProductSummary {
   readonly description: string;
   readonly material: string | null;
-  readonly sku: string;
   readonly basePriceCents: number;
-  readonly baseStock: number;
-  readonly images: readonly ProductImageModel[];
   readonly variants: readonly ProductVariantModel[];
   readonly sizes: readonly string[];
   readonly colors: readonly string[];
@@ -60,7 +56,6 @@ export interface AdminProductRow {
   readonly id: string;
   readonly name: string;
   readonly slug: string;
-  readonly sku: string;
   readonly basePriceCents: number;
   readonly totalStock: number;
   readonly variantCount: number;
@@ -95,36 +90,9 @@ export interface Paginated<TItem> {
   readonly totalPages: number;
 }
 
-export interface PurchasableUnit {
-  readonly priceCents: number;
-  readonly stock: number;
-  readonly sku: string;
-  readonly variantId: string | null;
-  readonly size: string | null;
-  readonly color: string | null;
-}
-
-export function resolvePurchasable(
-  product: Pick<ProductDetail, 'basePriceCents' | 'baseStock' | 'sku'>,
-  variant: ProductVariantModel | null,
-): PurchasableUnit {
-  if (!variant) {
-    return {
-      priceCents: product.basePriceCents,
-      stock: product.baseStock,
-      sku: product.sku,
-      variantId: null,
-      size: null,
-      color: null,
-    };
-  }
-
-  return {
-    priceCents: variant.priceCents,
-    stock: variant.stock,
-    sku: variant.sku,
-    variantId: variant.id,
-    size: variant.size,
-    color: variant.color,
-  };
+export function formatVariantLabel(
+  size: string | null,
+  color: string | null,
+): string {
+  return [size, color].filter(Boolean).join(' · ') || 'Default';
 }

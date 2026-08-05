@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -36,9 +37,19 @@ export default async function AdminLayout({ children }: { readonly children: Rea
 
           <div className="ml-auto flex items-center gap-3">
             <span className="text-muted-foreground hidden text-sm sm:inline">{user.email}</span>
-            <span className="bg-secondary text-secondary-foreground flex size-7 items-center justify-center rounded-full text-xs font-medium">
-              {getUserInitials(user)}
-            </span>
+            {user.avatarUrl ? (
+              <Image
+                src={user.avatarUrl}
+                alt=""
+                width={28}
+                height={28}
+                className="size-7 rounded-full object-cover"
+              />
+            ) : (
+              <span className="bg-secondary text-secondary-foreground flex size-7 items-center justify-center rounded-full text-xs font-medium">
+                {getUserInitials(user)}
+              </span>
+            )}
             <form action="/auth/sign-out" method="post">
               <button
                 type="submit"

@@ -1,12 +1,11 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ImageOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ROUTES } from '@/constants/routes';
 import { ProductGrid } from '@/entities/product/ui/product-grid';
+import { ProductGallery } from '@/features/catalog/ui/product-gallery';
 import { AddToCartForm } from '@/features/cart/ui/add-to-cart-form';
 import { FavoriteButton } from '@/features/favorites/ui/favorite-button';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -84,41 +83,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <div className="flex flex-col gap-3">
-          <div className="bg-muted relative aspect-3/4 overflow-hidden rounded-xl">
-            {product.images[0] ? (
-              <Image
-                src={product.images[0].url}
-                alt={product.images[0].alt}
-                fill
-                priority
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover"
-              />
-            ) : (
-              <div className="text-muted-foreground flex h-full items-center justify-center">
-                <ImageOff className="size-10" aria-hidden="true" />
-                <span className="sr-only">No image available</span>
-              </div>
-            )}
-          </div>
-
-          {product.images.length > 1 ? (
-            <ul className="grid grid-cols-4 gap-3">
-              {product.images.slice(1, 5).map((image) => (
-                <li key={image.id} className="bg-muted relative aspect-square overflow-hidden rounded-lg">
-                  <Image
-                    src={image.url}
-                    alt={image.alt}
-                    fill
-                    sizes="12vw"
-                    className="object-cover"
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
+        <ProductGallery images={product.variants.flatMap((variant) => variant.images)} productName={product.name} />
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -146,10 +111,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="flex items-start gap-3">
             <div className="flex-1">
               <AddToCartForm
-            productId={product.id}
-            productName={product.name}
-            variants={product.variants}
-            baseStock={product.baseStock}
+                productName={product.name}
+                variants={product.variants}
                 isAuthenticated={user !== null}
               />
             </div>
@@ -165,8 +128,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           <dl className="text-muted-foreground grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-            <dt className="font-medium">SKU</dt>
-            <dd>{product.sku}</dd>
             <dt className="font-medium">Material</dt>
             <dd>{product.material ?? '—'}</dd>
             <dt className="font-medium">Category</dt>
