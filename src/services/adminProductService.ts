@@ -283,10 +283,26 @@ async function removeAssets(keys: readonly string[]): Promise<void> {
     return;
   }
 
+  const stillReferenced = new Set(
+    (
+      await db.productImage.findMany({
+        where: { storageKey: { in: [...keys] } },
+        select: { storageKey: true },
+        distinct: ['storageKey'],
+      })
+    ).map((image) => image.storageKey),
+  );
+
+  const orphaned = keys.filter((key) => !stillReferenced.has(key));
+
+  if (orphaned.length === 0) {
+    return;
+  }
+
   const storage = getStoragePlugin();
 
   await Promise.all(
-    keys.map(async (key) => {
+    orphaned.map(async (key) => {
       try {
         await storage.remove(key);
       } catch (error) {

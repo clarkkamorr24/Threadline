@@ -23,8 +23,8 @@ export interface CategoryTreeNode extends CategoryModel {
 
 export interface ProductVariantModel {
   readonly id: string;
-  readonly size: string | null;
-  readonly color: string | null;
+  readonly size: string;
+  readonly color: string;
   readonly sku: string;
   readonly stock: number;
   readonly priceCents: number;

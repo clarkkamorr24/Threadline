@@ -56,8 +56,8 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
     defaultValues.variants.length > 0
       ? defaultValues.variants.map((variant) => ({
           id: variant.id ?? null,
-          size: variant.size,
-          color: variant.color,
+          size: variant.size ?? '',
+          color: variant.color ?? '',
           sku: variant.sku,
           stock: variant.stock,
           priceOverride: variant.priceOverride ?? null,
@@ -114,8 +114,8 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
 
       resolved.push({
         id: variant.id ?? null,
-        size: variant.size,
-        color: variant.color,
+        size: variant.size ?? '',
+        color: variant.color ?? '',
         sku: variant.sku,
         stock: variant.stock,
         priceOverride: variant.priceOverride ?? null,

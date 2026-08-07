@@ -1,5 +1,4 @@
 import 'server-only';
-import { randomUUID } from 'node:crypto';
 import { v2 as cloudinary } from 'cloudinary';
 import { getServerEnv } from '@/config/env';
 import { StorageError, ValidationError } from '@/lib/errors';
@@ -61,16 +60,10 @@ function getConfig(): CloudinaryConfig {
   return cachedConfig;
 }
 
-function buildPublicId(folder: string, fileName: string): string {
+function buildPublicId(folder: string, contentHash: string): string {
   const safeFolder = folder.replace(/[^a-z0-9-]/gi, '').toLowerCase() || 'uploads';
-  const stem = fileName
-    .replace(/\.[^.]+$/, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 48);
 
-  return `${safeFolder}/${randomUUID()}${stem ? `-${stem}` : ''}`;
+  return `${safeFolder}/${contentHash.toLowerCase()}`;
 }
 
 function assertUploadable(input: CreateUploadTicketInput): void {
@@ -94,10 +87,11 @@ export const cloudinaryStoragePlugin: StoragePlugin = {
     assertUploadable(input);
 
     const config = getConfig();
-    const publicId = buildPublicId(input.folder, input.fileName);
+    const publicId = buildPublicId(input.folder, input.contentHash);
     const timestamp = Math.floor(Date.now() / 1000);
 
     const signedParams = {
+      overwrite: 'false',
       public_id: publicId,
       timestamp,
     };
@@ -114,6 +108,7 @@ export const cloudinaryStoragePlugin: StoragePlugin = {
           timestamp: String(timestamp),
           signature,
           public_id: publicId,
+          overwrite: 'false',
         },
         headers: {},
         publicUrl: cloudinary.url(publicId, { secure: true }),

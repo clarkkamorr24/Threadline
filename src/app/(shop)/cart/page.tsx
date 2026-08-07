@@ -59,10 +59,6 @@ export default async function CartPage() {
           ) : null}
 
           <OrderSummary totals={cart.totals}>
-            {/* An anchor cannot be `disabled`, so the blocked state is expressed
-                three ways that actually work on a link: pointer-events, an
-                aria-disabled hint, and a href that goes nowhere new. Checkout
-                re-checks stock server-side regardless. */}
             <Button
               asChild
               size="lg"

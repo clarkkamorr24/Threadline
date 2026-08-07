@@ -18,8 +18,8 @@ const FORCE_OVERWRITE = process.env.SEED_FORCE === 'true';
 const IMAGE_BASE = 'https://images.unsplash.com/photo';
 
 interface SeedVariant {
-  readonly size?: string;
-  readonly color?: string;
+  readonly size: string;
+  readonly color: string;
   readonly sku: string;
   readonly stock: number;
   readonly priceOverrideCents?: number;
@@ -204,7 +204,7 @@ const PRODUCTS: readonly SeedProduct[] = [
     featured: true,
     categorySlug: 'accessories',
     images: [`${IMAGE_BASE}-1553062407-98eeb64c6a62?w=1200&q=80`],
-    variants: [{ color: 'Sand', sku: 'TL-ACC-001-SND', stock: 18 }],
+    variants: [{ size: 'One Size', color: 'Sand', sku: 'TL-ACC-001-SND', stock: 18 }],
   },
   {
     name: 'Bridle Leather Belt',
@@ -218,9 +218,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     images: [`${IMAGE_BASE}-1624222247344-550fb60583dc?w=1200&q=80`],
     // Size-only variants — colour stays null, which the model permits.
     variants: [
-      { size: '32', sku: 'TL-ACC-002-32', stock: 20 },
-      { size: '34', sku: 'TL-ACC-002-34', stock: 25 },
-      { size: '36', sku: 'TL-ACC-002-36', stock: 0 },
+      { size: '32', color: 'Tan', sku: 'TL-ACC-002-32', stock: 20 },
+      { size: '34', color: 'Tan', sku: 'TL-ACC-002-34', stock: 25 },
+      { size: '36', color: 'Tan', sku: 'TL-ACC-002-36', stock: 0 },
     ],
   },
   {
@@ -232,7 +232,7 @@ const PRODUCTS: readonly SeedProduct[] = [
     featured: false,
     categorySlug: 'accessories',
     images: [`${IMAGE_BASE}-1576871337632-b9aef4c17ab9?w=1200&q=80`],
-    variants: [{ color: 'Charcoal', sku: 'TL-ACC-003-CHR', stock: 12 }],
+    variants: [{ size: 'One Size', color: 'Charcoal', sku: 'TL-ACC-003-CHR', stock: 12 }],
   },
 ];
 

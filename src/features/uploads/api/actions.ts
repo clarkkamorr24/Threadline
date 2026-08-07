@@ -15,6 +15,7 @@ const uploadTicketSchema = z.object({
   fileName: z.string().min(1).max(255),
   contentType: z.string().min(1).max(100),
   sizeBytes: z.number().int().positive(),
+  contentHash: z.string().regex(/^[a-f0-9]{64}$/i, 'Invalid content hash.'),
   folder: z.enum(UPLOAD_FOLDERS).default('products'),
 });
 

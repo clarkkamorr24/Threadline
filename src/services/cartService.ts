@@ -98,6 +98,17 @@ export async function getCartItemCount(userId: string): Promise<number> {
   return result._sum.quantity ?? 0;
 }
 
+export async function getCartVariantQuantities(
+  userId: string,
+): Promise<Readonly<Record<string, number>>> {
+  const items = await db.cartItem.findMany({
+    where: { cart: { userId } },
+    select: { variantId: true, quantity: true },
+  });
+
+  return Object.fromEntries(items.map((item) => [item.variantId, item.quantity]));
+}
+
 function assertQuantityInRange(quantity: number): void {
   if (!Number.isInteger(quantity) || quantity < 1) {
     throw new ValidationError('Quantity must be a whole number of at least 1.');
@@ -131,14 +142,22 @@ export async function addItemToCart(
     select: { id: true, quantity: true },
   });
 
-  const requested = (existing?.quantity ?? 0) + quantity;
+  const inCart = existing?.quantity ?? 0;
+  const requested = inCart + quantity;
+  const ceiling = Math.min(variant.stock, MAX_CART_ITEM_QUANTITY);
 
-  if (requested > variant.stock) {
-    throw new InsufficientStockError(variant.product.name, variant.stock);
-  }
+  if (requested > ceiling) {
+    const remaining = Math.max(0, ceiling - inCart);
+    const limit =
+      variant.stock <= MAX_CART_ITEM_QUANTITY
+        ? `only ${variant.stock} in stock`
+        : `a limit of ${MAX_CART_ITEM_QUANTITY} per order`;
 
-  if (requested > MAX_CART_ITEM_QUANTITY) {
-    throw new ValidationError(`You can order at most ${MAX_CART_ITEM_QUANTITY} of an item.`);
+    throw new ValidationError(
+      inCart > 0
+        ? `You already have ${inCart} in your cart and there is ${limit}. You can add ${remaining} more.`
+        : `There is ${limit}.`,
+    );
   }
 
   await db.cartItem.upsert({

@@ -18,6 +18,7 @@ import {
   applyServerIssues,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -28,9 +29,12 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ROUTES } from '@/constants/routes';
 import { slugify } from '@/features/admin-products/model/schema';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/useToast';
 import { createCategoryAction, updateCategoryAction } from '../api/actions';
 import { categorySchema } from '../model/schema';
+import { CategoryImageField } from './category-image-field';
+import type { CategoryImageDraft } from './category-image-field';
 import type { CategoryInput } from '../model/schema';
 
 const NO_PARENT = '__none__';
@@ -45,6 +49,10 @@ export function CategoryForm({ parentOptions, categoryId, defaultValues }: Categ
   const router = useRouter();
   const toast = useToast();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { upload } = useImageUpload('categories');
+  const [image, setImage] = useState<CategoryImageDraft>(
+    defaultValues.imageUrl ? { kind: 'uploaded', url: defaultValues.imageUrl } : null,
+  );
 
   const isEditing = categoryId !== undefined;
 
@@ -57,6 +65,23 @@ export function CategoryForm({ parentOptions, categoryId, defaultValues }: Categ
 
   async function onSubmit(values: CategoryInput): Promise<void> {
     setSubmitError(null);
+
+    let imageUrl: string | null = null;
+
+    if (image?.kind === 'uploaded') {
+      imageUrl = image.url;
+    } else if (image?.kind === 'pending') {
+      const uploaded = await upload(image.file);
+
+      if (!uploaded) {
+        setSubmitError('The image could not be uploaded. Nothing was saved.');
+        return;
+      }
+
+      imageUrl = uploaded.url;
+    }
+
+    values = { ...values, imageUrl };
 
     const result = isEditing
       ? await updateCategoryAction({ ...values, id: categoryId })
@@ -172,25 +197,11 @@ export function CategoryForm({ parentOptions, categoryId, defaultValues }: Categ
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="imageUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image URL</FormLabel>
-              <FormControl>
-                <Input
-                  type="url"
-                  placeholder="https://example.com/image.jpg"
-                  value={field.value ?? ''}
-                  onChange={(event) => field.onChange(event.target.value || null)}
-                />
-              </FormControl>
-              <FormDescription>Optional. Shown on the home page tile.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex flex-col gap-2">
+          <Label>Image</Label>
+          <CategoryImageField value={image} onChange={setImage} disabled={isSubmitting} />
+          <p className="text-muted-foreground text-sm">Optional. Shown on the home page tile.</p>
+        </div>
 
         <div className="mt-2 flex gap-3">
           <Button type="submit" isLoading={isSubmitting}>

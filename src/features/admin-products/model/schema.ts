@@ -18,23 +18,14 @@ export const variantImageSchema = z.object({
 
 export const variantSchema = z.object({
   id: z.string().nullish(),
-  size: z
-    .string()
-    .max(30)
-    .nullable()
-    .default(null)
-    .transform((value) => value?.trim() || null),
-  color: z
-    .string()
-    .max(40)
-    .nullable()
-    .default(null)
-    .transform((value) => value?.trim() || null),
+  size: z.string().trim().min(1, 'Size is required.').max(30),
+  color: z.string().trim().min(1, 'Colour is required.').max(40),
   sku: z
     .string()
+    .trim()
     .min(1, 'Each variant needs a SKU.')
     .max(60)
-    .transform((value) => value.trim().toUpperCase()),
+    .transform((value) => value.toUpperCase()),
   stock: z
     .number({ invalid_type_error: 'Enter a stock quantity.' })
     .int()
@@ -43,16 +34,16 @@ export const variantSchema = z.object({
   priceOverride: priceField.nullish(),
   images: z
     .array(variantImageSchema)
-    .max(MAX_VARIANT_IMAGES, `At most ${MAX_VARIANT_IMAGES} images per variant.`)
-    .default([]),
+    .min(1, 'Each variant needs at least one image.')
+    .max(MAX_VARIANT_IMAGES, `At most ${MAX_VARIANT_IMAGES} images per variant.`),
 });
 
 const baseProductSchema = z.object({
   name: z
     .string()
+    .trim()
     .min(1, 'Name is required.')
-    .max(140, 'Name must be 140 characters or fewer.')
-    .transform((value) => value.trim()),
+    .max(140, 'Name must be 140 characters or fewer.'),
   slug: z
     .string()
     .min(1, 'Slug is required.')
@@ -60,9 +51,9 @@ const baseProductSchema = z.object({
     .regex(slugPattern, 'Use lowercase letters, numbers and hyphens only.'),
   description: z
     .string()
+    .trim()
     .min(1, 'Description is required.')
-    .max(5_000, 'Description must be 5000 characters or fewer.')
-    .transform((value) => value.trim()),
+    .max(5_000, 'Description must be 5000 characters or fewer.'),
   material: z
     .string()
     .max(200, 'Material must be 200 characters or fewer.')
@@ -109,7 +100,7 @@ export type ProductDetailsInput = z.infer<typeof productDetailsSchema>;
 
 export interface VariantIssue {
   readonly index: number;
-  readonly field: 'sku' | 'size' | 'color' | 'stock';
+  readonly field: 'sku' | 'size' | 'color' | 'stock' | 'images';
   readonly message: string;
 }
 
@@ -119,6 +110,7 @@ export function validateVariants(
     color: string | null;
     sku: string;
     stock: number;
+    images: readonly unknown[];
   }[],
 ): readonly VariantIssue[] {
   const issues: VariantIssue[] = [];
@@ -127,6 +119,18 @@ export function validateVariants(
 
   variants.forEach((variant, index) => {
     const sku = variant.sku.trim().toUpperCase();
+
+    if (!variant.size?.trim()) {
+      issues.push({ index, field: 'size', message: 'Size is required.' });
+    }
+
+    if (!variant.color?.trim()) {
+      issues.push({ index, field: 'color', message: 'Colour is required.' });
+    }
+
+    if (variant.images.length === 0) {
+      issues.push({ index, field: 'images', message: 'Add at least one image.' });
+    }
 
     if (!sku) {
       issues.push({ index, field: 'sku', message: 'SKU is required.' });
@@ -177,8 +181,8 @@ export interface ProductWriteModel {
   readonly categoryId: string;
   readonly variants: readonly {
     id: string | null;
-    size: string | null;
-    color: string | null;
+    size: string;
+    color: string;
     sku: string;
     stock: number;
     priceOverrideCents: number | null;

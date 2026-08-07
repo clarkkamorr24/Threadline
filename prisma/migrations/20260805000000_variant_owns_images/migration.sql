@@ -59,8 +59,8 @@ CREATE TABLE "products" (
 CREATE TABLE "product_variants" (
     "id" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
-    "size" TEXT,
-    "color" TEXT,
+    "size" TEXT NOT NULL,
+    "color" TEXT NOT NULL,
     "sku" TEXT NOT NULL,
     "stock" INTEGER NOT NULL DEFAULT 0,
     "priceOverrideCents" INTEGER,

@@ -46,8 +46,8 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     categoryId: product.categoryId,
     variants: product.variants.map((variant) => ({
       id: variant.id,
-      size: variant.size,
-      color: variant.color,
+      size: variant.size ?? '',
+      color: variant.color ?? '',
       sku: variant.sku,
       stock: variant.stock,
       priceOverride:

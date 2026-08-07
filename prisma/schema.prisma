@@ -93,8 +93,8 @@ model Product {
 model ProductVariant {
   id                 String   @id @default(cuid())
   productId          String
-  size               String?
-  color              String?
+  size               String
+  color              String
   sku                String   @unique
   stock              Int      @default(0)
   priceOverrideCents Int?

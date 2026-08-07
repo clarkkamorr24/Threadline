@@ -22,6 +22,7 @@ export function CartLineItem({ item }: CartLineItemProps) {
   const [isPending, startTransition] = useTransition();
 
   const exceedsStock = item.quantity > item.availableStock;
+  const variantLabel = [item.size, item.color].filter(Boolean).join(' · ');
 
   function changeQuantity(next: number): void {
     startTransition(async () => {
@@ -52,7 +53,7 @@ export function CartLineItem({ item }: CartLineItemProps) {
     <li className="flex gap-4 py-6">
       <Link
         href={ROUTES.product(item.slug)}
-        className="bg-muted relative aspect-3/4 w-20 shrink-0 overflow-hidden rounded-md sm:w-24"
+        className="bg-muted relative aspect-3/4 w-16 shrink-0 overflow-hidden rounded-md sm:w-24"
       >
         {item.imageUrl ? (
           <Image src={item.imageUrl} alt={item.name} fill sizes="96px" className="object-cover" />
@@ -64,18 +65,24 @@ export function CartLineItem({ item }: CartLineItemProps) {
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0">
-            <h3 className="truncate text-sm font-medium">
+            <h3 className="text-sm font-medium">
               <Link href={ROUTES.product(item.slug)} className="hover:underline">
                 {item.name}
               </Link>
             </h3>
+
+            {variantLabel ? (
+              <p className="text-muted-foreground mt-0.5 text-sm">{variantLabel}</p>
+            ) : null}
+
             <p className="text-muted-foreground text-sm">
               {formatMoney(item.unitPriceCents)} each
             </p>
           </div>
-          <p className="text-sm font-medium whitespace-nowrap">
+
+          <p className="text-sm font-medium whitespace-nowrap sm:text-right">
             {formatMoney(item.lineTotalCents)}
           </p>
         </div>
@@ -86,7 +93,7 @@ export function CartLineItem({ item }: CartLineItemProps) {
           </p>
         ) : null}
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center rounded-md border">
             <Button
               type="button"

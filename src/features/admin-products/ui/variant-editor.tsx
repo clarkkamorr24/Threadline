@@ -18,8 +18,8 @@ export type DraftImage =
 
 export interface VariantDraft {
   readonly id?: string | null;
-  readonly size: string | null;
-  readonly color: string | null;
+  readonly size: string;
+  readonly color: string;
   readonly sku: string;
   readonly stock: number;
   readonly priceOverride?: number | null;
@@ -31,8 +31,8 @@ export function createEmptyVariant(baseSku: string, index: number): VariantDraft
 
   return {
     id: null,
-    size: null,
-    color: null,
+    size: '',
+    color: '',
     sku: baseSku ? `${baseSku}-${suffix}` : '',
     stock: 0,
     priceOverride: null,
@@ -42,7 +42,7 @@ export function createEmptyVariant(baseSku: string, index: number): VariantDraft
 
 export interface VariantIssueRef {
   readonly index: number;
-  readonly field: 'sku' | 'size' | 'color' | 'stock';
+  readonly field: 'sku' | 'size' | 'color' | 'stock' | 'images';
   readonly message: string;
 }
 
@@ -93,11 +93,22 @@ export function VariantEditor({
       return;
     }
 
+    const images = source.images.map((image): DraftImage => {
+      if (image.kind === 'uploaded') {
+        return image;
+      }
+
+      const previewUrl = URL.createObjectURL(image.file);
+      createdUrlsRef.current.push(previewUrl);
+
+      return { kind: 'pending', file: image.file, previewUrl };
+    });
+
     const copy: VariantDraft = {
       ...source,
       id: null,
       sku: `${source.sku}-COPY`,
-      images: [],
+      images,
     };
 
     onChange([...value.slice(0, index + 1), copy, ...value.slice(index + 1)]);
@@ -242,11 +253,15 @@ export function VariantEditor({
                 </Label>
                 <Input
                   id={`variant-size-${index}`}
-                  value={variant.size ?? ''}
+                  value={variant.size}
                   placeholder="M"
-                  onChange={(event) => update(index, { size: event.target.value || null })}
+                  onChange={(event) => update(index, { size: event.target.value })}
                   disabled={disabled}
+                  aria-invalid={issueFor(index, 'size') !== null}
                 />
+                 {issueFor(index, 'size') ? (
+                  <p className="text-destructive text-xs">{issueFor(index, 'size')}</p>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -255,9 +270,9 @@ export function VariantEditor({
                 </Label>
                 <Input
                   id={`variant-color-${index}`}
-                  value={variant.color ?? ''}
+                  value={variant.color}
                   placeholder="Navy"
-                  onChange={(event) => update(index, { color: event.target.value || null })}
+                  onChange={(event) => update(index, { color: event.target.value })}
                   disabled={disabled}
                   aria-invalid={issueFor(index, 'color') !== null}
                 />
@@ -327,6 +342,9 @@ export function VariantEditor({
               <span className="text-xs font-medium">
                 Images ({variant.images.length}/{MAX_VARIANT_IMAGES})
               </span>
+              {issueFor(index, 'images') ? (
+                <p className="text-destructive text-xs">{issueFor(index, 'images')}</p>
+              ) : null}
 
               {variant.images.length > 0 ? (
                 <ul className="grid grid-cols-4 gap-2 sm:grid-cols-6">
@@ -413,8 +431,8 @@ export function VariantEditor({
           Add variant
         </Button>
         <p className="text-muted-foreground mt-2 text-xs">
-          Every product needs at least one variant. Duplicate copies the fields but not the
-          images. Images upload when you save.
+          Every product needs at least one variant. Duplicate copies the fields and the images.
+          Images upload when you save, and variants sharing a photo share one stored file.
         </p>
       </div>
     </div>

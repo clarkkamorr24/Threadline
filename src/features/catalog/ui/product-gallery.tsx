@@ -12,13 +12,25 @@ const ZOOM_SCALE = 2.2;
 interface ProductGalleryProps {
   readonly images: readonly ProductImageModel[];
   readonly productName: string;
+  readonly activeImageUrl?: string;
 }
 
-export function ProductGallery({ images, productName }: ProductGalleryProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+export function ProductGallery({ images, productName, activeImageUrl }: ProductGalleryProps) {
+  const [activeUrl, setActiveUrl] = useState(activeImageUrl ?? images[0]?.url);
+  const [requestedUrl, setRequestedUrl] = useState(activeImageUrl);
   const [isZooming, setIsZooming] = useState(false);
   const [origin, setOrigin] = useState('50% 50%');
 
+  if (activeImageUrl !== requestedUrl) {
+    setRequestedUrl(activeImageUrl);
+
+    if (activeImageUrl) {
+      setActiveUrl(activeImageUrl);
+    }
+  }
+
+  const foundIndex = images.findIndex((image) => image.url === activeUrl);
+  const activeIndex = foundIndex === -1 ? 0 : foundIndex;
   const active = images[activeIndex];
 
   function handleMouseMove(event: MouseEvent<HTMLDivElement>): void {
@@ -67,7 +79,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             <li key={image.id}>
               <button
                 type="button"
-                onClick={() => setActiveIndex(index)}
+                onClick={() => setActiveUrl(image.url)}
                 aria-label={`View image ${index + 1} of ${images.length} for ${productName}`}
                 aria-current={index === activeIndex}
                 className={cn(

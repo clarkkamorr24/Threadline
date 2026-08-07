@@ -17,6 +17,23 @@ interface UseImageUploadResult {
   readonly reset: () => void;
 }
 
+const uploadedByContent = new Map<string, UploadedImage>();
+
+async function hashFile(file: File): Promise<string> {
+  if (!globalThis.crypto?.subtle) {
+    const random = new Uint8Array(32);
+    globalThis.crypto.getRandomValues(random);
+    return toHex(random);
+  }
+
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return toHex(new Uint8Array(digest));
+}
+
+function toHex(bytes: Uint8Array): string {
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 export function useImageUpload(
   folder: 'products' | 'categories' | 'avatars' = 'products',
 ): UseImageUploadResult {
@@ -41,10 +58,19 @@ export function useImageUpload(
       setError(null);
 
       try {
+        const contentHash = await hashFile(file);
+        const cacheKey = `${folder}/${contentHash}`;
+        const alreadyUploaded = uploadedByContent.get(cacheKey);
+
+        if (alreadyUploaded) {
+          return alreadyUploaded;
+        }
+
         const ticketResult = await createUploadTicketAction({
           fileName: file.name,
           contentType: file.type,
           sizeBytes: file.size,
+          contentHash,
           folder,
         });
 
@@ -62,7 +88,10 @@ export function useImageUpload(
           return null;
         }
 
-        return { storageKey: ticket.key, url: ticket.publicUrl };
+        const uploaded: UploadedImage = { storageKey: ticket.key, url: ticket.publicUrl };
+        uploadedByContent.set(cacheKey, uploaded);
+
+        return uploaded;
       } catch (cause) {
         console.error('[useImageUpload] Upload failed:', cause);
         setError('The image could not be uploaded. Please try again.');
