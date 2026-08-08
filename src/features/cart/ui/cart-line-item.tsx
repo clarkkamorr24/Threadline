@@ -22,7 +22,7 @@ export function CartLineItem({ item }: CartLineItemProps) {
   const [isPending, startTransition] = useTransition();
 
   const exceedsStock = item.quantity > item.availableStock;
-  const variantLabel = [item.size, item.color].filter(Boolean).join(' · ');
+  const variantLabel = [item.size, item.color].filter(Boolean).join(' - ');
 
   function changeQuantity(next: number): void {
     startTransition(async () => {

@@ -27,7 +27,7 @@ export function SiteFooter() {
     <footer className="mt-16 border-t">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-2">
-          <p className="text-base font-semibold tracking-tight">Threadline</p>
+          <p className="font-display text-lg font-semibold tracking-wide">Threadline</p>
           <p className="text-muted-foreground max-w-xs text-sm">
             Well-made basics and outerwear in natural fibres, cut for everyday wear.
           </p>

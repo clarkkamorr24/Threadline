@@ -40,7 +40,7 @@ export async function SiteHeader() {
 
         <Link
           href={ROUTES.home}
-          className="text-lg font-semibold tracking-tight whitespace-nowrap"
+          className="font-display text-xl font-semibold tracking-wide whitespace-nowrap"
         >
           Threadline
         </Link>

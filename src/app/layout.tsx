@@ -1,14 +1,19 @@
 import type { Metadata, Viewport } from 'next';
-import { Poppins } from 'next/font/google';
+import { Cabin, Inter } from 'next/font/google';
 import { clientEnv } from '@/config/env';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from './providers';
 import './globals.css';
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-poppins',
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const cabin = Cabin({
+  subsets: ['latin'],
+  variable: '--font-cabin',
   display: 'swap',
 });
 
@@ -37,7 +42,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={poppins.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${cabin.variable}`} suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col">
         <Providers>
           {children}

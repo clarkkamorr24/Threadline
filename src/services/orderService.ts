@@ -283,8 +283,6 @@ export async function listOrders(
 
 export async function getOrderById(userId: string, orderId: string): Promise<OrderDetail> {
   const row = await db.order.findFirst({
-    // Scoped by userId so an order id from another account resolves to a 404
-    // rather than disclosing that the order exists.
     where: { id: orderId, userId },
     select: orderDetailSelect,
   });

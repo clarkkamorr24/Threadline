@@ -79,8 +79,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                   </Link>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {/* Rendered from an ISO string; Date objects do not survive
-                      the RSC serialization boundary. */}
                   {new Date(order.placedAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',

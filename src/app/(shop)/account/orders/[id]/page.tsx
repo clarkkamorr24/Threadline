@@ -87,13 +87,12 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
 
                 <div className="flex flex-1 justify-between gap-4">
                   <div className="min-w-0">
-                    {/* Snapshot values, not live catalog data — the order shows
-                        what was bought, at the price that was charged. */}
                     <h2 className="truncate text-sm font-medium">
                       <Link href={ROUTES.product(item.productSlug)} className="hover:underline">
                         {item.productName}
                       </Link>
                     </h2>
+                    <p className="text-muted-foreground mt-0.5 text-sm">{item.color} - {item.size}</p>
                     <p className="text-muted-foreground text-sm">
                       {formatMoney(item.unitPriceCents)} × {item.quantity}
                     </p>
