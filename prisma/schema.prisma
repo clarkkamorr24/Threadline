@@ -73,17 +73,15 @@ model Product {
   basePriceCents Int
   status         ProductStatus @default(DRAFT)
   featured       Boolean       @default(false)
-  categoryId     String
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  category   Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categories Category[]
   variants   ProductVariant[]
   cartItems  CartItem[]
   orderItems OrderItem[]
   favorites  Favorite[]
 
-  @@index([status, categoryId])
   @@index([status, createdAt])
   @@index([status, basePriceCents])
   @@index([featured, status])
@@ -203,6 +201,12 @@ model Order {
   taxCents        Int         @default(0)
   totalCents      Int
   shippingAddress Json
+
+  paymentProvider  String?
+  paymentMethod    String?
+  paymentReference String?   @unique
+  paidAt           DateTime?
+
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

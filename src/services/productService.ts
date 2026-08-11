@@ -32,7 +32,7 @@ const productSummarySelect = {
   name: true,
   slug: true,
   basePriceCents: true,
-  category: { select: { id: true, name: true, slug: true } },
+  categories: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
   variants: { select: variantSelect, orderBy: { position: 'asc' } },
 } satisfies Prisma.ProductSelect;
 
@@ -77,7 +77,7 @@ function toProductSummary(row: ProductSummaryRow): ProductSummary {
     hasPriceRange: prices.length > 0 && Math.min(...prices) !== Math.max(...prices),
     inStock: variants.some((variant) => variant.inStock),
     primaryImage: image ? { ...image, alt: image.alt || row.name } : null,
-    category: row.category,
+    categories: row.categories,
   };
 }
 
@@ -123,10 +123,11 @@ function buildWhere(query: ProductQuery): Prisma.ProductWhereInput {
 
   if (query.categorySlug) {
     conditions.push({
-      OR: [
-        { category: { slug: query.categorySlug } },
-        { category: { parent: { slug: query.categorySlug } } },
-      ],
+      categories: {
+        some: {
+          OR: [{ slug: query.categorySlug }, { parent: { slug: query.categorySlug } }],
+        },
+      },
     });
   }
 
@@ -203,11 +204,19 @@ export async function getFeaturedProducts(limit = 8): Promise<readonly ProductSu
 
 export async function getRelatedProducts(
   productId: string,
-  categoryId: string,
+  categoryIds: readonly string[],
   limit = 4,
 ): Promise<readonly ProductSummary[]> {
+  if (categoryIds.length === 0) {
+    return [];
+  }
+
   const rows = await db.product.findMany({
-    where: { status: 'ACTIVE', categoryId, id: { not: productId } },
+    where: {
+      status: 'ACTIVE',
+      categories: { some: { id: { in: [...categoryIds] } } },
+      id: { not: productId },
+    },
     select: productSummarySelect,
     orderBy: { createdAt: 'desc' },
     take: limit,

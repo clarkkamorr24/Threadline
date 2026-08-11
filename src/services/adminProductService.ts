@@ -14,7 +14,7 @@ const adminRowSelect = {
   status: true,
   featured: true,
   updatedAt: true,
-  category: { select: { name: true } },
+  categories: { select: { name: true }, orderBy: { name: 'asc' } },
   variants: {
     select: {
       stock: true,
@@ -40,7 +40,7 @@ function toAdminProductRow(row: AdminRow): AdminProductRow {
     variantCount: row.variants.length,
     status: row.status as ProductStatusValue,
     featured: row.featured,
-    categoryName: row.category.name,
+    categoryNames: row.categories.map((category) => category.name),
     primaryImageUrl: row.variants.flatMap((variant) => variant.images)[0]?.url ?? null,
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -105,7 +105,7 @@ export async function getProductForEdit(id: string) {
       material: true,
       status: true,
       featured: true,
-      categoryId: true,
+      categories: { select: { id: true } },
       variants: {
         select: {
           id: true,
@@ -149,10 +149,16 @@ function toConflictError(error: unknown): never {
 }
 
 export async function createProduct(input: ProductWriteModel): Promise<{ id: string }> {
-  const { variants, ...productData } = input;
+  const { variants, categoryIds, ...productData } = input;
 
   try {
-    const created = await db.product.create({ data: productData, select: { id: true } });
+    const created = await db.product.create({
+      data: {
+        ...productData,
+        categories: { connect: categoryIds.map((id) => ({ id })) },
+      },
+      select: { id: true },
+    });
 
     for (const [index, variant] of variants.entries()) {
       await db.productVariant.create({
@@ -189,7 +195,7 @@ export async function updateProduct(
   id: string,
   input: ProductWriteModel,
 ): Promise<{ id: string }> {
-  const { variants, ...productData } = input;
+  const { variants, categoryIds, ...productData } = input;
 
   const existing = await db.product.findUnique({
     where: { id },
@@ -207,7 +213,13 @@ export async function updateProduct(
 
   try {
     await db.$transaction(async (tx) => {
-      await tx.product.update({ where: { id }, data: productData });
+      await tx.product.update({
+        where: { id },
+        data: {
+          ...productData,
+          categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) },
+        },
+      });
       await tx.productVariant.deleteMany({ where: { productId: id } });
 
       for (const [index, variant] of variants.entries()) {
@@ -277,7 +289,6 @@ export async function deleteProduct(id: string): Promise<void> {
   );
 }
 
-/** Best-effort cleanup of provider-hosted assets. Never throws. */
 async function removeAssets(keys: readonly string[]): Promise<void> {
   if (keys.length === 0) {
     return;

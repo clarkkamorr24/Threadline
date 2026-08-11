@@ -9,9 +9,9 @@ export const MAX_CART_ITEM_QUANTITY = 20;
 export const MAX_VARIANT_IMAGES = 6;
 export const MAX_VARIANTS = 50;
 
-export const FREE_SHIPPING_THRESHOLD_CENTS = 10_000;
-export const FLAT_SHIPPING_RATE_CENTS = 599;
-export const TAX_RATE_BASIS_POINTS = 800; // 8.00%
+export const FREE_SHIPPING_THRESHOLD_CENTS = 250_000;
+export const FLAT_SHIPPING_RATE_CENTS = 15_000;
+export const TAX_RATE_BASIS_POINTS = 1_200;
 export const BASIS_POINTS_DIVISOR = 10_000;
 
 export const PRODUCT_SORT_OPTIONS = [

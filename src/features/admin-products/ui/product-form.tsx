@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert, Wand2 } from 'lucide-react';
+import { ChevronDown, CircleAlert, Wand2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,6 +18,12 @@ import {
   FormMessage,
   applyServerIssues,
 } from '@/components/ui/form';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -39,9 +45,27 @@ import type { CreateProductInput } from '../model/schema';
 import { VariantEditor, createEmptyVariant } from './variant-editor';
 import type { VariantDraft } from './variant-editor';
 
+function describeSelection(
+  categories: readonly CategoryModel[],
+  selectedIds: readonly string[],
+): string {
+  const names = categories
+    .filter((category) => selectedIds.includes(category.id))
+    .map((category) => category.name);
+
+  if (names.length === 0) {
+    return 'Choose categories';
+  }
+
+  if (names.length <= 3) {
+    return names.join(', ');
+  }
+
+  return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`;
+}
+
 interface ProductFormProps {
   readonly categories: readonly CategoryModel[];
-  /** Present when editing; absent when creating. */
   readonly productId?: string;
   readonly defaultValues: CreateProductInput;
 }
@@ -84,7 +108,7 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
       basePrice: defaultValues.basePrice,
       status: defaultValues.status,
       featured: defaultValues.featured,
-      categoryId: defaultValues.categoryId,
+      categoryIds: defaultValues.categoryIds,
     },
   });
 
@@ -283,24 +307,48 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
 
             <FormField
               control={form.control}
-              name="categoryId"
+              name="categoryIds"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
+                <FormItem className="sm:col-span-3">
+                  <FormLabel>Categories</FormLabel>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild disabled={isSubmitting}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full justify-between font-normal"
+                      >
+                        <span className="truncate">
+                          {describeSelection(categories, field.value)}
+                        </span>
+                        <ChevronDown aria-hidden="true" className="opacity-60" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      className="max-h-72 w-(--radix-dropdown-menu-trigger-width) overflow-y-auto"
+                    >
                       {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
+                        <DropdownMenuCheckboxItem
+                          key={category.id}
+                          checked={field.value.includes(category.id)}
+                          onSelect={(event) => event.preventDefault()}
+                          onCheckedChange={(checked) =>
+                            field.onChange(
+                              checked
+                                ? [...field.value, category.id]
+                                : field.value.filter((id: string) => id !== category.id),
+                            )
+                          }
+                        >
                           {category.name}
-                        </SelectItem>
+                        </DropdownMenuCheckboxItem>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <FormDescription>
+                    A product can appear in several categories. Pick at least one.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

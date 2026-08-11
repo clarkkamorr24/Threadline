@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { PAYMENT_METHOD_IDS } from '@/lib/plugins/payment/types';
 
 const requiredText = (label: string, max = 120) =>
   z
     .string()
+    .trim()
     .min(1, `${label} is required.`)
-    .max(max, `${label} must be ${max} characters or fewer.`)
-    .transform((value) => value.trim());
+    .max(max, `${label} must be ${max} characters or fewer.`);
 
 const optionalText = (max: number) =>
   z
@@ -27,3 +28,9 @@ export const shippingAddressSchema = z.object({
 });
 
 export type ShippingAddressInput = z.infer<typeof shippingAddressSchema>;
+
+export const placeOrderSchema = shippingAddressSchema.extend({
+  paymentMethod: z.enum(PAYMENT_METHOD_IDS).nullable().default(null),
+});
+
+export type PlaceOrderInput = z.infer<typeof placeOrderSchema>;

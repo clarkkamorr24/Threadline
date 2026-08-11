@@ -40,8 +40,6 @@ function parseRole(value: string | undefined): UserRoleValue | null {
 }
 
 export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
-  // The layout already gates on role; calling it again here returns the
-  // current admin so their own row can be marked non-editable.
   const admin = await requireAdmin();
   const params = await searchParams;
   const parsedPage = Number(params.page);

@@ -25,8 +25,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             alt={product.primaryImage.alt}
             fill
             priority={priority}
-            // Tells the browser the rendered width per breakpoint so it can
-            // pick the right source instead of always downloading the largest.
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -50,7 +48,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             {product.name}
           </Link>
         </h3>
-        <p className="text-muted-foreground text-xs">{product.category.name}</p>
+        <p className="text-muted-foreground text-xs">
+          {product.categories.map((category) => category.name).join(', ')}
+        </p>
         <p className="text-sm">
           {product.hasPriceRange ? (
             <span className="text-muted-foreground text-xs">from </span>

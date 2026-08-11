@@ -21,12 +21,16 @@ import { OrderSummary } from '@/features/cart/ui/order-summary';
 import { ROUTES } from '@/constants/routes';
 import type { CartTotals } from '@/entities/cart/model/types';
 import { useToast } from '@/hooks/useToast';
+import type { PaymentMethodOption } from '@/lib/plugins/payment/types';
+import { cn } from '@/lib/utils';
 import { placeOrderAction } from '../api/actions';
-import { shippingAddressSchema, type ShippingAddressInput } from '../model/schema';
+import { placeOrderSchema, type PlaceOrderInput } from '../model/schema';
+import { PaymentMethodLogo } from './payment-method-logo';
 
 interface CheckoutFormProps {
   readonly totals: CartTotals;
   readonly defaultName: string;
+  readonly paymentMethods: readonly PaymentMethodOption[];
 }
 
 const FIELDS = [
@@ -40,13 +44,13 @@ const FIELDS = [
   { name: 'phone', label: 'Phone (optional)', autoComplete: 'tel' },
 ] as const;
 
-export function CheckoutForm({ totals, defaultName }: CheckoutFormProps) {
+export function CheckoutForm({ totals, defaultName, paymentMethods }: CheckoutFormProps) {
   const router = useRouter();
   const toast = useToast();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const form = useForm<ShippingAddressInput>({
-    resolver: zodResolver(shippingAddressSchema),
+  const form = useForm<PlaceOrderInput>({
+    resolver: zodResolver(placeOrderSchema),
     defaultValues: {
       fullName: defaultName,
       line1: '',
@@ -54,14 +58,15 @@ export function CheckoutForm({ totals, defaultName }: CheckoutFormProps) {
       city: '',
       state: null,
       postalCode: '',
-      country: '',
+      country: 'Philippines',
       phone: null,
+      paymentMethod: paymentMethods[0]?.id ?? null,
     },
   });
 
   const isSubmitting = form.formState.isSubmitting;
 
-  async function onSubmit(values: ShippingAddressInput): Promise<void> {
+  async function onSubmit(values: PlaceOrderInput): Promise<void> {
     setSubmitError(null);
 
     const result = await placeOrderAction(values);
@@ -80,7 +85,12 @@ export function CheckoutForm({ totals, defaultName }: CheckoutFormProps) {
       return;
     }
 
-    toast.success('Order placed', `Order ${result.data.orderNumber}`);
+    if (result.data.paymentError) {
+      toast.error('Order saved, payment not started', result.data.paymentError);
+    } else {
+      toast.success('Order placed', `Order ${result.data.orderNumber}`);
+    }
+
     router.push(ROUTES.order(result.data.orderId));
   }
 
@@ -122,6 +132,40 @@ export function CheckoutForm({ totals, defaultName }: CheckoutFormProps) {
               />
             ))}
           </div>
+
+          {paymentMethods.length > 0 ? (
+            <FormField
+              control={form.control}
+              name="paymentMethod"
+              render={({ field }) => (
+                <FormItem className="mt-4">
+                  <FormLabel>Payment method</FormLabel>
+                  <div className="flex flex-wrap gap-2">
+                    {paymentMethods.map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => field.onChange(method.id)}
+                        disabled={isSubmitting}
+                        aria-pressed={field.value === method.id}
+                        className={cn(
+                          'flex items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors',
+                          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                          field.value === method.id
+                            ? 'border-foreground bg-accent font-medium'
+                            : 'hover:border-foreground/40',
+                        )}
+                      >
+                        <PaymentMethodLogo src={method.logoSrc} label={method.label} />
+                        {method.label}
+                      </button>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : null}
         </section>
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
@@ -130,7 +174,9 @@ export function CheckoutForm({ totals, defaultName }: CheckoutFormProps) {
               Place order
             </Button>
             <p className="text-muted-foreground text-center text-xs">
-              No payment is taken — this store runs the manual payment provider.
+              {paymentMethods.length > 0
+                ? 'You will be redirected to complete payment securely.'
+                : 'No payment is taken — this store runs the manual payment provider.'}
             </p>
           </OrderSummary>
         </aside>

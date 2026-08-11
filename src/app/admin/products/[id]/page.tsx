@@ -43,7 +43,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     basePrice: toMajorUnits(product.basePriceCents),
     status: product.status as ProductStatusValue,
     featured: product.featured,
-    categoryId: product.categoryId,
+    categoryIds: product.categories.map((category) => category.id),
     variants: product.variants.map((variant) => ({
       id: variant.id,
       size: variant.size ?? '',

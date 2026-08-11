@@ -29,6 +29,9 @@ const serverSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+  PAYMENT_PROVIDER: z.enum(['manual', 'paymongo']).default('manual'),
+  PAYMONGO_SECRET_KEY: z.string().optional(),
+  PAYMONGO_WEBHOOK_SECRET: z.string().optional(),
 });
 
 export type ClientEnv = Readonly<z.infer<typeof clientSchema>>;

@@ -21,7 +21,7 @@ const favoriteInclude = {
       name: true,
       slug: true,
       basePriceCents: true,
-      category: { select: { id: true, name: true, slug: true } },
+      categories: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
       variants: {
         select: {
           stock: true,
@@ -77,7 +77,7 @@ export async function listFavorites(userId: string): Promise<readonly FavoriteIt
               isPrimary: image.isPrimary,
             }
           : null,
-        category: row.product.category,
+        categories: row.product.categories,
       },
     };
   });

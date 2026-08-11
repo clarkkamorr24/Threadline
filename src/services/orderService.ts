@@ -13,6 +13,7 @@ import { canTransition } from '@/entities/order/model/types';
 import type { Paginated } from '@/entities/product/model/types';
 import { db } from '@/lib/db';
 import { ConflictError, InsufficientStockError, NotFoundError, ValidationError } from '@/lib/errors';
+import { getPaymentPlugin } from '@/lib/plugins/payment/registry';
 import { calculateTotals } from '@/utils/pricing';
 
 const orderDetailSelect = {
@@ -364,6 +365,59 @@ export async function getOrderForAdmin(orderId: string): Promise<OrderDetail> {
   }
 
   return toOrderDetail(row);
+}
+
+export async function attachPaymentReference(
+  orderId: string,
+  payment: { provider: string; method: string | null; reference: string },
+): Promise<void> {
+  await db.order.update({
+    where: { id: orderId },
+    data: {
+      paymentProvider: payment.provider,
+      paymentMethod: payment.method,
+      paymentReference: payment.reference,
+    },
+  });
+}
+
+export async function markOrderPaid(reference: string): Promise<boolean> {
+  const result = await db.order.updateMany({
+    where: { paymentReference: reference, status: 'PENDING' },
+    data: { status: 'PROCESSING', paidAt: new Date() },
+  });
+
+  return result.count > 0;
+}
+
+export async function confirmPendingPayment(userId: string, orderId: string): Promise<boolean> {
+  const order = await db.order.findFirst({
+    where: { id: orderId, userId },
+    select: { status: true, paymentReference: true, paymentProvider: true },
+  });
+
+  if (!order || order.status !== 'PENDING' || !order.paymentReference) {
+    return false;
+  }
+
+  const plugin = getPaymentPlugin();
+
+  if (plugin.id !== order.paymentProvider) {
+    return false;
+  }
+
+  try {
+    const status = await plugin.getStatus(order.paymentReference);
+
+    if (status !== 'paid') {
+      return false;
+    }
+  } catch (error) {
+    console.error('[orderService] Could not confirm payment on return:', error);
+    return false;
+  }
+
+  return markOrderPaid(order.paymentReference);
 }
 
 export async function updateOrderStatus(

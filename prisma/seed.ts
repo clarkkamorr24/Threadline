@@ -32,7 +32,7 @@ interface SeedProduct {
   readonly material: string;
   readonly basePriceCents: number;
   readonly featured: boolean;
-  readonly categorySlug: string;
+  readonly categorySlugs: readonly string[];
   readonly images: readonly string[];
   readonly variants: readonly SeedVariant[];
 }
@@ -96,9 +96,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'A 240gsm organic cotton tee with a boxy body and ribbed collar that holds its shape wash after wash. Garment dyed for a soft, lived-in hand.',
     material: '100% organic cotton',
-    basePriceCents: 3800,
+    basePriceCents: 129000,
     featured: true,
-    categorySlug: 't-shirts',
+    categorySlugs: ['t-shirts', 'tops'],
     images: [`${IMAGE_BASE}-1521572163474-6864f9cf17ab?w=1200&q=80`],
     variants: [
       { size: 'S', color: 'White', sku: 'TL-TOP-001-S-WHT', stock: 12 },
@@ -115,15 +115,15 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'Fine-gauge extra-fine merino in a clean crew neck. Breathable enough for indoors, warm enough under a jacket.',
     material: '100% extra-fine merino wool',
-    basePriceCents: 11500,
+    basePriceCents: 395000,
     featured: true,
-    categorySlug: 'knitwear',
+    categorySlugs: ['knitwear', 'tops'],
     images: [`${IMAGE_BASE}-1576871337622-98d48d1cf531?w=1200&q=80`],
     variants: [
       { size: 'M', color: 'Navy', sku: 'TL-TOP-002-M-NVY', stock: 10 },
       { size: 'L', color: 'Navy', sku: 'TL-TOP-002-L-NVY', stock: 6 },
       // Price override, to exercise the fallback rule.
-      { size: 'M', color: 'Oatmeal', sku: 'TL-TOP-002-M-OAT', stock: 3, priceOverrideCents: 12500 },
+      { size: 'M', color: 'Oatmeal', sku: 'TL-TOP-002-M-OAT', stock: 3, priceOverrideCents: 425000 },
     ],
   },
   {
@@ -132,9 +132,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'Woven from Japanese oxford cloth with a soft roll collar and single-needle side seams. Cut slightly relaxed through the body.',
     material: '100% cotton oxford',
-    basePriceCents: 8900,
+    basePriceCents: 249000,
     featured: false,
-    categorySlug: 'tops',
+    categorySlugs: ['tops'],
     images: [`${IMAGE_BASE}-1602810318383-e386cc2a3ccf?w=1200&q=80`],
     variants: [{ size: 'M', color: 'White', sku: 'TL-TOP-003-M-WHT', stock: 60 }],
   },
@@ -144,9 +144,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'A four-pocket chore coat in waxed British cotton. Weathers to a personal patina and shrugs off light rain.',
     material: 'Waxed British cotton',
-    basePriceCents: 24900,
+    basePriceCents: 849000,
     featured: true,
-    categorySlug: 'outerwear',
+    categorySlugs: ['outerwear'],
     images: [`${IMAGE_BASE}-1551028719-00167b16eac5?w=1200&q=80`],
     variants: [
       { size: 'M', color: 'Olive', sku: 'TL-OUT-001-M-OLV', stock: 7 },
@@ -160,9 +160,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'Diamond-quilted recycled fill in a trim vest that layers cleanly under a coat without bulk at the shoulder.',
     material: 'Recycled polyester shell and fill',
-    basePriceCents: 13900,
+    basePriceCents: 475000,
     featured: false,
-    categorySlug: 'outerwear',
+    categorySlugs: ['outerwear'],
     images: [`${IMAGE_BASE}-1544022613-e87ca75a784a?w=1200&q=80`],
     variants: [{ size: 'M', color: 'Black', sku: 'TL-OUT-002-M-BLK', stock: 34 }],
   },
@@ -172,9 +172,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       '13.5oz selvedge denim from a Japanese mill, cut straight from hip to hem with a mid rise. Raw and unsanforized.',
     material: '13.5oz Japanese selvedge denim',
-    basePriceCents: 16500,
+    basePriceCents: 559000,
     featured: true,
-    categorySlug: 'denim',
+    categorySlugs: ['denim', 'bottoms'],
     images: [`${IMAGE_BASE}-1542272604-787c3835535d?w=1200&q=80`],
     variants: [
       { size: '30', color: 'Indigo', sku: 'TL-BOT-001-30-IND', stock: 9 },
@@ -188,9 +188,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'A single-pleat trouser in tropical wool with a tailored waistband and clean drape to the ankle.',
     material: 'Tropical wool',
-    basePriceCents: 18900,
+    basePriceCents: 645000,
     featured: false,
-    categorySlug: 'bottoms',
+    categorySlugs: ['bottoms'],
     images: [`${IMAGE_BASE}-1473966968600-fa801b869a1a?w=1200&q=80`],
     variants: [{ size: '32', color: 'Charcoal', sku: 'TL-BOT-002-32-CHR', stock: 28 }],
   },
@@ -200,9 +200,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'A 20oz cotton canvas holdall with bridle leather handles and a brass zip. Sized for two nights away.',
     material: '20oz cotton canvas, bridle leather',
-    basePriceCents: 19500,
+    basePriceCents: 665000,
     featured: true,
-    categorySlug: 'accessories',
+    categorySlugs: ['accessories'],
     images: [`${IMAGE_BASE}-1553062407-98eeb64c6a62?w=1200&q=80`],
     variants: [{ size: 'One Size', color: 'Sand', sku: 'TL-ACC-001-SND', stock: 18 }],
   },
@@ -212,9 +212,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     description:
       'Vegetable-tanned bridle leather with a solid brass buckle. Stiff at first, moulds to you within a month.',
     material: 'Vegetable-tanned bridle leather',
-    basePriceCents: 8500,
+    basePriceCents: 289000,
     featured: false,
-    categorySlug: 'accessories',
+    categorySlugs: ['accessories'],
     images: [`${IMAGE_BASE}-1624222247344-550fb60583dc?w=1200&q=80`],
     // Size-only variants — colour stays null, which the model permits.
     variants: [
@@ -228,9 +228,9 @@ const PRODUCTS: readonly SeedProduct[] = [
     slug: 'ribbed-wool-beanie',
     description: 'A chunky ribbed beanie in lambswool with a deep cuff. Warm without the itch.',
     material: '100% lambswool',
-    basePriceCents: 4500,
+    basePriceCents: 149000,
     featured: false,
-    categorySlug: 'accessories',
+    categorySlugs: ['accessories'],
     images: [`${IMAGE_BASE}-1576871337632-b9aef4c17ab9?w=1200&q=80`],
     variants: [{ size: 'One Size', color: 'Charcoal', sku: 'TL-ACC-003-CHR', stock: 12 }],
   },
@@ -282,13 +282,15 @@ async function main(): Promise<void> {
   let variantCount = 0;
 
   for (const product of PRODUCTS) {
-    const categoryId = categoryIdBySlug.get(product.categorySlug);
+    const categoryIds = product.categorySlugs.map((slug) => {
+      const id = categoryIdBySlug.get(slug);
 
-    if (!categoryId) {
-      throw new Error(
-        `Product "${product.slug}" references unknown category "${product.categorySlug}".`,
-      );
-    }
+      if (!id) {
+        throw new Error(`Product "${product.slug}" references unknown category "${slug}".`);
+      }
+
+      return id;
+    });
 
     const existing = await prisma.product.findUnique({
       where: { slug: product.slug },
@@ -300,13 +302,21 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const { images, variants, categorySlug: _categorySlug, ...productData } = product;
+    const { images, variants, categorySlugs: _categorySlugs, ...productData } = product;
 
     await prisma.$transaction(async (tx) => {
       const record = await tx.product.upsert({
         where: { slug: product.slug },
-        update: { ...productData, categoryId, status: ProductStatus.ACTIVE },
-        create: { ...productData, categoryId, status: ProductStatus.ACTIVE },
+        update: {
+          ...productData,
+          status: ProductStatus.ACTIVE,
+          categories: { set: categoryIds.map((id) => ({ id })) },
+        },
+        create: {
+          ...productData,
+          status: ProductStatus.ACTIVE,
+          categories: { connect: categoryIds.map((id) => ({ id })) },
+        },
       });
 
       await tx.productVariant.deleteMany({ where: { productId: record.id } });

@@ -117,7 +117,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
                       <div className="min-w-0">
                         <p className="truncate font-medium">{product.name}</p>
                         <p className="text-muted-foreground truncate text-xs">
-                          {product.categoryName}
+                          {product.categoryNames.join(', ')}
                           {product.featured ? ' · Featured' : ''}
                         </p>
                       </div>

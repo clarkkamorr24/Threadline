@@ -23,7 +23,6 @@ export const updateOrderStatusAction = createAction(
 
     revalidatePath(ROUTES.admin.orders);
     revalidatePath(ROUTES.admin.order(input.orderId));
-    // The customer's own order views must reflect the change too.
     revalidatePath(ROUTES.orders);
 
     return { status: order.status };

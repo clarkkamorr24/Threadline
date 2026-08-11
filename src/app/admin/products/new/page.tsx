@@ -14,19 +14,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function NewProductPage() {
   const categories = await listCategories();
-
-  // A product cannot exist without a category, so there is nothing useful to
-  // render — say why rather than showing an empty, unusable dropdown.
-  // Destructured rather than indexed: `noUncheckedIndexedAccess` does not
-  // narrow `categories[0]` from a length check, and this reads better anyway.
   const [firstCategory] = categories;
 
   if (!firstCategory) {
     return (
       <Alert variant="warning">
         <AlertDescription>
-          There are no categories yet. Seed the catalogue (<code>npm run db:seed</code>) or add a
-          category before creating products.
+          There are no categories yet. Add a category before creating products.
         </AlertDescription>
       </Alert>
     );
@@ -40,7 +34,7 @@ export default async function NewProductPage() {
     basePrice: 0,
     status: 'DRAFT',
     featured: false,
-    categoryId: firstCategory.id,
+    categoryIds: [firstCategory.id],
     variants: [{ id: null, size: '', color: '', sku: '', stock: 0, priceOverride: null, images: [] }],
   };
 

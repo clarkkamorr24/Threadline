@@ -55,9 +55,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await findProduct(slug);
 
+  const primaryCategory = product.categories[0] ?? null;
+
   const [user, related] = await Promise.all([
     getCurrentUser(),
-    getRelatedProducts(product.id, product.category.id, 4),
+    getRelatedProducts(product.id, product.categories.map((category) => category.id), 4),
   ]);
   
   const [favorited, cartQuantities] =
@@ -77,15 +79,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
               Products
             </Link>
           </li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <Link
-              href={ROUTES.category(product.category.slug)}
-              className="hover:text-foreground"
-            >
-              {product.category.name}
-            </Link>
-          </li>
+          {primaryCategory ? (
+            <>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link
+                  href={ROUTES.category(primaryCategory.slug)}
+                  className="hover:text-foreground"
+                >
+                  {primaryCategory.name}
+                </Link>
+              </li>
+            </>
+          ) : null}
         </ol>
       </nav>
 
@@ -142,8 +148,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <dl className="text-muted-foreground grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
               <dt className="font-medium">Material</dt>
               <dd>{product.material ?? '—'}</dd>
-              <dt className="font-medium">Category</dt>
-              <dd>{product.category.name}</dd>
+              <dt className="font-medium">{product.categories.length === 1 ? 'Category' : 'Categories'}</dt>
+              <dd>
+                {product.categories.length > 0
+                  ? product.categories.map((category) => category.name).join(', ')
+                  : '—'}
+              </dd>
               <dt className="font-medium">Availability</dt>
               <dd>{product.inStock ? 'In stock' : 'Out of stock'}</dd>
             </dl>

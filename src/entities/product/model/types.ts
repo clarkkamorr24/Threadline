@@ -40,7 +40,7 @@ export interface ProductSummary {
   readonly hasPriceRange: boolean;
   readonly primaryImage: ProductImageModel | null;
   readonly inStock: boolean;
-  readonly category: Pick<CategoryModel, 'id' | 'name' | 'slug'>;
+  readonly categories: readonly Pick<CategoryModel, 'id' | 'name' | 'slug'>[];
 }
 
 export interface ProductDetail extends ProductSummary {
@@ -61,7 +61,7 @@ export interface AdminProductRow {
   readonly variantCount: number;
   readonly status: ProductStatusValue;
   readonly featured: boolean;
-  readonly categoryName: string;
+  readonly categoryNames: readonly string[];
   readonly primaryImageUrl: string | null;
   readonly updatedAt: string;
 }

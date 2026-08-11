@@ -37,7 +37,6 @@ export const credentialsAuthPlugin: CredentialsAuthPlugin = {
       password: input.password,
       options: {
         emailRedirectTo: redirectTo,
-        // Surfaced to the database trigger / profile sync as user metadata.
         data: { name: input.name },
       },
     });
@@ -53,7 +52,6 @@ export const credentialsAuthPlugin: CredentialsAuthPlugin = {
       throw new AppError('INTERNAL_ERROR', 'Account creation failed.', 500);
     }
 
-    // With email confirmation enabled Supabase returns a user but no session.
     return data.session
       ? { kind: 'session', userId: data.user.id }
       : { kind: 'confirmation-required', email: input.email };

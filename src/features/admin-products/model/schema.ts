@@ -63,7 +63,11 @@ const baseProductSchema = z.object({
   basePrice: priceField,
   status: z.enum(PRODUCT_STATUSES),
   featured: z.boolean().default(false),
-  categoryId: z.string().min(1, 'Choose a category.'),
+  categoryIds: z
+    .array(z.string().min(1))
+    .min(1, 'Choose at least one category.')
+    .max(10, 'At most 10 categories per product.')
+    .transform((ids) => [...new Set(ids)]),
   variants: z
     .array(variantSchema)
     .min(1, 'A product needs at least one variant.')
@@ -178,7 +182,7 @@ export interface ProductWriteModel {
   readonly basePriceCents: number;
   readonly status: (typeof PRODUCT_STATUSES)[number];
   readonly featured: boolean;
-  readonly categoryId: string;
+  readonly categoryIds: readonly string[];
   readonly variants: readonly {
     id: string | null;
     size: string;
@@ -199,7 +203,7 @@ export function toProductWriteModel(input: CreateProductInput): ProductWriteMode
     basePriceCents: toCents(input.basePrice),
     status: input.status,
     featured: input.featured,
-    categoryId: input.categoryId,
+    categoryIds: input.categoryIds,
     variants: input.variants.map((variant) => ({
       id: variant.id ?? null,
       size: variant.size,

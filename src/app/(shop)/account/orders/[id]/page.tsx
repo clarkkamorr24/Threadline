@@ -8,7 +8,7 @@ import { ROUTES } from '@/constants/routes';
 import { OrderStatusBadge } from '@/entities/order/ui/order-status-badge';
 import { requireUserOrRedirect } from '@/lib/auth/session';
 import { isAppError } from '@/lib/errors';
-import { getOrderById } from '@/services/orderService';
+import { confirmPendingPayment, getOrderById } from '@/services/orderService';
 import { formatMoney } from '@/utils/money';
 
 export const metadata: Metadata = {
@@ -22,6 +22,8 @@ interface OrderDetailPageProps {
 export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
   const { id } = await params;
   const user = await requireUserOrRedirect(ROUTES.order(id));
+
+  await confirmPendingPayment(user.id, id);
 
   let order;
   try {

@@ -6,6 +6,7 @@ export const ERROR_CODES = {
   CONFLICT: 'CONFLICT',
   INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
   STORAGE: 'STORAGE_ERROR',
+  PAYMENT: 'PAYMENT_ERROR',
   INTERNAL: 'INTERNAL_ERROR',
 } as const;
 
@@ -87,6 +88,13 @@ export class StorageError extends AppError {
   constructor(message = 'The file could not be stored.') {
     super(ERROR_CODES.STORAGE, message, 502);
     this.name = 'StorageError';
+  }
+}
+
+export class PaymentError extends AppError {
+  constructor(message = 'The payment could not be processed.') {
+    super(ERROR_CODES.PAYMENT, message, 502);
+    this.name = 'PaymentError';
   }
 }
 
