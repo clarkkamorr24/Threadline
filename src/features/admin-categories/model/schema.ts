@@ -28,11 +28,6 @@ export const categorySchema = z.object({
     .nullable()
     .default(null)
     .or(z.literal('').transform(() => null)),
-  parentId: z
-    .string()
-    .nullable()
-    .default(null)
-    .transform((value) => value || null),
 });
 
 export const updateCategorySchema = categorySchema.extend({ id: z.string().min(1) });

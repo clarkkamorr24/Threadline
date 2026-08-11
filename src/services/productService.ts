@@ -4,7 +4,6 @@ import { DEFAULT_PRODUCT_SORT, MAX_PAGE_SIZE, PRODUCTS_PER_PAGE } from '@/consta
 import type { ProductSort } from '@/constants/catalog';
 import type {
   CategoryModel,
-  CategoryTreeNode,
   Paginated,
   ProductDetail,
   ProductQuery,
@@ -123,11 +122,7 @@ function buildWhere(query: ProductQuery): Prisma.ProductWhereInput {
 
   if (query.categorySlug) {
     conditions.push({
-      categories: {
-        some: {
-          OR: [{ slug: query.categorySlug }, { parent: { slug: query.categorySlug } }],
-        },
-      },
+      categories: { some: { slug: query.categorySlug } },
     });
   }
 
@@ -231,7 +226,6 @@ const categorySelect = {
   slug: true,
   description: true,
   imageUrl: true,
-  parentId: true,
   _count: { select: { products: { where: { status: 'ACTIVE' } } } },
 } satisfies Prisma.CategorySelect;
 
@@ -244,7 +238,6 @@ function toCategory(
     slug: row.slug,
     description: row.description,
     imageUrl: row.imageUrl,
-    parentId: row.parentId,
     productCount: row._count.products,
   };
 }
@@ -256,27 +249,6 @@ export async function listCategories(): Promise<readonly CategoryModel[]> {
   });
 
   return rows.map(toCategory);
-}
-
-export async function listCategoryTree(): Promise<readonly CategoryTreeNode[]> {
-  const categories = await listCategories();
-  const childrenByParent = new Map<string, CategoryModel[]>();
-
-  for (const category of categories) {
-    if (category.parentId === null) {
-      continue;
-    }
-    const siblings = childrenByParent.get(category.parentId) ?? [];
-    siblings.push(category);
-    childrenByParent.set(category.parentId, siblings);
-  }
-
-  const toNode = (category: CategoryModel): CategoryTreeNode => ({
-    ...category,
-    children: (childrenByParent.get(category.id) ?? []).map(toNode),
-  });
-
-  return categories.filter((category) => category.parentId === null).map(toNode);
 }
 
 export async function listVariantFacets(): Promise<{

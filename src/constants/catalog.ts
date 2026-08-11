@@ -1,5 +1,5 @@
 export const PRODUCTS_PER_PAGE = 12;
-export const ADMIN_ROWS_PER_PAGE = 20;
+export const ADMIN_ROWS_PER_PAGE = 25;
 export const MAX_PAGE_SIZE = 60;
 
 export const SEARCH_DEBOUNCE_MS = 300;

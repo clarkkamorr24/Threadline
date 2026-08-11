@@ -2,7 +2,6 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ROUTES } from '@/constants/routes';
 import { CategoryForm } from '@/features/admin-categories/ui/category-form';
-import { listParentCategoryOptions } from '@/services/adminCategoryService';
 
 export const metadata: Metadata = {
   title: 'New category · Admin',
@@ -10,9 +9,7 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewCategoryPage() {
-  const parentOptions = await listParentCategoryOptions();
-
+export default function NewCategoryPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -25,13 +22,11 @@ export default async function NewCategoryPage() {
       </header>
 
       <CategoryForm
-        parentOptions={parentOptions}
         defaultValues={{
           name: '',
           slug: '',
           description: null,
           imageUrl: null,
-          parentId: null,
         }}
       />
     </div>

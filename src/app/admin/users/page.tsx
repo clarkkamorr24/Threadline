@@ -1,9 +1,7 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   Table,
@@ -13,8 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ADMIN_ROWS_PER_PAGE } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
+import { parseAdminListQuery, type AdminListParams } from '@/features/admin-table/model/query';
+import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
+import { AdminSearch } from '@/features/admin-table/ui/admin-search';
 import { USER_ROLES, getUserInitials } from '@/entities/user/model/types';
 import type { UserRoleValue } from '@/entities/user/model/types';
 import { UserActiveToggle } from '@/features/admin-users/ui/user-active-toggle';
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 interface AdminUsersPageProps {
-  readonly searchParams: Promise<{ q?: string; role?: string; page?: string }>;
+  readonly searchParams: Promise<AdminListParams & { role?: string }>;
 }
 
 function parseRole(value: string | undefined): UserRoleValue | null {
@@ -42,14 +42,9 @@ function parseRole(value: string | undefined): UserRoleValue | null {
 export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
   const admin = await requireAdmin();
   const params = await searchParams;
-  const parsedPage = Number(params.page);
+  const listQuery = parseAdminListQuery(params);
 
-  const result = await listUsers({
-    search: params.q?.trim() || null,
-    role: parseRole(params.role),
-    page: Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1,
-    pageSize: ADMIN_ROWS_PER_PAGE,
-  });
+  const result = await listUsers({ ...listQuery, role: parseRole(params.role) });
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,6 +54,13 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           {result.total} registered {result.total === 1 ? 'account' : 'accounts'}.
         </p>
       </header>
+
+      <AdminSearch
+        basePath={ROUTES.admin.users}
+        params={params}
+        placeholder="Search by name or email…"
+        label="Search users"
+      />
 
       {result.items.length === 0 ? (
         <EmptyState
@@ -149,23 +151,15 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         </div>
       )}
 
-      {result.totalPages > 1 ? (
-        <nav aria-label="Pagination" className="flex items-center justify-center gap-3">
-          {result.page > 1 ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`${ROUTES.admin.users}?page=${result.page - 1}`}>Previous</Link>
-            </Button>
-          ) : null}
-          <span className="text-muted-foreground text-sm">
-            Page {result.page} of {result.totalPages}
-          </span>
-          {result.page < result.totalPages ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`${ROUTES.admin.users}?page=${result.page + 1}`}>Next</Link>
-            </Button>
-          ) : null}
-        </nav>
-      ) : null}
+      <AdminPagination
+        basePath={ROUTES.admin.users}
+        params={params}
+        page={result.page}
+        pageSize={result.pageSize}
+        total={result.total}
+        totalPages={result.totalPages}
+        noun="users"
+      />
     </div>
   );
 }

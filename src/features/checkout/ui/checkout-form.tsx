@@ -60,7 +60,7 @@ export function CheckoutForm({ totals, defaultName, paymentMethods }: CheckoutFo
       postalCode: '',
       country: 'Philippines',
       phone: null,
-      paymentMethod: paymentMethods[0]?.id ?? null,
+      paymentMethod: paymentMethods[0]?.id,
     },
   });
 
@@ -96,7 +96,11 @@ export function CheckoutForm({ totals, defaultName, paymentMethods }: CheckoutFo
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-10 lg:grid-cols-[1fr_360px]" noValidate>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="grid gap-10 lg:grid-cols-[1fr_360px]"
+        noValidate
+      >
         <section className="flex flex-col gap-4">
           <h2 className="font-semibold">Shipping address</h2>
 
@@ -115,7 +119,9 @@ export function CheckoutForm({ totals, defaultName, paymentMethods }: CheckoutFo
                 name={field.name}
                 render={({ field: controlled }) => (
                   <FormItem
-                    className={field.name === 'line1' || field.name === 'line2' ? 'sm:col-span-2' : undefined}
+                    className={
+                      field.name === 'line1' || field.name === 'line2' ? 'sm:col-span-2' : undefined
+                    }
                   >
                     <FormLabel>{field.label}</FormLabel>
                     <FormControl>
@@ -133,39 +139,37 @@ export function CheckoutForm({ totals, defaultName, paymentMethods }: CheckoutFo
             ))}
           </div>
 
-          {paymentMethods.length > 0 ? (
-            <FormField
-              control={form.control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <FormItem className="mt-4">
-                  <FormLabel>Payment method</FormLabel>
-                  <div className="flex flex-wrap gap-2">
-                    {paymentMethods.map((method) => (
-                      <button
-                        key={method.id}
-                        type="button"
-                        onClick={() => field.onChange(method.id)}
-                        disabled={isSubmitting}
-                        aria-pressed={field.value === method.id}
-                        className={cn(
-                          'flex items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors',
-                          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                          field.value === method.id
-                            ? 'border-foreground bg-accent font-medium'
-                            : 'hover:border-foreground/40',
-                        )}
-                      >
-                        <PaymentMethodLogo src={method.logoSrc} label={method.label} />
-                        {method.label}
-                      </button>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ) : null}
+          <FormField
+            control={form.control}
+            name="paymentMethod"
+            render={({ field }) => (
+              <FormItem className="mt-4">
+                <FormLabel>Payment method</FormLabel>
+                <div className="flex flex-wrap gap-2">
+                  {paymentMethods.map((method) => (
+                    <button
+                      key={method.id}
+                      type="button"
+                      onClick={() => field.onChange(method.id)}
+                      disabled={isSubmitting}
+                      aria-pressed={field.value === method.id}
+                      className={cn(
+                        'flex items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors',
+                        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                        field.value === method.id
+                          ? 'border-foreground bg-accent font-medium'
+                          : 'hover:border-foreground/40',
+                      )}
+                    >
+                      <PaymentMethodLogo src={method.logoSrc} label={method.label} />
+                      {method.label}
+                    </button>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </section>
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
@@ -174,9 +178,7 @@ export function CheckoutForm({ totals, defaultName, paymentMethods }: CheckoutFo
               Place order
             </Button>
             <p className="text-muted-foreground text-center text-xs">
-              {paymentMethods.length > 0
-                ? 'You will be redirected to complete payment securely.'
-                : 'No payment is taken — this store runs the manual payment provider.'}
+              You will be redirected to complete payment securely.
             </p>
           </OrderSummary>
         </aside>

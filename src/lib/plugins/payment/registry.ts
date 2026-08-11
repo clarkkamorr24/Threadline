@@ -1,28 +1,13 @@
 import 'server-only';
-import { manualPaymentPlugin } from './manual';
 import { paymongoPaymentPlugin } from './paymongo';
-import type { PaymentPlugin, PaymentProviderId } from './types';
-
-const REGISTRY: Partial<Record<PaymentProviderId, PaymentPlugin>> = {
-  manual: manualPaymentPlugin,
-  paymongo: paymongoPaymentPlugin,
-};
+import type { PaymentPlugin } from './types';
 
 export function getPaymentPlugin(): PaymentPlugin {
-  const configured = (process.env.PAYMENT_PROVIDER ?? 'manual') as PaymentProviderId;
-  const plugin = REGISTRY[configured];
-
-  if (!plugin) {
+  if (!paymongoPaymentPlugin.isEnabled()) {
     throw new Error(
-      `Payment provider "${configured}" is not implemented. Available: ${Object.keys(REGISTRY).join(', ')}.`,
+      'PayMongo is not configured. Set PAYMONGO_SECRET_KEY to accept payments.',
     );
   }
 
-  if (!plugin.isEnabled()) {
-    throw new Error(
-      `Payment provider "${configured}" is selected but not configured. Set its API keys.`,
-    );
-  }
-
-  return plugin;
+  return paymongoPaymentPlugin;
 }

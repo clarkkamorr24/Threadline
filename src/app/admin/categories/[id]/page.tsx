@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { ROUTES } from '@/constants/routes';
 import { CategoryForm } from '@/features/admin-categories/ui/category-form';
 import { isAppError } from '@/lib/errors';
-import { getCategoryForEdit, listParentCategoryOptions } from '@/services/adminCategoryService';
+import { getCategoryForEdit } from '@/services/adminCategoryService';
 
 export const metadata: Metadata = {
   title: 'Edit category · Admin',
@@ -29,8 +29,6 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
     throw error;
   }
 
-  const parentOptions = await listParentCategoryOptions(id);
-
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -43,14 +41,12 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
       </header>
 
       <CategoryForm
-        parentOptions={parentOptions}
         categoryId={category.id}
         defaultValues={{
           name: category.name,
           slug: category.slug,
           description: category.description,
           imageUrl: category.imageUrl,
-          parentId: category.parentId,
         }}
       />
     </div>

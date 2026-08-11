@@ -41,49 +41,42 @@ const CATEGORIES = [
   {
     name: 'Tops',
     slug: 'tops',
-    parentSlug: null,
     description: 'Shirts, tees and knitwear cut for everyday wear.',
     imageUrl: `${IMAGE_BASE}-1521572163474-6864f9cf17ab?w=800&q=80`,
   },
   {
     name: 'Outerwear',
     slug: 'outerwear',
-    parentSlug: null,
     description: 'Jackets and overshirts built for layering.',
     imageUrl: `${IMAGE_BASE}-1551028719-00167b16eac5?w=800&q=80`,
   },
   {
     name: 'Bottoms',
     slug: 'bottoms',
-    parentSlug: null,
     description: 'Trousers, denim and shorts with a considered fit.',
     imageUrl: `${IMAGE_BASE}-1542272604-787c3835535d?w=800&q=80`,
   },
   {
     name: 'Accessories',
     slug: 'accessories',
-    parentSlug: null,
     description: 'Bags, belts and the small things that finish a look.',
     imageUrl: `${IMAGE_BASE}-1553062407-98eeb64c6a62?w=800&q=80`,
   },
   {
     name: 'T-Shirts',
     slug: 't-shirts',
-    parentSlug: 'tops',
     description: 'Short-sleeve cotton tees.',
     imageUrl: null,
   },
   {
     name: 'Knitwear',
     slug: 'knitwear',
-    parentSlug: 'tops',
     description: 'Merino and lambswool knits.',
     imageUrl: null,
   },
   {
     name: 'Denim',
     slug: 'denim',
-    parentSlug: 'bottoms',
     description: 'Selvedge and stretch denim.',
     imageUrl: null,
   },
@@ -239,31 +232,20 @@ const PRODUCTS: readonly SeedProduct[] = [
 async function seedCategories(): Promise<Map<string, string>> {
   const idBySlug = new Map<string, string>();
 
-  for (const pass of ['parents', 'children'] as const) {
-    for (const category of CATEGORIES) {
-      const isChild = category.parentSlug !== null;
+  for (const category of CATEGORIES) {
+    const data = {
+      name: category.name,
+      description: category.description,
+      imageUrl: category.imageUrl,
+    };
 
-      if ((pass === 'parents') === isChild) {
-        continue;
-      }
+    const record = await prisma.category.upsert({
+      where: { slug: category.slug },
+      update: FORCE_OVERWRITE ? data : {},
+      create: { slug: category.slug, ...data },
+    });
 
-      const parentId = category.parentSlug ? (idBySlug.get(category.parentSlug) ?? null) : null;
-
-      const data = {
-        name: category.name,
-        description: category.description,
-        imageUrl: category.imageUrl,
-        parentId,
-      };
-
-      const record = await prisma.category.upsert({
-        where: { slug: category.slug },
-        update: FORCE_OVERWRITE ? data : {},
-        create: { slug: category.slug, ...data },
-      });
-
-      idBySlug.set(record.slug, record.id);
-    }
+    idBySlug.set(record.slug, record.id);
   }
 
   return idBySlug;

@@ -1,6 +1,6 @@
 import type { OrderStatusValue } from '@/entities/order/model/types';
 
-export const PAYMENT_PROVIDER_IDS = ['manual', 'paymongo'] as const;
+export const PAYMENT_PROVIDER_IDS = ['paymongo'] as const;
 
 export type PaymentProviderId = (typeof PAYMENT_PROVIDER_IDS)[number];
 

@@ -30,7 +30,10 @@ export const shippingAddressSchema = z.object({
 export type ShippingAddressInput = z.infer<typeof shippingAddressSchema>;
 
 export const placeOrderSchema = shippingAddressSchema.extend({
-  paymentMethod: z.enum(PAYMENT_METHOD_IDS).nullable().default(null),
+  paymentMethod: z.enum(PAYMENT_METHOD_IDS, {
+    required_error: 'Choose a payment method.',
+    invalid_type_error: 'Choose a payment method.',
+  }),
 });
 
 export type PlaceOrderInput = z.infer<typeof placeOrderSchema>;

@@ -14,8 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ADMIN_ROWS_PER_PAGE } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
+import { parseAdminListQuery, type AdminListParams } from '@/features/admin-table/model/query';
+import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
+import { AdminSearch } from '@/features/admin-table/ui/admin-search';
 import { PRODUCT_STATUSES } from '@/entities/product/model/types';
 import type { ProductStatusValue } from '@/entities/product/model/types';
 import { DeleteProductButton } from '@/features/admin-products/ui/delete-product-button';
@@ -35,7 +37,7 @@ const STATUS_VARIANT: Readonly<Record<ProductStatusValue, BadgeProps['variant']>
 };
 
 interface AdminProductsPageProps {
-  readonly searchParams: Promise<{ q?: string; status?: string; page?: string }>;
+  readonly searchParams: Promise<AdminListParams & { status?: string }>;
 }
 
 function parseStatus(value: string | undefined): ProductStatusValue | null {
@@ -46,13 +48,11 @@ function parseStatus(value: string | undefined): ProductStatusValue | null {
 
 export default async function AdminProductsPage({ searchParams }: AdminProductsPageProps) {
   const params = await searchParams;
-  const parsedPage = Number(params.page);
+  const listQuery = parseAdminListQuery(params);
 
   const result = await listAdminProducts({
-    search: params.q?.trim() || null,
+    ...listQuery,
     status: parseStatus(params.status),
-    page: Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1,
-    pageSize: ADMIN_ROWS_PER_PAGE,
   });
 
   return (
@@ -68,6 +68,13 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
           <Link href={ROUTES.admin.newProduct}>Add product</Link>
         </Button>
       </header>
+
+      <AdminSearch
+        basePath={ROUTES.admin.products}
+        params={params}
+        placeholder="Search products…"
+        label="Search products"
+      />
 
       {result.items.length === 0 ? (
         <EmptyState
@@ -167,23 +174,15 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
         </div>
       )}
 
-      {result.totalPages > 1 ? (
-        <nav aria-label="Pagination" className="flex items-center justify-center gap-3">
-          {result.page > 1 ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`${ROUTES.admin.products}?page=${result.page - 1}`}>Previous</Link>
-            </Button>
-          ) : null}
-          <span className="text-muted-foreground text-sm">
-            Page {result.page} of {result.totalPages}
-          </span>
-          {result.page < result.totalPages ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`${ROUTES.admin.products}?page=${result.page + 1}`}>Next</Link>
-            </Button>
-          ) : null}
-        </nav>
-      ) : null}
+      <AdminPagination
+        basePath={ROUTES.admin.products}
+        params={params}
+        page={result.page}
+        pageSize={result.pageSize}
+        total={result.total}
+        totalPages={result.totalPages}
+        noun="products"
+      />
     </div>
   );
 }

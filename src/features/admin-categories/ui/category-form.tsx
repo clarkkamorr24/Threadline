@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,13 +18,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ROUTES } from '@/constants/routes';
 import { slugify } from '@/features/admin-products/model/schema';
@@ -37,15 +29,12 @@ import { CategoryImageField } from './category-image-field';
 import type { CategoryImageDraft } from './category-image-field';
 import type { CategoryInput } from '../model/schema';
 
-const NO_PARENT = '__none__';
-
 interface CategoryFormProps {
-  readonly parentOptions: readonly { id: string; name: string }[];
   readonly categoryId?: string;
   readonly defaultValues: CategoryInput;
 }
 
-export function CategoryForm({ parentOptions, categoryId, defaultValues }: CategoryFormProps) {
+export function CategoryForm({ categoryId, defaultValues }: CategoryFormProps) {
   const router = useRouter();
   const toast = useToast();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -144,36 +133,6 @@ export function CategoryForm({ parentOptions, categoryId, defaultValues }: Categ
                   Generate
                 </Button>
               </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="parentId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Parent category</FormLabel>
-              <Select
-                value={field.value ?? NO_PARENT}
-                onValueChange={(value) => field.onChange(value === NO_PARENT ? null : value)}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="None (top level)" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={NO_PARENT}>None (top level)</SelectItem>
-                  {parentOptions.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
-                      {option.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>Categories nest one level deep.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

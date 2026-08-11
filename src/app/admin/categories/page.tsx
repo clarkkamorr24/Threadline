@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { FolderTree, Pencil } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
@@ -24,12 +23,6 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminCategoriesPage() {
   const categories = await listAdminCategories();
-  const topLevel = categories.filter((category) => category.parentId === null);
-
-  const ordered = topLevel.flatMap((parent) => [
-    parent,
-    ...categories.filter((category) => category.parentId === parent.id),
-  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,7 +30,7 @@ export default async function AdminCategoriesPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Categories</h1>
           <p className="text-muted-foreground text-sm">
-            {categories.length} total, {topLevel.length} top level.
+            {categories.length} categor{categories.length === 1 ? 'y' : 'ies'}.
           </p>
         </div>
         <Button asChild>
@@ -45,7 +38,7 @@ export default async function AdminCategoriesPage() {
         </Button>
       </header>
 
-      {ordered.length === 0 ? (
+      {categories.length === 0 ? (
         <EmptyState
           icon={FolderTree}
           title="No categories yet"
@@ -64,24 +57,16 @@ export default async function AdminCategoriesPage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Slug</TableHead>
                 <TableHead className="text-right">Products</TableHead>
-                <TableHead className="text-right">Subcategories</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ordered.map((category) => (
+              {categories.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell>
-                    <div className={category.parentId ? 'pl-6' : undefined}>
-                      <span className="font-medium">{category.name}</span>
-                      {category.parentId ? (
-                        <Badge variant="outline" className="ml-2">
-                          under {category.parentName}
-                        </Badge>
-                      ) : null}
-                    </div>
+                    <span className="font-medium">{category.name}</span>
                   </TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
                     {category.slug}
@@ -89,7 +74,6 @@ export default async function AdminCategoriesPage() {
                   <TableCell className="text-right tabular-nums">
                     {category.productCount ?? 0}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{category.childCount}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
                       <Button asChild variant="ghost" size="icon">

@@ -19,10 +19,8 @@ export function PaymentMethodLogo({ src, label }: PaymentMethodLogoProps) {
     <img
       src={src}
       alt={`${label} logo`}
-      width={20}
-      height={20}
       aria-hidden="true"
-      className="size-5 shrink-0 object-contain"
+      className="h-5 w-auto max-w-16 shrink-0 object-contain"
       onError={() => setIsMissing(true)}
     />
   );

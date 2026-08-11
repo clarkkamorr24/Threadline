@@ -5,7 +5,7 @@ import { clientEnv } from '@/config/env';
 import { ROUTES } from '@/constants/routes';
 import { STORE_CURRENCY } from '@/constants/store';
 import { requireShopper } from '@/lib/auth/session';
-import { ValidationError, isAppError } from '@/lib/errors';
+import { isAppError } from '@/lib/errors';
 import { getPaymentPlugin } from '@/lib/plugins/payment/registry';
 import { createAction } from '@/lib/serverAction';
 import { attachPaymentReference, placeOrder } from '@/services/orderService';
@@ -26,10 +26,6 @@ export const placeOrderAction = createAction(
 
     const { paymentMethod, ...address } = input;
     const payment = getPaymentPlugin();
-
-    if (payment.availableMethods().length > 0 && !paymentMethod) {
-      throw new ValidationError('Choose a payment method.');
-    }
 
     const order = await placeOrder({ userId: user.id, shippingAddress: address });
 

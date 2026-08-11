@@ -11,8 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ADMIN_ROWS_PER_PAGE } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
+import {
+  buildAdminListHref,
+  parseAdminListQuery,
+  type AdminListParams,
+} from '@/features/admin-table/model/query';
+import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
+import { AdminSearch } from '@/features/admin-table/ui/admin-search';
 import { ORDER_STATUSES } from '@/entities/order/model/types';
 import type { OrderStatusValue } from '@/entities/order/model/types';
 import { OrderStatusSelect } from '@/features/admin-orders/ui/order-status-select';
@@ -26,7 +32,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 interface AdminOrdersPageProps {
-  readonly searchParams: Promise<{ q?: string; status?: string; page?: string }>;
+  readonly searchParams: Promise<AdminListParams & { status?: string }>;
 }
 
 function parseStatus(value: string | undefined): OrderStatusValue | null {
@@ -37,15 +43,10 @@ function parseStatus(value: string | undefined): OrderStatusValue | null {
 
 export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
   const params = await searchParams;
-  const parsedPage = Number(params.page);
+  const listQuery = parseAdminListQuery(params);
   const activeStatus = parseStatus(params.status);
 
-  const result = await listAllOrders({
-    search: params.q?.trim() || null,
-    status: activeStatus,
-    page: Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1,
-    pageSize: ADMIN_ROWS_PER_PAGE,
-  });
+  const result = await listAllOrders({ ...listQuery, status: activeStatus });
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,9 +57,18 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
         </p>
       </header>
 
+      <AdminSearch
+        basePath={ROUTES.admin.orders}
+        params={params}
+        placeholder="Search orders…"
+        label="Search orders"
+      />
+
       <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
         <Button asChild variant={activeStatus === null ? 'default' : 'outline'} size="sm">
-          <Link href={ROUTES.admin.orders}>All</Link>
+          <Link href={buildAdminListHref(ROUTES.admin.orders, params, { status: null, page: null })}>
+            All
+          </Link>
         </Button>
         {ORDER_STATUSES.map((status) => (
           <Button
@@ -67,7 +77,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
             variant={activeStatus === status ? 'default' : 'outline'}
             size="sm"
           >
-            <Link href={`${ROUTES.admin.orders}?status=${status}`}>
+            <Link href={buildAdminListHref(ROUTES.admin.orders, params, { status, page: null })}>
               {status.charAt(0) + status.slice(1).toLowerCase()}
             </Link>
           </Button>
@@ -139,23 +149,15 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
         </div>
       )}
 
-      {result.totalPages > 1 ? (
-        <nav aria-label="Pagination" className="flex items-center justify-center gap-3">
-          {result.page > 1 ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`${ROUTES.admin.orders}?page=${result.page - 1}`}>Previous</Link>
-            </Button>
-          ) : null}
-          <span className="text-muted-foreground text-sm">
-            Page {result.page} of {result.totalPages}
-          </span>
-          {result.page < result.totalPages ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`${ROUTES.admin.orders}?page=${result.page + 1}`}>Next</Link>
-            </Button>
-          ) : null}
-        </nav>
-      ) : null}
+      <AdminPagination
+        basePath={ROUTES.admin.orders}
+        params={params}
+        page={result.page}
+        pageSize={result.pageSize}
+        total={result.total}
+        totalPages={result.totalPages}
+        noun="orders"
+      />
     </div>
   );
 }

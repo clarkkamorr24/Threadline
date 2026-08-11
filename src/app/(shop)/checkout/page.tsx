@@ -1,4 +1,6 @@
 import { redirect } from 'next/navigation';
+import { CircleAlert } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { Metadata } from 'next';
 import { ROUTES } from '@/constants/routes';
 import { CheckoutForm } from '@/features/checkout/ui/checkout-form';
@@ -32,11 +34,21 @@ export default async function CheckoutPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="mb-8 text-2xl font-semibold tracking-tight">Checkout</h1>
-      <CheckoutForm
-        totals={cart.totals}
-        defaultName={user.name ?? ''}
-        paymentMethods={paymentMethods}
-      />
+      {paymentMethods.length === 0 ? (
+        <Alert variant="destructive">
+          <CircleAlert aria-hidden="true" />
+          <AlertDescription>
+            Payments are unavailable right now, so orders cannot be placed. Please try again
+            later.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <CheckoutForm
+          totals={cart.totals}
+          defaultName={user.name ?? ''}
+          paymentMethods={paymentMethods}
+        />
+      )}
     </div>
   );
 }

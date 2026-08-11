@@ -13,12 +13,7 @@ export interface CategoryModel {
   readonly slug: string;
   readonly description: string | null;
   readonly imageUrl: string | null;
-  readonly parentId: string | null;
   readonly productCount?: number;
-}
-
-export interface CategoryTreeNode extends CategoryModel {
-  readonly children: readonly CategoryTreeNode[];
 }
 
 export interface ProductVariantModel {
