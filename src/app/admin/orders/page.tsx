@@ -51,8 +51,8 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Orders</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="font-display text-[22px] font-extrabold">Orders</h1>
+        <p className="text-ink-55 text-sm">
           {result.total} order{result.total === 1 ? '' : 's'}.
         </p>
       </header>
@@ -95,7 +95,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
           }
         />
       ) : (
-        <div className="rounded-xl border">
+        <div className="border-line border">
           <Table>
             <TableHeader>
               <TableRow>

@@ -37,7 +37,7 @@ export default async function EditCategoryPage({ params }: EditCategoryPageProps
             ← Back to categories
           </Link>
         </nav>
-        <h1 className="text-2xl font-semibold tracking-tight">{category.name}</h1>
+        <h1 className="font-display text-[22px] font-extrabold">{category.name}</h1>
       </header>
 
       <CategoryForm

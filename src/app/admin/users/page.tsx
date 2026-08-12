@@ -49,8 +49,8 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="font-display text-[22px] font-extrabold">Users</h1>
+        <p className="text-ink-55 text-sm">
           {result.total} registered {result.total === 1 ? 'account' : 'accounts'}.
         </p>
       </header>
@@ -69,7 +69,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           description="Accounts appear here once someone signs up."
         />
       ) : (
-        <div className="rounded-xl border">
+        <div className="border-line border">
           <Table>
             <TableHeader>
               <TableRow>

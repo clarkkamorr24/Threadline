@@ -48,7 +48,7 @@ export function TableHead({ className, ...props }: ComponentProps<'th'>) {
     <th
       scope="col"
       className={cn(
-        'text-muted-foreground h-10 px-3 text-left align-middle text-xs font-medium tracking-wide uppercase',
+        'text-ink-55 border-line-strong h-11 border-b-2 px-4.5 text-left align-middle font-mono text-[11px] font-semibold tracking-[0.07em] whitespace-nowrap uppercase',
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ export function TableHead({ className, ...props }: ComponentProps<'th'>) {
 }
 
 export function TableCell({ className, ...props }: ComponentProps<'td'>) {
-  return <td className={cn('p-3 align-middle', className)} {...props} />;
+  return <td className={cn('border-line border-b px-4.5 py-3.75 align-middle text-sm', className)} {...props} />;
 }
 
 export function TableCaption({ className, ...props }: ComponentProps<'caption'>) {

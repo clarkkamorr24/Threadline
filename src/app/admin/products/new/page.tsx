@@ -46,7 +46,7 @@ export default async function NewProductPage() {
             ← Back to products
           </Link>
         </nav>
-        <h1 className="text-2xl font-semibold tracking-tight">New product</h1>
+        <h1 className="font-display text-[22px] font-extrabold">New product</h1>
       </header>
 
       <ProductForm categories={categories} defaultValues={defaultValues} />

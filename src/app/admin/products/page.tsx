@@ -59,8 +59,8 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="font-display text-[22px] font-extrabold">Products</h1>
+          <p className="text-ink-55 text-sm">
             {result.total} product{result.total === 1 ? '' : 's'} in the catalogue.
           </p>
         </div>
@@ -88,7 +88,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
           }
         />
       ) : (
-        <div className="rounded-xl border">
+        <div className="border-line border">
           <Table>
             <TableHeader>
               <TableRow>

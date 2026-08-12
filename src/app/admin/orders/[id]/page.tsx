@@ -42,7 +42,7 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
 
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label="Breadcrumb" className="text-muted-foreground text-sm">
+      <nav aria-label="Breadcrumb" className="text-ink-55 text-sm">
         <Link href={ROUTES.admin.orders} className="hover:text-foreground">
           ← Back to orders
         </Link>
@@ -50,8 +50,8 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
 
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Order {order.orderNumber}</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="font-display text-[22px] font-extrabold">Order {order.orderNumber}</h1>
+          <p className="text-ink-55 text-sm">
             Placed{' '}
             {new Date(order.placedAt).toLocaleDateString('en-US', {
               year: 'numeric',
@@ -122,7 +122,7 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
         </section>
 
         <aside className="flex flex-col gap-6">
-          <div className="bg-card rounded-xl border p-6">
+          <div className="bg-card border-line border p-6">
             <h2 className="mb-4 font-semibold">Summary</h2>
             <dl className="flex flex-col gap-2 text-sm">
               {totalRows.map((row) => (
@@ -143,9 +143,9 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border p-6">
+          <div className="bg-card border-line border p-6">
             <h2 className="mb-3 font-semibold">Shipping to</h2>
-            <address className="text-muted-foreground text-sm not-italic">
+            <address className="text-ink-55 text-sm not-italic">
               {address.fullName}
               <br />
               {address.line1}

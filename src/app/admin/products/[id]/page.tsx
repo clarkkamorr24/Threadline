@@ -68,7 +68,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
             ← Back to products
           </Link>
         </nav>
-        <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+        <h1 className="font-display text-[22px] font-extrabold">{product.name}</h1>
       </header>
 
       <ProductForm
