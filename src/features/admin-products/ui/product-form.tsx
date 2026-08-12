@@ -191,245 +191,261 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8" noValidate>
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
         {submitError ? (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="mb-6 rounded-none">
             <CircleAlert aria-hidden="true" />
             <AlertDescription>{submitError}</AlertDescription>
           </Alert>
         ) : null}
 
-        <section className="flex flex-col gap-4">
-          <h2 className="font-semibold">Details</h2>
+        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+          <div className="flex flex-col gap-6">
+            <section className="border-line bg-background border p-6">
+              <h2 className="font-display mb-4.5 text-base font-extrabold">General</h2>
+              <div className="flex flex-col gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Heavyweight Cotton Tee" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Heavyweight Cotton Tee" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="slug"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Slug</FormLabel>
-                <div className="flex gap-2">
-                  <FormControl>
-                    <Input placeholder="heavyweight-cotton-tee" {...field} />
-                  </FormControl>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => field.onChange(slugify(form.getValues('name')))}
-                  >
-                    <Wand2 aria-hidden="true" />
-                    Generate
-                  </Button>
-                </div>
-                <FormDescription>Appears in the product URL. Must be unique.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea rows={5} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </section>
-
-        <section className="flex flex-col gap-4">
-          <h2 className="font-semibold">Pricing and stock</h2>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <FormField
-              control={form.control}
-              name="basePrice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Base price</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      {...field}
-                      onChange={(event) => field.onChange(event.target.valueAsNumber)}
-                      value={Number.isNaN(field.value) ? '' : field.value}
-                    />
-                  </FormControl>
-                  <FormDescription>Used when the product has no variants.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="material"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Material</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="100% organic cotton"
-                      value={field.value ?? ''}
-                      onChange={(event) => field.onChange(event.target.value || null)}
-                    />
-                  </FormControl>
-                  <FormDescription>Optional.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-
-            <FormField
-              control={form.control}
-              name="categoryIds"
-              render={({ field }) => (
-                <FormItem className="sm:col-span-3">
-                  <FormLabel>Categories</FormLabel>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild disabled={isSubmitting}>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full justify-between font-normal"
-                      >
-                        <span className="truncate">
-                          {describeSelection(categories, field.value)}
-                        </span>
-                        <ChevronDown aria-hidden="true" className="opacity-60" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="start"
-                      className="max-h-72 w-(--radix-dropdown-menu-trigger-width) overflow-y-auto"
-                    >
-                      {categories.map((category) => (
-                        <DropdownMenuCheckboxItem
-                          key={category.id}
-                          checked={field.value.includes(category.id)}
-                          onSelect={(event) => event.preventDefault()}
-                          onCheckedChange={(checked) =>
-                            field.onChange(
-                              checked
-                                ? [...field.value, category.id]
-                                : field.value.filter((id: string) => id !== category.id),
-                            )
-                          }
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Slug</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="heavyweight-cotton-tee" {...field} />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => field.onChange(slugify(form.getValues('name')))}
                         >
-                          {category.name}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <FormDescription>
-                    A product can appear in several categories. Pick at least one.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                          <Wand2 aria-hidden="true" />
+                          Generate
+                        </Button>
+                      </div>
+                      <FormDescription>Appears in the product URL. Must be unique.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PRODUCT_STATUSES.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {status.charAt(0) + status.slice(1).toLowerCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Only ACTIVE products are public.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea rows={5} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </section>
+
+            <section className="border-line bg-background border p-6">
+              <h2 className="font-display mb-4.5 text-base font-extrabold">Pricing</h2>
+              <div className="flex flex-col gap-4">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <FormField
+                    control={form.control}
+                    name="basePrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Base price</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            {...field}
+                            onChange={(event) => field.onChange(event.target.valueAsNumber)}
+                            value={Number.isNaN(field.value) ? '' : field.value}
+                          />
+                        </FormControl>
+                        <FormDescription>Used when the product has no variants.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="material"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Material</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="100% organic cotton"
+                            value={field.value ?? ''}
+                            onChange={(event) => field.onChange(event.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormDescription>Optional.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <FormField
+                    control={form.control}
+                    name="categoryIds"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-3">
+                        <FormLabel>Categories</FormLabel>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild disabled={isSubmitting}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full justify-between font-normal"
+                            >
+                              <span className="truncate">
+                                {describeSelection(categories, field.value)}
+                              </span>
+                              <ChevronDown aria-hidden="true" className="opacity-60" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="start"
+                            className="max-h-72 w-(--radix-dropdown-menu-trigger-width) overflow-y-auto"
+                          >
+                            {categories.map((category) => (
+                              <DropdownMenuCheckboxItem
+                                key={category.id}
+                                checked={field.value.includes(category.id)}
+                                onSelect={(event) => event.preventDefault()}
+                                onCheckedChange={(checked) =>
+                                  field.onChange(
+                                    checked
+                                      ? [...field.value, category.id]
+                                      : field.value.filter((id: string) => id !== category.id),
+                                  )
+                                }
+                              >
+                                {category.name}
+                              </DropdownMenuCheckboxItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <FormDescription>
+                          A product can appear in several categories. Pick at least one.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="border-line bg-background border p-6">
+              <h2 className="font-display mb-4.5 text-base font-extrabold">Variants</h2>
+              <div className="flex flex-col gap-4">
+                <VariantEditor
+                  value={variants}
+                  onChange={(next) => {
+                    setVariants(next);
+                    setVariantIssues([]);
+                  }}
+                  issues={variantIssues}
+                  baseSku={form.watch('slug').toUpperCase().replace(/-/g, '').slice(0, 10)}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </section>
+
+            {Object.keys(form.formState.errors).length > 0 ? (
+              <Alert variant="destructive" className="rounded-none">
+                <CircleAlert aria-hidden="true" />
+                <AlertDescription>
+                  Some required fields are missing or invalid. Check the highlighted fields.
+                </AlertDescription>
+              </Alert>
+            ) : null}
           </div>
 
-          <FormField
-            control={form.control}
-            name="featured"
-            render={({ field }) => (
-              <FormItem className="flex-row items-center gap-3">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <FormLabel className="font-normal">Feature on the home page</FormLabel>
-              </FormItem>
-            )}
-          />
-        </section>
+          <aside className="flex flex-col gap-5 self-start lg:sticky lg:top-24">
+            <div className="border-line bg-background border p-5.5">
+              <h2 className="font-display mb-4 text-base font-extrabold">Status</h2>
+              <div className="flex flex-col gap-4">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PRODUCT_STATUSES.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status.charAt(0) + status.slice(1).toLowerCase()}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>Only ACTIVE products are public.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="featured"
+                  render={({ field }) => (
+                    <FormItem className="flex-row items-center gap-3">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="font-normal">Feature on the home page</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
-        <section className="flex flex-col gap-4">
-          <h2 className="font-semibold">Variants</h2>
-          <VariantEditor
-            value={variants}
-            onChange={(next) => {
-              setVariants(next);
-              setVariantIssues([]);
-            }}
-            issues={variantIssues}
-            baseSku={form.watch('slug').toUpperCase().replace(/-/g, '').slice(0, 10)}
-            disabled={isSubmitting}
-          />
-        </section>
-
-        {Object.keys(form.formState.errors).length > 0 ? (
-          <Alert variant="destructive">
-            <CircleAlert aria-hidden="true" />
-            <AlertDescription>
-              Some required fields are missing or invalid. Check the highlighted fields above.
-            </AlertDescription>
-          </Alert>
-        ) : null}
-
-        <div className="flex gap-3">
-          <Button type="submit" isLoading={isSubmitting}>
-            {isEditing ? 'Save changes' : 'Create product'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push(ROUTES.admin.products)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
+            <div className="flex gap-2.5">
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                className="flex-1 justify-center py-3.5"
+              >
+                {isEditing ? 'Save changes' : 'Create product'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push(ROUTES.admin.products)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            </div>
+          </aside>
         </div>
       </form>
     </Form>
