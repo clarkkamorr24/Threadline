@@ -35,7 +35,7 @@ export function CatalogPagination({ page, totalPages, searchParams }: CatalogPag
   const isLast = page >= totalPages;
 
   return (
-    <nav aria-label="Pagination" className="flex items-center justify-center gap-2">
+    <nav aria-label="Pagination" className="border-line mt-6 flex items-center justify-center gap-3 border-t pt-6">
       {isFirst ? (
         <span
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'pointer-events-none opacity-50')}
@@ -55,7 +55,7 @@ export function CatalogPagination({ page, totalPages, searchParams }: CatalogPag
         </Link>
       )}
 
-      <span className="text-muted-foreground px-2 text-sm" aria-current="page">
+      <span className="text-ink-55 px-2 font-mono text-xs" aria-current="page">
         Page {page} of {totalPages}
       </span>
 
