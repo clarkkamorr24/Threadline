@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  BarChart3,
+  Boxes,
   FolderTree,
   LayoutDashboard,
   LogOut,
@@ -18,6 +20,8 @@ const NAV_ITEMS = [
   { href: ROUTES.admin.products, label: 'Products', icon: Package },
   { href: ROUTES.admin.categories, label: 'Categories', icon: FolderTree },
   { href: ROUTES.admin.orders, label: 'Orders', icon: ShoppingCart },
+  { href: ROUTES.admin.inventory, label: 'Inventory', icon: Boxes },
+  { href: ROUTES.admin.analytics, label: 'Analytics', icon: BarChart3 },
   { href: ROUTES.admin.users, label: 'Customers', icon: Users },
 ] as const;
 

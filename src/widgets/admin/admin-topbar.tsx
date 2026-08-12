@@ -10,6 +10,8 @@ const TITLES: readonly { readonly prefix: string; readonly title: string }[] = [
   { prefix: ROUTES.admin.newCategory, title: 'Add category' },
   { prefix: ROUTES.admin.categories, title: 'Categories' },
   { prefix: ROUTES.admin.orders, title: 'Orders' },
+  { prefix: ROUTES.admin.inventory, title: 'Inventory' },
+  { prefix: ROUTES.admin.analytics, title: 'Analytics' },
   { prefix: ROUTES.admin.users, title: 'Customers' },
 ];
 

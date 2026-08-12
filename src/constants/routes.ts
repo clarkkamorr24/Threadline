@@ -23,6 +23,8 @@ export const ROUTES = {
     newCategory: '/admin/categories/new',
     editCategory: (id: string) => `/admin/categories/${id}`,
     users: '/admin/users',
+    inventory: '/admin/inventory',
+    analytics: '/admin/analytics',
     orders: '/admin/orders',
     order: (id: string) => `/admin/orders/${id}`,
   },

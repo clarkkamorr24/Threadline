@@ -84,3 +84,37 @@ export async function getTopProducts(limit = 5): Promise<readonly TopProductRow[
     revenueCents: Number(row.revenue),
   }));
 }
+
+export interface RevenueSlice {
+  readonly label: string;
+  readonly revenueCents: number;
+}
+
+export async function getRevenueByCategory(): Promise<readonly RevenueSlice[]> {
+  const rows = await db.$queryRaw<{ label: string; revenue: bigint }[]>`
+    SELECT c."name" AS label,
+           SUM(oi."quantity" * oi."unitPriceCents") AS revenue
+    FROM "order_items" oi
+    JOIN "orders" o ON o."id" = oi."orderId"
+    JOIN "_CategoryToProduct" cp ON cp."B" = oi."productId"
+    JOIN "categories" c ON c."id" = cp."A"
+    WHERE o."status" <> 'CANCELLED'
+    GROUP BY c."name"
+    ORDER BY revenue DESC`;
+
+  return rows.map((row) => ({ label: row.label, revenueCents: Number(row.revenue) }));
+}
+
+export async function getRevenueByPaymentMethod(): Promise<readonly RevenueSlice[]> {
+  const rows = await db.$queryRaw<{ label: string | null; revenue: bigint }[]>`
+    SELECT "paymentMethod" AS label, SUM("totalCents") AS revenue
+    FROM "orders"
+    WHERE "status" <> 'CANCELLED'
+    GROUP BY "paymentMethod"
+    ORDER BY revenue DESC`;
+
+  return rows.map((row) => ({
+    label: row.label === 'paymaya' ? 'Maya' : row.label === 'gcash' ? 'GCash' : 'Unpaid',
+    revenueCents: Number(row.revenue),
+  }));
+}
