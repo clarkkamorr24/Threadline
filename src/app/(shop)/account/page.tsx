@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Heart, Package, ShoppingBag } from 'lucide-react';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { ROUTES } from '@/constants/routes';
-import { ProfileForm } from '@/features/profile/ui/profile-form';
+import { OrderStatusBadge } from '@/entities/order/ui/order-status-badge';
 import { requireUserOrRedirect } from '@/lib/auth/session';
+import { getCustomerOrderStats, listOrders } from '@/services/orderService';
+import { formatMoney } from '@/utils/money';
 
 export const metadata: Metadata = {
   title: 'Account',
@@ -13,73 +12,80 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function AccountPage() {
+export default async function AccountOverviewPage() {
   const user = await requireUserOrRedirect(ROUTES.account);
 
-  const links = [
-    {
-      href: ROUTES.orders,
-      icon: Package,
-      title: 'Your orders',
-      description: 'Track status and review past purchases.',
-      shopperOnly: false,
-    },
-    {
-      href: ROUTES.favorites,
-      icon: Heart,
-      title: 'Your wishlist',
-      description: 'Items you have saved for later.',
-      shopperOnly: true,
-    },
-    {
-      href: ROUTES.cart,
-      icon: ShoppingBag,
-      title: 'Your cart',
-      description: 'Pick up where you left off.',
-      shopperOnly: true,
-    },
-  ].filter((link) => !link.shopperOnly || user.role === 'USER');
+  const [stats, recent] = await Promise.all([
+    getCustomerOrderStats(user.id),
+    listOrders(user.id, 1, 3),
+  ]);
+
+  const cells = [
+    { label: 'Total orders', value: String(stats.totalOrders) },
+    { label: 'Total spent', value: formatMoney(stats.totalSpentCents) },
+    { label: 'Avg order', value: formatMoney(stats.averageOrderCents) },
+  ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {user.name ? `Hello, ${user.name}` : 'Your account'}
-        </h1>
-        <p className="text-muted-foreground text-sm">{user.email}</p>
-      </header>
+    <div>
+      <div className="border-line bg-line mb-9 grid gap-px border sm:grid-cols-3">
+        {cells.map((cell) => (
+          <div key={cell.label} className="bg-background p-6">
+            <div className="text-ink-55 font-mono text-[11px] uppercase">{cell.label}</div>
+            <div className="font-display mt-2 text-[30px] font-extrabold md:text-[38px]">
+              {cell.value}
+            </div>
+          </div>
+        ))}
+      </div>
 
-      <section aria-labelledby="profile-heading" className="mb-10">
-        <h2 id="profile-heading" className="mb-4 font-semibold">
-          Profile
-        </h2>
-        <ProfileForm user={user} />
-      </section>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-display text-[22px] font-extrabold">Recent orders</h2>
+        <Link href={ROUTES.orders} className="text-[13px] hover:underline">
+          View all →
+        </Link>
+      </div>
 
-      <Separator className="mb-10" />
-
-      <section aria-labelledby="shortcuts-heading">
-        <h2 id="shortcuts-heading" className="mb-4 font-semibold">
-          Shortcuts
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="focus-visible:ring-ring rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2"
-            >
-              <Card className="hover:bg-accent/50 h-full transition-colors">
-                <CardHeader>
-                  <link.icon className="text-muted-foreground mb-2 size-5" aria-hidden="true" />
-                  <CardTitle className="text-base">{link.title}</CardTitle>
-                  <CardDescription>{link.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
+      {recent.items.length === 0 ? (
+        <div className="border-line border px-5 py-16 text-center">
+          <p className="text-ink-70">You have not placed an order yet.</p>
+          <Link
+            href={ROUTES.products}
+            className="bg-primary text-primary-foreground mt-4 inline-block px-[26px] py-3 text-sm font-medium"
+          >
+            Start shopping
+          </Link>
         </div>
-      </section>
+      ) : (
+        <ul className="border-line border">
+          {recent.items.map((order) => (
+            <li key={order.id} className="border-line border-b last:border-b-0">
+              <Link
+                href={ROUTES.order(order.id)}
+                className="flex flex-wrap items-center gap-4 px-5 py-4 transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_4%,transparent)]"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="font-display text-[15px] font-extrabold">
+                    #{order.orderNumber}
+                  </div>
+                  <div className="text-ink-55 mt-1 font-mono text-[11px]">
+                    {new Date(order.placedAt).toLocaleDateString('en-PH', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}{' '}
+                    · {order.itemCount} item{order.itemCount === 1 ? '' : 's'}
+                  </div>
+                </div>
+                <OrderStatusBadge status={order.status} />
+                <div className="w-[90px] text-right text-[15px] font-semibold">
+                  {formatMoney(order.totalCents)}
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -241,6 +241,29 @@ async function createOrderWithUniqueNumber(
   throw new ConflictError('Could not allocate an order number. Please try again.');
 }
 
+export interface CustomerOrderStats {
+  readonly totalOrders: number;
+  readonly totalSpentCents: number;
+  readonly averageOrderCents: number;
+}
+
+export async function getCustomerOrderStats(userId: string): Promise<CustomerOrderStats> {
+  const result = await db.order.aggregate({
+    where: { userId, status: { not: 'CANCELLED' } },
+    _count: { _all: true },
+    _sum: { totalCents: true },
+  });
+
+  const totalOrders = result._count._all;
+  const totalSpentCents = result._sum.totalCents ?? 0;
+
+  return {
+    totalOrders,
+    totalSpentCents,
+    averageOrderCents: totalOrders > 0 ? Math.round(totalSpentCents / totalOrders) : 0,
+  };
+}
+
 export async function listOrders(
   userId: string,
   page: number,

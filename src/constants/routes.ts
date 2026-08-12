@@ -10,6 +10,7 @@ export const ROUTES = {
   orders: '/account/orders',
   order: (id: string) => `/account/orders/${id}`,
   account: '/account',
+  profile: '/account/profile',
   signIn: '/sign-in',
   signUp: '/sign-up',
   authCallback: '/auth/callback',

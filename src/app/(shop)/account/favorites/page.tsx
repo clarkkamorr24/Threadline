@@ -29,7 +29,7 @@ export default async function FavoritesPage() {
 
   if (favorites.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-20">
+      <div>
         <EmptyState
           icon={Heart}
           title="Your wishlist is empty"
@@ -45,8 +45,8 @@ export default async function FavoritesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="mb-8 text-2xl font-semibold tracking-tight">Your wishlist</h1>
+    <div>
+      <h2 className="font-display mb-4 text-[22px] font-extrabold">Wishlist</h2>
 
       <ul className="divide-y border-y">
         {favorites.map((favorite) => {
