@@ -77,6 +77,8 @@ function toProductSummary(row: ProductSummaryRow): ProductSummary {
     inStock: variants.some((variant) => variant.inStock),
     primaryImage: image ? { ...image, alt: image.alt || row.name } : null,
     categories: row.categories,
+    colors: distinct(variants.map((variant) => variant.color)),
+    defaultVariantId: variants.find((variant) => variant.inStock)?.id ?? null,
   };
 }
 

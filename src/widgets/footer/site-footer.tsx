@@ -6,17 +6,22 @@ const FOOTER_SECTIONS = [
     heading: 'Shop',
     links: [
       { label: 'All products', href: ROUTES.products },
-      { label: 'Tops', href: ROUTES.category('tops') },
-      { label: 'Outerwear', href: ROUTES.category('outerwear') },
-      { label: 'Bottoms', href: ROUTES.category('bottoms') },
-      { label: 'Accessories', href: ROUTES.category('accessories') },
+      { label: 'New arrivals', href: `${ROUTES.products}?sort=newest` },
+      { label: 'Cart', href: ROUTES.cart },
     ],
   },
   {
-    heading: 'Account',
+    heading: 'Company',
+    links: [
+      { label: 'Our story', href: ROUTES.products },
+      { label: 'Admin →', href: ROUTES.admin.root },
+    ],
+  },
+  {
+    heading: 'Support',
     links: [
       { label: 'Your orders', href: ROUTES.orders },
-      { label: 'Cart', href: ROUTES.cart },
+      { label: 'Account', href: ROUTES.account },
       { label: 'Sign in', href: ROUTES.signIn },
     ],
   },
@@ -24,12 +29,15 @@ const FOOTER_SECTIONS = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col gap-2">
-          <p className="font-display text-lg font-semibold tracking-wide">Threadline</p>
-          <p className="text-muted-foreground max-w-xs text-sm">
-            Well-made basics and outerwear in natural fibres, cut for everyday wear.
+    <footer className="border-line-strong mt-0 border-t-2">
+      <div className="mx-auto grid max-w-360 gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">
+        <div className="flex flex-col gap-3">
+          <p className="font-display text-[22px] leading-none font-extrabold tracking-[-0.02em]">
+            THREADLINE<span className="text-brand">.</span>
+          </p>
+          <p className="text-ink-70 max-w-xs text-sm leading-relaxed">
+            Well-made basics and outerwear in natural fibres, cut for everyday wear and built to
+            last.
           </p>
         </div>
 
@@ -37,17 +45,14 @@ export function SiteFooter() {
           <nav key={section.heading} aria-labelledby={`footer-${section.heading}`}>
             <h2
               id={`footer-${section.heading}`}
-              className="mb-3 text-sm font-medium tracking-wide uppercase"
+              className="text-ink-55 mb-4 font-mono text-[11px] tracking-[0.14em] uppercase"
             >
               {section.heading}
             </h2>
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2.5">
               {section.links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-                  >
+                <li key={link.label}>
+                  <Link href={link.href} className="hover:text-brand text-sm transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -55,19 +60,11 @@ export function SiteFooter() {
             </ul>
           </nav>
         ))}
-
-        <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-medium tracking-wide uppercase">Free shipping</h2>
-          <p className="text-muted-foreground text-sm">
-            On every order over $100. Returns accepted within 30 days.
-          </p>
-        </div>
       </div>
 
-      <div className="border-t">
-        <div className="text-muted-foreground mx-auto max-w-7xl px-4 py-6 text-sm">
-          <p>© {new Date().getFullYear()} Threadline. A demonstration storefront.</p>
-        </div>
+      <div className="border-line text-ink-55 mx-auto flex max-w-360 flex-wrap justify-between gap-2 border-t px-5 py-6 font-mono text-[11px] tracking-[0.06em] uppercase lg:px-10">
+        <span>© {new Date().getFullYear()} Threadline</span>
+        <span>A demonstration storefront</span>
       </div>
     </footer>
   );

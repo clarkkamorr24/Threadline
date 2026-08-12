@@ -1,26 +1,20 @@
 import type { Metadata, Viewport } from 'next';
-import { Cabin, Inter } from 'next/font/google';
+import { Archivo } from 'next/font/google';
 import { clientEnv } from '@/config/env';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from './providers';
 import './globals.css';
 
-const inter = Inter({
+const archivo = Archivo({
   subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const cabin = Cabin({
-  subsets: ['latin'],
-  variable: '--font-cabin',
+  variable: '--font-archivo',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(clientEnv.NEXT_PUBLIC_SITE_URL),
   title: {
-    default: 'Threadline — Considered everyday clothing',
+    default: 'Threadline - Considered everyday clothing',
     template: '%s · Threadline',
   },
   description:
@@ -42,7 +36,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${cabin.variable}`} suppressHydrationWarning>
+    <html lang="en" className={archivo.variable} suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col">
         <Providers>
           {children}

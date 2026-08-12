@@ -24,6 +24,8 @@ const favoriteInclude = {
       categories: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
       variants: {
         select: {
+          id: true,
+          color: true,
           stock: true,
           priceOverrideCents: true,
           images: {
@@ -78,6 +80,9 @@ export async function listFavorites(userId: string): Promise<readonly FavoriteIt
             }
           : null,
         categories: row.product.categories,
+        colors: [...new Set(row.product.variants.map((variant) => variant.color))],
+        defaultVariantId:
+          row.product.variants.find((variant) => variant.stock > 0)?.id ?? null,
       },
     };
   });

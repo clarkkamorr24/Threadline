@@ -3,41 +3,60 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --ink: #1c1a19;
+  --ink-55: color-mix(in srgb, var(--ink) 55%, transparent);
+  --ink-70: color-mix(in srgb, var(--ink) 70%, transparent);
+  --line: color-mix(in srgb, var(--ink) 16%, transparent);
+  --line-strong: color-mix(in srgb, var(--ink) 40%, transparent);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --brand: #3a4cc0;
+  --brand-100: #eceefb;
+  --brand-200: #d6daf4;
+  --brand-700: #2a3590;
+  --brand-foreground: #f4f3f1;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --admin-sidebar: #161514;
 
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --status-processing: #b8860b;
+  --status-shipped: #3a4cc0;
+  --status-delivered: #3d7a4e;
+  --status-cancelled: #b23b2e;
 
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --background: #f4f3f1;
+  --foreground: var(--ink);
 
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --card: #f4f3f1;
+  --card-foreground: var(--ink);
 
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover: #f4f3f1;
+  --popover-foreground: var(--ink);
 
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
+  --primary: var(--ink);
+  --primary-foreground: #f4f3f1;
 
-  --success: oklch(0.596 0.145 163.225);
-  --success-foreground: oklch(0.985 0 0);
+  --secondary: #ecebe8;
+  --secondary-foreground: var(--ink);
 
-  --warning: oklch(0.769 0.188 70.08);
-  --warning-foreground: oklch(0.205 0 0);
+  --muted: #ecebe8;
+  --muted-foreground: var(--ink-55);
 
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --accent: #ecebe8;
+  --accent-foreground: var(--ink);
+
+  --destructive: #b23b2e;
+  --destructive-foreground: #f4f3f1;
+
+  --success: #3d7a4e;
+  --success-foreground: #f4f3f1;
+
+  --warning: #b8860b;
+  --warning-foreground: #f4f3f1;
+
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
 }
 
 .dark {
@@ -101,18 +120,35 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --color-brand: var(--brand);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-700: var(--brand-700);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-55: var(--ink-55);
+  --color-ink-70: var(--ink-70);
+  --color-admin-sidebar: var(--admin-sidebar);
+  --color-status-processing: var(--status-processing);
+  --color-status-shipped: var(--status-shipped);
+  --color-status-delivered: var(--status-delivered);
+  --color-status-cancelled: var(--status-cancelled);
+
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
 
   --font-sans:
-    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    var(--font-archivo), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 
-  --font-display:
-    'Gill Sans', 'Gill Sans Nova', 'Gill Sans MT', var(--font-cabin), var(--font-inter),
-    ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+
+  --font-mono:
+    ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
 
   --animate-in: enter 150ms ease-out;
   --animate-out: exit 120ms ease-in;

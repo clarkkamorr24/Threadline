@@ -366,7 +366,7 @@ export function VariantEditor({
                         )}
                       </div>
                       {imageIndex === 0 ? (
-                        <span className="bg-primary text-primary-foreground absolute top-1 left-1 rounded px-1 text-[9px] font-medium">
+                        <span className="bg-primary text-primary-foreground absolute top-1 left-1 px-1 text-[9px] font-medium">
                           Main
                         </span>
                       ) : null}

@@ -52,6 +52,10 @@ export const credentialsAuthPlugin: CredentialsAuthPlugin = {
       throw new AppError('INTERNAL_ERROR', 'Account creation failed.', 500);
     }
 
+    if (data.user.identities?.length === 0) {
+      throw new ConflictError('An account with that email already exists.');
+    }
+
     return data.session
       ? { kind: 'session', userId: data.user.id }
       : { kind: 'confirmation-required', email: input.email };
