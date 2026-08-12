@@ -1,7 +1,10 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { ROUTES } from '@/constants/routes';
+import { EMPTY_CART } from '@/entities/cart/model/types';
+import { CartDrawer } from '@/features/cart/ui/cart-drawer';
 import { getCurrentUser } from '@/lib/auth/session';
+import { getCart } from '@/services/cartService';
 import { SiteFooter } from '@/widgets/footer/site-footer';
 import { SiteHeader } from '@/widgets/header/site-header';
 
@@ -11,6 +14,8 @@ export default async function ShopLayout({ children }: { readonly children: Reac
   if (user?.role === 'ADMIN') {
     redirect(ROUTES.admin.root);
   }
+
+  const cart = user ? await getCart(user.id) : EMPTY_CART;
 
   return (
     <>
@@ -28,6 +33,8 @@ export default async function ShopLayout({ children }: { readonly children: Reac
       </main>
 
       <SiteFooter />
+
+      <CartDrawer cart={cart} />
     </>
   );
 }

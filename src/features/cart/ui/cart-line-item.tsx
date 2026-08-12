@@ -4,25 +4,27 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
-import { ImageOff, Minus, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ImageOff } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 import type { CartLineItem as CartLineItemModel } from '@/entities/cart/model/types';
 import { useToast } from '@/hooks/useToast';
+import { cn } from '@/lib/utils';
 import { formatMoney } from '@/utils/money';
 import { removeCartItemAction, updateCartItemAction } from '../api/actions';
 
 interface CartLineItemProps {
   readonly item: CartLineItemModel;
+  readonly compact?: boolean;
+  readonly onNavigate?: () => void;
 }
 
-export function CartLineItem({ item }: CartLineItemProps) {
+export function CartLineItem({ item, compact = false, onNavigate }: CartLineItemProps) {
   const router = useRouter();
   const toast = useToast();
   const [isPending, startTransition] = useTransition();
 
   const exceedsStock = item.quantity > item.availableStock;
-  const variantLabel = [item.size, item.color].filter(Boolean).join(' - ');
+  const variantLabel = [item.size, item.color].filter(Boolean).join(' · ');
 
   function changeQuantity(next: number): void {
     startTransition(async () => {
@@ -49,92 +51,128 @@ export function CartLineItem({ item }: CartLineItemProps) {
     });
   }
 
+  const stepperSize = compact ? 'size-7 text-[15px]' : 'size-9 text-base';
+
   return (
-    <li className="flex gap-4 py-6">
+    <li
+      className={cn(
+        'border-line flex border-b',
+        compact ? 'gap-3.5 py-[18px]' : 'gap-5 py-6 pr-0 lg:pr-8',
+      )}
+    >
       <Link
         href={ROUTES.product(item.slug)}
-        className="bg-muted relative aspect-3/4 w-16 shrink-0 overflow-hidden rounded-md sm:w-24"
+        onClick={onNavigate}
+        className={cn(
+          'relative shrink-0 overflow-hidden bg-[#e6e4e1]',
+          compact ? 'h-24 w-[76px]' : 'h-[140px] w-[110px]',
+        )}
       >
         {item.imageUrl ? (
-          <Image src={item.imageUrl} alt={item.name} fill sizes="96px" className="object-cover" />
+          <Image
+            src={item.imageUrl}
+            alt={item.name}
+            fill
+            sizes={compact ? '76px' : '110px'}
+            className="object-cover"
+          />
         ) : (
-          <div className="text-muted-foreground flex h-full items-center justify-center">
-            <ImageOff className="size-5" aria-hidden="true" />
-          </div>
+          <span className="text-ink-55 grid h-full place-items-center">
+            <ImageOff aria-hidden="true" className="size-5" />
+          </span>
         )}
       </Link>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-sm font-medium">
-              <Link href={ROUTES.product(item.slug)} className="hover:underline">
-                {item.name}
-              </Link>
-            </h3>
-
+            <Link
+              href={ROUTES.product(item.slug)}
+              onClick={onNavigate}
+              className={cn(
+                'font-display block leading-[1.15] font-extrabold',
+                compact ? 'text-[15px]' : 'text-[19px]',
+              )}
+            >
+              {item.name}
+            </Link>
             {variantLabel ? (
-              <p className="text-muted-foreground mt-0.5 text-sm">{variantLabel}</p>
+              <div className="text-ink-55 mt-1 font-mono text-[11px] tracking-[0.04em] uppercase">
+                {variantLabel}
+              </div>
             ) : null}
-
-            <p className="text-muted-foreground text-sm">
-              {formatMoney(item.unitPriceCents)} each
-            </p>
           </div>
 
-          <p className="text-sm font-medium whitespace-nowrap sm:text-right">
-            {formatMoney(item.lineTotalCents)}
-          </p>
+          {compact ? (
+            <button
+              type="button"
+              onClick={remove}
+              disabled={isPending}
+              aria-label={`Remove ${item.name}`}
+              className="text-ink-55 hover:text-foreground h-fit text-lg leading-none"
+            >
+              ×
+            </button>
+          ) : (
+            <div className="text-lg font-semibold whitespace-nowrap">
+              {formatMoney(item.lineTotalCents)}
+            </div>
+          )}
         </div>
 
         {exceedsStock ? (
-          <p className="text-destructive text-sm">
-            Only {item.availableStock} left — reduce the quantity to check out.
+          <p className="text-destructive mt-1 text-xs">
+            Only {item.availableStock} left in stock
           </p>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center rounded-md border">
-            <Button
+        <div
+          className={cn(
+            'flex items-center justify-between',
+            compact ? 'mt-3' : 'mt-auto pt-[18px]',
+          )}
+        >
+          <div className={cn('flex items-center border', compact ? 'border-line' : 'border-line-strong')}>
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-r-none"
               onClick={() => changeQuantity(item.quantity - 1)}
-              disabled={item.quantity <= 1 || isPending}
-              aria-label={`Decrease quantity of ${item.name}`}
+              disabled={isPending || item.quantity <= 1}
+              aria-label="Decrease quantity"
+              className={cn(stepperSize, 'disabled:opacity-40')}
             >
-              <Minus aria-hidden="true" />
-            </Button>
-
-            <output className="w-9 text-center text-sm tabular-nums" aria-live="polite">
+              −
+            </button>
+            <span
+              className={cn(
+                'text-center tabular-nums',
+                compact ? 'w-[26px] text-[13px]' : 'w-[34px] text-sm',
+              )}
+            >
               {item.quantity}
-            </output>
-
-            <Button
+            </span>
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-l-none"
               onClick={() => changeQuantity(item.quantity + 1)}
-              disabled={item.quantity >= item.availableStock || isPending}
-              aria-label={`Increase quantity of ${item.name}`}
+              disabled={isPending || item.quantity >= item.availableStock}
+              aria-label="Increase quantity"
+              className={cn(stepperSize, 'disabled:opacity-40')}
             >
-              <Plus aria-hidden="true" />
-            </Button>
+              +
+            </button>
           </div>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={remove}
-            disabled={isPending}
-            className="text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 aria-hidden="true" />
-            Remove
-          </Button>
+          {compact ? (
+            <div className="text-sm font-semibold">{formatMoney(item.lineTotalCents)}</div>
+          ) : (
+            <button
+              type="button"
+              onClick={remove}
+              disabled={isPending}
+              className="text-brand font-mono text-xs tracking-[0.05em] uppercase disabled:opacity-50"
+            >
+              Remove
+            </button>
+          )}
         </div>
       </div>
     </li>
