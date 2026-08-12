@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { Metadata } from 'next';
 import { ROUTES } from '@/constants/routes';
 import { CheckoutForm } from '@/features/checkout/ui/checkout-form';
+import { CheckoutProgress } from '@/features/checkout/ui/checkout-progress';
 import { requireUserOrRedirect } from '@/lib/auth/session';
 import { getPaymentPlugin } from '@/lib/plugins/payment/registry';
 import type { PaymentMethodOption } from '@/lib/plugins/payment/types';
@@ -32,10 +33,14 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <h1 className="mb-8 text-2xl font-semibold tracking-tight">Checkout</h1>
+    <div className="mx-auto max-w-360 px-5 pt-8 pb-16 lg:px-10">
+      <CheckoutProgress activeIndex={1} />
+
+      <h1 className="font-display mb-7 text-[34px] font-extrabold tracking-[-0.03em] md:text-[52px]">
+        Checkout
+      </h1>
       {paymentMethods.length === 0 ? (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="rounded-none">
           <CircleAlert aria-hidden="true" />
           <AlertDescription>
             Payments are unavailable right now, so orders cannot be placed. Please try again
@@ -45,7 +50,9 @@ export default async function CheckoutPage() {
       ) : (
         <CheckoutForm
           totals={cart.totals}
+          items={cart.items}
           defaultName={user.name ?? ''}
+          email={user.email}
           paymentMethods={paymentMethods}
         />
       )}
