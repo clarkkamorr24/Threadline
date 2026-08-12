@@ -98,7 +98,7 @@ export function CheckoutForm({
       toast.success('Order placed', `Order ${result.data.orderNumber}`);
     }
 
-    router.push(ROUTES.order(result.data.orderId));
+    router.push(ROUTES.orderConfirmation(result.data.orderId));
   }
 
   return (

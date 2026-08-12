@@ -5,6 +5,7 @@ export const ROUTES = {
   category: (slug: string) => `/products?category=${encodeURIComponent(slug)}`,
   cart: '/cart',
   checkout: '/checkout',
+  orderConfirmation: (id: string) => `/checkout/confirmation/${id}`,
   favorites: '/account/favorites',
   orders: '/account/orders',
   order: (id: string) => `/account/orders/${id}`,

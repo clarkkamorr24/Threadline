@@ -41,7 +41,7 @@ export const placeOrderAction = createAction(
         customerName: address.fullName,
         customerPhone: address.phone,
         method: paymentMethod,
-        returnUrl: `${clientEnv.NEXT_PUBLIC_SITE_URL}${ROUTES.order(order.id)}`,
+        returnUrl: `${clientEnv.NEXT_PUBLIC_SITE_URL}${ROUTES.orderConfirmation(order.id)}`,
       });
 
       await attachPaymentReference(order.id, {
