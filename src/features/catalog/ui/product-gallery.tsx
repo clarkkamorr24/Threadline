@@ -43,7 +43,7 @@ export function ProductGallery({ images, productName, activeImageUrl }: ProductG
 
   if (!active) {
     return (
-      <div className="bg-muted text-muted-foreground flex aspect-3/4 items-center justify-center rounded-xl">
+      <div className="text-ink-55 flex aspect-4/5 items-center justify-center bg-[repeating-linear-gradient(135deg,#e6e4e1_0_11px,#eceae7_11px_22px)]">
         <ImageOff className="size-10" aria-hidden="true" />
         <span className="sr-only">No image available</span>
       </div>
@@ -51,9 +51,30 @@ export function ProductGallery({ images, productName, activeImageUrl }: ProductG
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col-reverse gap-0.5 lg:flex-row">
+      {images.length > 1 ? (
+        <ul className="flex gap-0.5 overflow-x-auto lg:flex-col lg:overflow-visible">
+          {images.map((image, index) => (
+            <li key={image.id}>
+              <button
+                type="button"
+                onClick={() => setActiveUrl(image.url)}
+                aria-label={`View image ${index + 1} of ${images.length} for ${productName}`}
+                aria-current={index === activeIndex}
+                className={cn(
+                  'focus-visible:ring-ring relative h-[88px] w-[70px] shrink-0 overflow-hidden border transition-colors focus-visible:ring-2',
+                  index === activeIndex ? 'border-foreground' : 'border-line hover:border-line-strong',
+                )}
+              >
+                <Image src={image.url} alt="" fill sizes="70px" className="object-cover" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       <div
-        className="bg-muted relative aspect-3/4 cursor-zoom-in overflow-hidden rounded-xl"
+        className="relative aspect-4/5 flex-1 cursor-zoom-in overflow-hidden bg-[#e6e4e1]"
         onMouseEnter={() => setIsZooming(true)}
         onMouseLeave={() => setIsZooming(false)}
         onMouseMove={handleMouseMove}
@@ -64,7 +85,7 @@ export function ProductGallery({ images, productName, activeImageUrl }: ProductG
           alt={active.alt}
           fill
           priority
-          sizes="(min-width: 1024px) 50vw, 100vw"
+          sizes="(min-width: 1024px) 55vw, 100vw"
           className="object-cover transition-transform duration-200 ease-out motion-reduce:transition-none"
           style={{
             transform: isZooming ? `scale(${ZOOM_SCALE})` : 'scale(1)',
@@ -73,32 +94,6 @@ export function ProductGallery({ images, productName, activeImageUrl }: ProductG
         />
       </div>
 
-      {images.length > 1 ? (
-        <ul className="grid grid-cols-5 gap-3">
-          {images.map((image, index) => (
-            <li key={image.id}>
-              <button
-                type="button"
-                onClick={() => setActiveUrl(image.url)}
-                aria-label={`View image ${index + 1} of ${images.length} for ${productName}`}
-                aria-current={index === activeIndex}
-                className={cn(
-                  'bg-muted focus-visible:ring-ring relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2',
-                  index === activeIndex ? 'border-foreground' : 'border-transparent hover:border-border',
-                )}
-              >
-                <Image
-                  src={image.url}
-                  alt=""
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                />
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
     </div>
   );
 }

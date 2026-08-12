@@ -2,14 +2,15 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
-import { Minus, Plus, ShoppingBag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ShoppingBag } from 'lucide-react';
 import { MAX_CART_ITEM_QUANTITY } from '@/constants/catalog';
 import { useProductSelection } from '@/entities/product/model/product-selection';
 import type { ProductVariantModel } from '@/entities/product/model/types';
 import { ROUTES } from '@/constants/routes';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
+import { colorToHex } from '@/utils/colors';
+import { formatMoney } from '@/utils/money';
 import { addToCartAction } from '../api/actions';
 
 interface AddToCartFormProps {
@@ -71,6 +72,7 @@ export function AddToCartForm({
     );
 
   const availableStock = selectedVariant?.stock ?? 0;
+  const unitPriceCents = selectedVariant?.priceCents ?? 0;
   const inCart = selectedVariant ? (cartQuantities[selectedVariant.id] ?? 0) : 0;
   const ceiling = Math.min(availableStock, MAX_CART_ITEM_QUANTITY);
   const maxQuantity = Math.max(0, ceiling - inCart);
@@ -113,26 +115,21 @@ export function AddToCartForm({
 
   const optionClasses = (isSelected: boolean, isAvailable: boolean): string =>
     cn(
-      'relative rounded-md border px-3 py-2 text-sm transition-colors',
+      'border-line relative h-[46px] min-w-12 border px-3 text-[13px] transition-colors',
       'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-      isSelected && 'border-foreground bg-accent font-medium',
-      !isSelected && isAvailable && 'hover:border-foreground/40',
-      !isAvailable && 'text-muted-foreground cursor-not-allowed opacity-50 line-through',
+      isSelected && 'bg-primary text-primary-foreground border-foreground font-medium',
+      !isSelected && isAvailable && 'hover:border-foreground',
+      !isAvailable && 'text-ink-55 cursor-not-allowed opacity-50 line-through',
     );
 
   return (
     <div className="flex flex-col gap-5">
       {colors.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline gap-2">
-            <span id="color-label" className="text-sm font-medium">
-              Colour
-            </span>
-            {selectedColor ? (
-              <span className="text-muted-foreground text-sm">{selectedColor}</span>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-2" role="group" aria-labelledby="color-label">
+        <div className="flex flex-col gap-3">
+          <span id="color-label" className="text-[13px] font-semibold">
+            Colour{selectedColor ? ` — ${selectedColor}` : ''}
+          </span>
+          <div className="flex flex-wrap gap-3" role="group" aria-labelledby="color-label">
             {colors.map((color) => {
               const available = isColorAvailable(color);
 
@@ -142,11 +139,17 @@ export function AddToCartForm({
                   type="button"
                   onClick={() => setSelectedColor(color)}
                   disabled={isPending}
+                  title={color}
+                  aria-label={color}
                   aria-pressed={color === selectedColor}
-                  className={optionClasses(color === selectedColor, available)}
-                >
-                  {color}
-                </button>
+                  style={{ backgroundColor: colorToHex(color) }}
+                  className={cn(
+                    'border-line size-8 rounded-full border',
+                    color === selectedColor &&
+                      'ring-foreground ring-offset-background ring-2 ring-offset-2',
+                    !available && 'opacity-40',
+                  )}
+                />
               );
             })}
           </div>
@@ -154,15 +157,10 @@ export function AddToCartForm({
       ) : null}
 
       {sizes.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline gap-2">
-            <span id="size-label" className="text-sm font-medium">
-              Size
-            </span>
-            {selectedSize ? (
-              <span className="text-muted-foreground text-sm">{selectedSize}</span>
-            ) : null}
-          </div>
+        <div className="flex flex-col gap-3">
+          <span id="size-label" className="text-[13px] font-semibold">
+            Size
+          </span>
           <div className="flex flex-wrap gap-2" role="group" aria-labelledby="size-label">
             {sizes.map((size) => {
               const available = isSizeAvailable(size);
@@ -185,15 +183,15 @@ export function AddToCartForm({
       ) : null}
 
       {isSoldOut ? (
-        <Button disabled size="lg" className="w-full">
+        <div className="bg-secondary text-ink-55 flex h-[52px] items-center justify-center text-[15px]">
           Sold out
-        </Button>
+        </div>
       ) : atCartLimit ? (
         <div className="flex flex-col gap-2">
-          <Button disabled size="lg" className="w-full">
-            Maximum already in cart
-          </Button>
-          <p className="text-muted-foreground text-sm">
+          <div className="bg-secondary text-ink-55 flex h-[52px] items-center justify-center text-[15px]">
+            Maximum already in bag
+          </div>
+          <p className="text-ink-55 text-[13px]">
             You have {inCart} of this option in your cart
             {availableStock <= MAX_CART_ITEM_QUANTITY
               ? `, which is all the stock available.`
@@ -202,65 +200,60 @@ export function AddToCartForm({
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-3">
-            <span id="quantity-label" className="text-sm font-medium">
-              Quantity
-            </span>
+          <div className="flex items-stretch gap-3">
             <div
-              className="flex items-center rounded-md border"
+              className="border-line-strong flex items-center border"
               role="group"
               aria-labelledby="quantity-label"
             >
-              <Button
+              <span id="quantity-label" className="sr-only">
+                Quantity
+              </span>
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-r-none"
+                className="h-[52px] w-[46px] text-lg disabled:opacity-40"
                 onClick={() => setQuantity((current) => Math.max(1, current - 1))}
                 disabled={quantity <= 1 || isPending}
                 aria-label="Decrease quantity"
               >
-                <Minus aria-hidden="true" />
-              </Button>
-
-              <output className="w-10 text-center text-sm tabular-nums" aria-live="polite">
+                −
+              </button>
+              <output className="w-10 text-center text-[15px] tabular-nums" aria-live="polite">
                 {quantity}
               </output>
-
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="size-9 rounded-l-none"
+                className="h-[52px] w-[46px] text-lg disabled:opacity-40"
                 onClick={() => setQuantity((current) => Math.min(maxQuantity || 1, current + 1))}
                 disabled={needsSelection || quantity >= maxQuantity || isPending}
                 aria-label="Increase quantity"
               >
-                <Plus aria-hidden="true" />
-              </Button>
+                +
+              </button>
             </div>
 
-            {selectedVariant ? (
-              <span className="text-muted-foreground text-sm">
-                {inCart > 0
-                  ? `${inCart} in cart · you can add ${maxQuantity} more`
-                  : availableStock <= 5
-                    ? `Only ${availableStock} left`
-                    : null}
-              </span>
-            ) : null}
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={needsSelection || isPending}
+              className="bg-primary text-primary-foreground flex h-[52px] flex-1 items-center justify-center gap-2 text-[15px] font-medium disabled:opacity-60"
+            >
+              {isPending ? null : <ShoppingBag aria-hidden="true" className="size-4" />}
+              {isPending
+                ? 'Adding…'
+                : needsSelection
+                  ? 'Select an option'
+                  : `Add to Cart · ${formatMoney(unitPriceCents * quantity)}`}
+            </button>
           </div>
 
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={handleAdd}
-            isLoading={isPending}
-            disabled={needsSelection}
-          >
-            {isPending ? null : <ShoppingBag aria-hidden="true" />}
-            {needsSelection ? 'Select an option' : 'Add to cart'}
-          </Button>
+          {selectedVariant && (inCart > 0 || availableStock <= 5) ? (
+            <p className="text-ink-55 text-[13px]">
+              {inCart > 0
+                ? `${inCart} in bag · you can add ${maxQuantity} more`
+                : `Only ${availableStock} left`}
+            </p>
+          ) : null}
         </>
       )}
     </div>

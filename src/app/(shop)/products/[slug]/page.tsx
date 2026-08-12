@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { RotateCcw, Truck } from 'lucide-react';
+import { FREE_SHIPPING_THRESHOLD_CENTS } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
 import { ProductSelectionProvider } from '@/entities/product/model/product-selection';
 import { ProductGrid } from '@/entities/product/ui/product-grid';
+import { ProductTabs } from '@/features/catalog/ui/product-tabs';
 import { VariantGallery } from '@/features/catalog/ui/variant-gallery';
 import { AddToCartForm } from '@/features/cart/ui/add-to-cart-form';
 import { FavoriteButton } from '@/features/favorites/ui/favorite-button';
@@ -70,60 +71,68 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ])
       : [false, {}];
 
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <nav aria-label="Breadcrumb" className="text-muted-foreground mb-6 text-sm">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link href={ROUTES.products} className="hover:text-foreground">
-              Products
+    <div>
+      <nav
+        aria-label="Breadcrumb"
+        className="text-ink-55 mx-auto max-w-360 px-5 pt-[22px] font-mono text-xs lg:px-10"
+      >
+        <Link href={ROUTES.home} className="hover:text-foreground">
+          Home
+        </Link>
+        {' / '}
+        <Link href={ROUTES.products} className="hover:text-foreground">
+          Shop
+        </Link>
+        {primaryCategory ? (
+          <>
+            {' / '}
+            <Link
+              href={ROUTES.category(primaryCategory.slug)}
+              className="hover:text-foreground"
+            >
+              {primaryCategory.name}
             </Link>
-          </li>
-          {primaryCategory ? (
-            <>
-              <li aria-hidden="true">/</li>
-              <li>
-                <Link
-                  href={ROUTES.category(primaryCategory.slug)}
-                  className="hover:text-foreground"
-                >
-                  {primaryCategory.name}
-                </Link>
-              </li>
-            </>
-          ) : null}
-        </ol>
+          </>
+        ) : null}
+        {' / '}
+        <span className="text-foreground">{product.name}</span>
       </nav>
 
       <ProductSelectionProvider
         initialColor={product.colors.length === 1 ? (product.colors[0] ?? null) : null}
         initialSize={product.sizes.length === 1 ? (product.sizes[0] ?? null) : null}
       >
-        <div className="grid gap-10 lg:grid-cols-2">
-          <VariantGallery variants={product.variants} productName={product.name} />
+        <div className="border-line-strong mx-auto mt-[18px] grid max-w-360 border-t-2 lg:grid-cols-[1.15fr_1fr]">
+          <div className="border-line-strong p-5 lg:border-r-2">
+            <VariantGallery variants={product.variants} productName={product.name} />
+          </div>
 
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-semibold tracking-tight text-balance">
-                {product.name}
-              </h1>
-
-              <div className="flex items-center gap-3">
-                <p className="text-2xl font-medium">
-                  {product.hasPriceRange ? (
-                    <span className="text-muted-foreground text-base">from </span>
-                  ) : null}
-                  {formatMoney(product.priceCents)}
-                </p>
-                {!product.inStock ? <Badge variant="secondary">Sold out</Badge> : null}
-              </div>
+          <div className="px-5 py-10 lg:px-12 lg:py-11">
+            <div className="text-brand font-mono text-[11px] tracking-[0.14em] uppercase">
+              Threadline
             </div>
 
-            <p className="text-muted-foreground leading-relaxed text-pretty">
-              {product.description}
-            </p>
+            <h1 className="font-display mt-2 mb-3 text-[30px] leading-[1.02] font-extrabold tracking-[-0.02em] md:text-[40px]">
+              {product.name}
+            </h1>
 
-            <Separator />
+            <div className="border-line mb-5 flex items-center gap-3 border-b pb-[22px]">
+              <span className="text-[28px] font-semibold">
+                {product.hasPriceRange ? (
+                  <span className="text-ink-55 text-lg">from </span>
+                ) : null}
+                {formatMoney(product.priceCents)}
+              </span>
+              {!product.inStock ? (
+                <span className="bg-secondary text-ink-55 px-2.5 py-1 font-mono text-[10px] tracking-[0.08em] uppercase">
+                  Sold out
+                </span>
+              ) : null}
+            </div>
+
+            <p className="text-ink-70 mb-6 text-[15px] leading-[1.6]">{product.description}</p>
 
             <div className="flex items-start gap-3">
               <div className="flex-1">
@@ -141,30 +150,36 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 initialIsFavorited={favorited}
                 canFavorite={user?.role === 'USER'}
                 isAuthenticated={user !== null}
-                className="mt-7 shrink-0"
+                className="border-line-strong mt-0 size-[52px] shrink-0 rounded-none border"
               />
             </div>
 
-            <dl className="text-muted-foreground grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-              <dt className="font-medium">Material</dt>
-              <dd>{product.material ?? '—'}</dd>
-              <dt className="font-medium">{product.categories.length === 1 ? 'Category' : 'Categories'}</dt>
-              <dd>
-                {product.categories.length > 0
-                  ? product.categories.map((category) => category.name).join(', ')
-                  : '—'}
-              </dd>
-              <dt className="font-medium">Availability</dt>
-              <dd>{product.inStock ? 'In stock' : 'Out of stock'}</dd>
-            </dl>
+            <ul className="border-line text-ink-70 mt-[26px] flex flex-col gap-3 border-t pt-[18px] text-[13px]">
+              <li className="flex items-center gap-2.5">
+                <Truck aria-hidden="true" className="text-brand size-4 shrink-0" />
+                Free shipping over {formatMoney(FREE_SHIPPING_THRESHOLD_CENTS)} · ships in 1–2 days
+              </li>
+              <li className="flex items-center gap-2.5">
+                <RotateCcw aria-hidden="true" className="text-brand size-4 shrink-0" />
+                Free 30-day returns · fully traceable materials
+              </li>
+            </ul>
           </div>
         </div>
       </ProductSelectionProvider>
 
+      <ProductTabs
+        description={product.description}
+        material={product.material}
+        categoryName={primaryCategory?.name ?? 'Threadline'}
+      />
+
       {related.length > 0 ? (
-        <section className="mt-20">
-          <h2 className="mb-6 text-xl font-semibold tracking-tight">You might also like</h2>
-          <ProductGrid products={related} />
+        <section className="mx-auto mt-11 max-w-360 px-5 pb-16 lg:px-10">
+          <h2 className="font-display mb-6 text-[26px] font-extrabold tracking-[-0.02em] md:text-[32px]">
+            You may also like
+          </h2>
+          <ProductGrid products={related} isAuthenticated={user !== null} columns={4} />
         </section>
       ) : null}
     </div>
