@@ -59,9 +59,9 @@ export function NewArrivalsRail({ products, isAuthenticated }: NewArrivalsRailPr
         {products.map((product) => (
           <article
             key={product.id}
-            className="border-line bg-background card-hover group w-[300px] shrink-0 snap-start border"
+            className="border-line bg-background card-hover group w-75 shrink-0 snap-start border"
           >
-            <Link href={ROUTES.product(product.slug)} className="relative block h-[340px]">
+            <Link href={ROUTES.product(product.slug)} className="relative block h-85">
               <ProductMedia
                 src={product.primaryImage?.url ?? null}
                 alt={product.primaryImage?.alt ?? product.name}
@@ -84,7 +84,7 @@ export function NewArrivalsRail({ products, isAuthenticated }: NewArrivalsRailPr
                 />
               </span>
             </Link>
-            <div className="px-[18px] py-4">
+            <div className="px-4.5 py-4">
               <div className="text-ink-55 font-mono text-[10px] tracking-[0.08em] uppercase">
                 {product.categories[0]?.name ?? 'Threadline'}
               </div>

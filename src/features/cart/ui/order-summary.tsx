@@ -22,9 +22,9 @@ export function OrderSummary({ totals, children }: OrderSummaryProps) {
 
   return (
     <div className="flex flex-col">
-      <h2 className="font-display mb-[18px] text-base font-extrabold">Order summary</h2>
+      <h2 className="font-display mb-4.5 text-base font-extrabold">Order summary</h2>
 
-      <dl className="text-ink-70 flex flex-col gap-[11px] text-sm">
+      <dl className="text-ink-70 flex flex-col gap-2.75 text-sm">
         {rows.map((row) => (
           <div key={row.label} className="flex justify-between">
             <dt>{row.label}</dt>
@@ -39,7 +39,7 @@ export function OrderSummary({ totals, children }: OrderSummaryProps) {
         </p>
       ) : null}
 
-      <div className="border-line-strong mt-[18px] flex items-baseline justify-between border-t-2 py-[18px]">
+      <div className="border-line-strong mt-4.5 flex items-baseline justify-between border-t-2 py-4.5">
         <span className="font-display text-[19px] font-extrabold">Total</span>
         <span className="font-display text-2xl font-extrabold">
           {formatMoney(totals.totalCents)}

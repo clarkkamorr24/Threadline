@@ -17,16 +17,16 @@ export function BrandStory() {
         sizes="(min-width: 1024px) 50vw, 100vw"
         label="editorial · atelier / makers at work"
         editorial
-        className="min-h-[320px] lg:min-h-[480px]"
+        className="min-h-80 lg:min-h-120"
       />
       <div className="border-line-strong flex flex-col justify-center px-5 py-12 lg:border-l-2 lg:px-14 lg:py-16">
         <span className="text-brand font-mono text-[11px] tracking-[0.14em] uppercase">
           Our story
         </span>
-        <h2 className="font-display my-[18px] text-[28px] leading-[1.02] font-extrabold tracking-[-0.025em] md:text-[40px]">
+        <h2 className="font-display my-4.5 text-[28px] leading-[1.02] font-extrabold tracking-[-0.025em] md:text-[40px]">
           We make fewer things, better.
         </h2>
-        <p className="text-ink-70 max-w-[460px] text-base leading-[1.6]">
+        <p className="text-ink-70 max-w-115 text-base leading-[1.6]">
           Threadline began with a simple frustration: too much of what we buy is designed to be
           replaced. So we work directly with small mills and workshops to make a tight range of
           pieces from materials that improve with age — and we tell you exactly where every one
@@ -44,7 +44,7 @@ export function BrandStory() {
         </div>
         <Link
           href={ROUTES.products}
-          className="border-line-strong hover:border-foreground mt-[34px] self-start border px-6 py-[13px] text-sm font-medium transition-colors"
+          className="border-line-strong hover:border-foreground mt-8.5 self-start border px-6 py-3.25 text-sm font-medium transition-colors"
         >
           Read the full story
         </Link>

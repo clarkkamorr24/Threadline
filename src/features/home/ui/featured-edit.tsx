@@ -16,7 +16,7 @@ interface FeaturedEditProps {
 export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProps) {
   return (
     <section className="mx-auto w-full max-w-360 px-5 pt-16 pb-5 lg:px-10">
-      <div className="mb-[34px] flex items-end justify-between">
+      <div className="mb-8.5 flex items-end justify-between">
         <div>
           <span className="text-brand font-mono text-[11px] tracking-[0.14em] uppercase">
             01 / Featured
@@ -37,7 +37,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
         )}
       >
         <article className="card-hover bg-background group relative flex flex-col">
-          <Link href={ROUTES.product(large.slug)} className="relative min-h-[320px] flex-1 lg:min-h-[440px]">
+          <Link href={ROUTES.product(large.slug)} className="relative min-h-80 flex-1 lg:min-h-110">
             <ProductMedia
               src={large.primaryImage?.url ?? null}
               alt={large.primaryImage?.alt ?? large.name}
@@ -49,7 +49,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
               Editor&apos;s pick
             </span>
           </Link>
-          <div className="absolute bottom-[104px] left-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <div className="absolute bottom-26 left-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <QuickAddButton
               productName={large.name}
               productSlug={large.slug}
@@ -57,7 +57,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
               isAuthenticated={isAuthenticated}
             />
           </div>
-          <div className="border-line flex items-start justify-between border-t px-[22px] py-5">
+          <div className="border-line flex items-start justify-between border-t px-5.5 py-5">
             <div>
               <div className="text-ink-55 font-mono text-[10px] tracking-[0.08em] uppercase">
                 {large.categories[0]?.name ?? 'Threadline'}
@@ -79,7 +79,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
               key={product.id}
               className="card-hover bg-background group grid grid-cols-2"
             >
-              <Link href={ROUTES.product(product.slug)} className="relative min-h-[210px]">
+              <Link href={ROUTES.product(product.slug)} className="relative min-h-52.5">
                 <ProductMedia
                   src={product.primaryImage?.url ?? null}
                   alt={product.primaryImage?.alt ?? product.name}
@@ -94,7 +94,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
                     variantId={product.defaultVariantId}
                     isAuthenticated={isAuthenticated}
                     label="Add"
-                    className="px-[15px] py-[9px] text-xs"
+                    className="px-3.75 py-2.25 text-xs"
                   />
                 </span>
               </Link>
@@ -104,7 +104,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
                 </div>
                 <Link
                   href={ROUTES.product(product.slug)}
-                  className="font-display mt-[5px] text-[18px] leading-[1.15] font-extrabold"
+                  className="font-display mt-1.25 text-[18px] leading-[1.15] font-extrabold"
                 >
                   {product.name}
                 </Link>

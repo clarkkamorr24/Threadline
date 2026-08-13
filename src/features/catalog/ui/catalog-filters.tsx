@@ -65,7 +65,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
 
   return (
     <div>
-      <div className="mb-[18px] flex items-center justify-between">
+      <div className="mb-4.5 flex items-center justify-between">
         <h2 className="font-display text-base font-extrabold">Filter</h2>
         {hasFilters ? (
           <Link
@@ -77,7 +77,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
         ) : null}
       </div>
 
-      <fieldset className="border-line border-t py-[18px]">
+      <fieldset className="border-line border-t py-4.5">
         <legend className="sr-only">Sort</legend>
         <h3 className="mb-3 text-[13px] font-semibold">Sort</h3>
         <div className="flex flex-col gap-0.5">
@@ -89,7 +89,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
                 router.push(buildUrl((params) => params.set('sort', option.value)))
               }
               aria-pressed={activeSort === option.value}
-              className="flex items-center gap-2.5 py-[5px] text-left text-[13px]"
+              className="flex items-center gap-2.5 py-1.25 text-left text-[13px]"
             >
               <span
                 className={cn(
@@ -108,7 +108,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
       </fieldset>
 
       {categories.length > 0 ? (
-        <div className="border-line border-t py-[18px]">
+        <div className="border-line border-t py-4.5">
           <h3 className="mb-3 text-[13px] font-semibold">Category</h3>
           <div className="flex flex-col gap-2.5 text-[13px]">
             {categories.map((category) => (
@@ -132,7 +132,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
       ) : null}
 
       {sizes.length > 0 ? (
-        <div className="border-line border-t py-[18px]">
+        <div className="border-line border-t py-4.5">
           <h3 className="mb-3 text-[13px] font-semibold">Size</h3>
           <div className="flex flex-wrap gap-1.5">
             {sizes.map((size) => (
@@ -142,7 +142,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
                 onClick={() => toggleParam('size', size)}
                 aria-pressed={activeSize === size}
                 className={cn(
-                  'border-line h-[38px] min-w-10 border px-2 text-xs transition-colors',
+                  'border-line h-9.5 min-w-10 border px-2 text-xs transition-colors',
                   activeSize === size
                     ? 'bg-primary text-primary-foreground border-foreground'
                     : 'hover:border-foreground',
@@ -156,7 +156,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
       ) : null}
 
       {colors.length > 0 ? (
-        <div className="border-line border-t py-[18px]">
+        <div className="border-line border-t py-4.5">
           <h3 className="mb-3 text-[13px] font-semibold">Colour</h3>
           <div className="flex flex-wrap gap-2.5">
             {colors.map((color) => (
@@ -169,7 +169,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
                 aria-pressed={activeColor === color}
                 style={{ backgroundColor: colorToHex(color) }}
                 className={cn(
-                  'border-line size-[26px] rounded-full border',
+                  'border-line size-6.5 rounded-full border',
                   activeColor === color &&
                     'ring-foreground ring-offset-background ring-2 ring-offset-2',
                 )}
@@ -179,7 +179,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
         </div>
       ) : null}
 
-      <div className="border-line border-t pt-[18px]">
+      <div className="border-line border-t pt-4.5">
         <h3 className="mb-3 text-[13px] font-semibold">Availability</h3>
         <button
           type="button"
@@ -215,11 +215,11 @@ export function CatalogFilters(props: CatalogFiltersProps) {
 export function CatalogFiltersSheet(props: CatalogFiltersProps) {
   return (
     <Sheet>
-      <SheetTrigger className="border-line-strong hover:border-foreground flex items-center gap-2 border px-[18px] py-[11px] text-[13px] transition-colors lg:hidden">
+      <SheetTrigger className="border-line-strong hover:border-foreground flex items-center gap-2 border px-4.5 py-2.75 text-[13px] transition-colors lg:hidden">
         <SlidersHorizontal aria-hidden="true" className="size-4" />
         Filters
       </SheetTrigger>
-      <SheetContent side="left" className="w-[300px] overflow-y-auto px-6 py-7">
+      <SheetContent side="left" className="w-75 overflow-y-auto px-6 py-7">
         <SheetHeader className="p-0">
           <SheetTitle className="font-display text-base font-extrabold">Filter</SheetTitle>
         </SheetHeader>

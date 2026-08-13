@@ -31,7 +31,7 @@ export function ProductGrid({
         {showClearFilters ? (
           <Link
             href={ROUTES.products}
-            className="bg-primary text-primary-foreground mt-3.5 inline-block px-[22px] py-3 text-sm font-medium"
+            className="bg-primary text-primary-foreground mt-3.5 inline-block px-5.5 py-3 text-sm font-medium"
           >
             Clear filters
           </Link>

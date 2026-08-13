@@ -193,7 +193,7 @@ export function CheckoutForm({
                           disabled={isSubmitting}
                           aria-pressed={isSelected}
                           className={cn(
-                            'border-line flex items-center gap-3.5 border px-[18px] py-4 text-left transition-colors',
+                            'border-line flex items-center gap-3.5 border px-4.5 py-4 text-left transition-colors',
                             isSelected
                               ? 'border-foreground shadow-[inset_0_0_0_1px_var(--ink)]'
                               : 'hover:border-line-strong',
@@ -228,7 +228,7 @@ export function CheckoutForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary text-primary-foreground mt-6 flex w-full items-center justify-center px-4 py-[17px] text-[15px] font-medium disabled:opacity-60"
+              className="bg-primary text-primary-foreground mt-6 flex w-full items-center justify-center px-4 py-4.25 text-[15px] font-medium disabled:opacity-60"
             >
               {isSubmitting
                 ? 'Placing order…'
@@ -238,14 +238,14 @@ export function CheckoutForm({
         </div>
 
         <aside className="self-start py-8 lg:sticky lg:top-24 lg:pl-9">
-          <h2 className="font-display mb-[18px] text-base font-extrabold">
+          <h2 className="font-display mb-4.5 text-base font-extrabold">
             Order summary ({items.length})
           </h2>
 
-          <ul className="mb-5 flex max-h-[280px] flex-col gap-3.5 overflow-y-auto">
+          <ul className="mb-5 flex max-h-70 flex-col gap-3.5 overflow-y-auto">
             {items.map((item) => (
               <li key={item.id} className="flex items-center gap-3.5">
-                <div className="relative h-[70px] w-14 shrink-0 overflow-hidden bg-[#e6e4e1]">
+                <div className="relative h-17.5 w-14 shrink-0 overflow-hidden bg-[#e6e4e1]">
                   {item.imageUrl ? (
                     <Image
                       src={item.imageUrl}
@@ -273,7 +273,7 @@ export function CheckoutForm({
             ))}
           </ul>
 
-          <dl className="border-line text-ink-70 flex flex-col gap-2.5 border-t pt-[18px] text-sm">
+          <dl className="border-line text-ink-70 flex flex-col gap-2.5 border-t pt-4.5 text-sm">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
               <dd className="text-foreground">{formatMoney(totals.subtotalCents)}</dd>
@@ -290,7 +290,7 @@ export function CheckoutForm({
             </div>
           </dl>
 
-          <div className="border-line-strong mt-3.5 flex items-baseline justify-between border-t-2 pt-[18px]">
+          <div className="border-line-strong mt-3.5 flex items-baseline justify-between border-t-2 pt-4.5">
             <span className="font-display text-lg font-extrabold">Total</span>
             <span className="font-display text-2xl font-extrabold">
               {formatMoney(totals.totalCents)}

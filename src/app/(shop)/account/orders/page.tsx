@@ -35,7 +35,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
           <p className="text-ink-70">Orders you place will appear here.</p>
           <Link
             href={ROUTES.products}
-            className="bg-primary text-primary-foreground mt-4 inline-block px-[26px] py-3 text-sm font-medium"
+            className="bg-primary text-primary-foreground mt-4 inline-block px-6.5 py-3 text-sm font-medium"
           >
             Start shopping
           </Link>
@@ -62,7 +62,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
 
                   <OrderStatusBadge status={order.status} />
 
-                  <div className="w-[90px] text-right text-base font-semibold">
+                  <div className="w-22.5 text-right text-base font-semibold">
                     {formatMoney(order.totalCents)}
                   </div>
 

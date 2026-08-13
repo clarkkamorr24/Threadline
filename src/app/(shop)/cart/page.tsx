@@ -30,7 +30,7 @@ export default async function CartPage() {
           <p className="text-ink-70 mt-2.5 mb-5">Add something worth keeping to get started.</p>
           <Link
             href={ROUTES.products}
-            className="bg-primary text-primary-foreground inline-block px-[26px] py-3.5 text-sm font-medium"
+            className="bg-primary text-primary-foreground inline-block px-6.5 py-3.5 text-sm font-medium"
           >
             Start shopping
           </Link>

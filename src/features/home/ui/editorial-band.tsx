@@ -22,10 +22,10 @@ export function EditorialBand({ product }: EditorialBandProps) {
           <h3 className="font-display mt-4 mb-2.5 text-[26px] leading-[1.05] font-extrabold tracking-[-0.02em] lg:text-[34px]">
             {product.name}
           </h3>
-          <p className="text-ink-70 max-w-[380px] text-[15px]">
+          <p className="text-ink-70 max-w-95 text-[15px]">
             {product.categories.map((category) => category.name).join(' · ')}
           </p>
-          <div className="mt-[22px] flex items-center gap-[18px]">
+          <div className="mt-5.5 flex items-center gap-4.5">
             <span className="text-xl font-semibold">{formatMoney(product.priceCents)}</span>
             <span className="text-[13px] underline underline-offset-4">Shop the piece →</span>
           </div>
@@ -35,7 +35,7 @@ export function EditorialBand({ product }: EditorialBandProps) {
           alt={product.primaryImage?.alt ?? product.name}
           sizes="(min-width: 768px) 50vw, 100vw"
           label="product"
-          className="min-h-[240px] lg:min-h-[340px]"
+          className="min-h-60 lg:min-h-85"
         />
       </Link>
     </section>

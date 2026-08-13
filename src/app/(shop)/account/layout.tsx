@@ -22,7 +22,7 @@ export default async function AccountLayout({ children }: { readonly children: R
         <form action="/auth/sign-out" method="post">
           <button
             type="submit"
-            className="border-line-strong hover:border-foreground border px-[18px] py-[11px] text-[13px] transition-colors"
+            className="border-line-strong hover:border-foreground border px-4.5 py-2.75 text-[13px] transition-colors"
           >
             Sign out
           </button>

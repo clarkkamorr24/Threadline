@@ -1,10 +1,17 @@
 import type { NextConfig } from 'next';
 
+const OAUTH_AVATAR_HOSTS = [
+  'lh3.googleusercontent.com',
+  'avatars.githubusercontent.com',
+] as const;
+
 function buildRemotePatterns(): NonNullable<NextConfig['images']>['remotePatterns'] {
-  const hosts = (process.env.NEXT_PUBLIC_IMAGE_HOSTS ?? '')
+  const configured = (process.env.NEXT_PUBLIC_IMAGE_HOSTS ?? '')
     .split(',')
     .map((host) => host.trim())
     .filter(Boolean);
+
+  const hosts = [...new Set([...configured, ...OAUTH_AVATAR_HOSTS])];
 
   return hosts.map((hostname) => ({
     protocol: hostname === 'localhost' ? 'http' : 'https',

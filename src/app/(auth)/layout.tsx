@@ -23,14 +23,14 @@ export default function AuthLayout({ children }: { readonly children: ReactNode 
           <h2 className="font-display text-[44px] leading-[0.98] font-extrabold tracking-[-0.03em]">
             Objects worth keeping.
           </h2>
-          <p className="text-ink-70 mt-3.5 max-w-[400px] text-[15px]">
+          <p className="text-ink-70 mt-3.5 max-w-100 text-[15px]">
             Sign in to track orders, save favourites and check out faster.
           </p>
         </div>
       </div>
 
       <div className="flex flex-col justify-center px-5 py-12 lg:px-14">
-        <div className="mx-auto w-full max-w-[420px]">
+        <div className="mx-auto w-full max-w-105">
           <Link
             href={ROUTES.home}
             className="font-display mb-9 inline-block text-[22px] font-extrabold tracking-[-0.02em] lg:hidden"

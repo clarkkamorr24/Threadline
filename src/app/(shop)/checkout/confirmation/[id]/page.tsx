@@ -60,19 +60,19 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
     <div className="mx-auto max-w-360 px-5 pt-8 lg:px-10">
       <CheckoutProgress activeIndex={4} />
 
-      <div className="mx-auto max-w-[820px] pb-20 text-center">
+      <div className="mx-auto max-w-205 pb-20 text-center">
         <div
           aria-hidden="true"
           className={
             isAwaitingPayment
-              ? 'border-line-strong mx-auto grid size-[72px] place-items-center rounded-full border-2'
-              : 'bg-brand mx-auto grid size-[72px] place-items-center rounded-full'
+              ? 'border-line-strong mx-auto grid size-18 place-items-center rounded-full border-2'
+              : 'bg-brand mx-auto grid size-18 place-items-center rounded-full'
           }
         >
           {isAwaitingPayment ? (
             <span className="text-ink-55 font-mono text-xs">···</span>
           ) : (
-            <Check aria-hidden="true" className="size-[34px] text-white" strokeWidth={2.4} />
+            <Check aria-hidden="true" className="size-8.5 text-white" strokeWidth={2.4} />
           )}
         </div>
 
@@ -105,7 +105,7 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
                 key={cell.label}
                 className={index < cells.length - 1 ? 'border-line sm:border-r' : undefined}
               >
-                <div className="p-[22px]">
+                <div className="p-5.5">
                   <div className="text-ink-55 font-mono text-[11px] uppercase">{cell.label}</div>
                   <div className="font-display mt-1.5 text-lg font-extrabold">{cell.value}</div>
                 </div>
@@ -122,13 +122,13 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
             href={ROUTES.order(order.id)}
-            className="bg-primary text-primary-foreground px-[26px] py-3.5 text-sm font-medium"
+            className="bg-primary text-primary-foreground px-6.5 py-3.5 text-sm font-medium"
           >
             Track your order
           </Link>
           <Link
             href={ROUTES.products}
-            className="border-line-strong hover:border-foreground border px-[26px] py-3.5 text-sm font-medium transition-colors"
+            className="border-line-strong hover:border-foreground border px-6.5 py-3.5 text-sm font-medium transition-colors"
           >
             Continue shopping
           </Link>

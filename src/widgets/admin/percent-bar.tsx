@@ -14,7 +14,7 @@ export function PercentBar({ label, value, percent, accent = false }: PercentBar
         <span>{label}</span>
         <span className="text-ink-70 font-mono">{value}</span>
       </div>
-      <div className="bg-secondary h-[7px]">
+      <div className="bg-secondary h-1.75">
         <div
           className={cn('h-full', accent ? 'bg-brand' : 'bg-ink')}
           style={{ width: `${Math.max(Math.min(percent, 100), 0)}%` }}

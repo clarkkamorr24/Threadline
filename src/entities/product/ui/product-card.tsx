@@ -46,19 +46,19 @@ export function ProductCard({
             productSlug={product.slug}
             variantId={product.defaultVariantId}
             isAuthenticated={isAuthenticated}
-            className="flex-1 py-[13px]"
+            className="flex-1 py-3.25"
           />
           <Link
             href={href}
             aria-label={`Quick view ${product.name}`}
-            className="bg-primary text-primary-foreground grid place-items-center px-[15px]"
+            className="bg-primary text-primary-foreground grid place-items-center px-3.75"
           >
             <Eye aria-hidden="true" className="size-4" />
           </Link>
         </div>
       </div>
 
-      <div className="px-4 pt-[15px] pb-[18px]">
+      <div className="px-4 pt-3.75 pb-4.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="text-ink-55 font-mono text-[10px] tracking-[0.07em] uppercase">

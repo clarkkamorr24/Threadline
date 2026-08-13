@@ -34,7 +34,7 @@ export function ProductTabs({ description, material, categoryName }: ProductTabs
             aria-selected={active === tab}
             onClick={() => setActive(tab)}
             className={cn(
-              'font-display mr-[30px] border-b-2 py-3.5 text-base font-extrabold transition-colors',
+              'font-display mr-7.5 border-b-2 py-3.5 text-base font-extrabold transition-colors',
               active === tab ? 'border-brand text-foreground' : 'text-ink-55 border-transparent',
             )}
           >
@@ -43,7 +43,7 @@ export function ProductTabs({ description, material, categoryName }: ProductTabs
         ))}
       </div>
 
-      <div className="max-w-[720px] pt-7 pb-2">
+      <div className="max-w-180 pt-7 pb-2">
         {active === 'Details' ? (
           <p className="text-ink-70 text-[15px] leading-[1.7]">
             {description} Every Threadline piece is made in small batches and quality-checked by

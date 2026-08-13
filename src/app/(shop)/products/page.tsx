@@ -51,7 +51,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     <div>
       <nav
         aria-label="Breadcrumb"
-        className="text-ink-55 mx-auto max-w-360 px-5 pt-[22px] font-mono text-xs lg:px-10"
+        className="text-ink-55 mx-auto max-w-360 px-5 pt-5.5 font-mono text-xs lg:px-10"
       >
         <Link href={ROUTES.home} className="hover:text-foreground">
           Home

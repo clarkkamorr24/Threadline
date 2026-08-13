@@ -29,7 +29,7 @@ export default async function ResetPasswordPage() {
 
         <Link
           href={ROUTES.forgotPassword}
-          className="bg-primary text-primary-foreground flex items-center justify-center px-4 py-[15px] text-[15px] font-medium"
+          className="bg-primary text-primary-foreground flex items-center justify-center px-4 py-3.75 text-[15px] font-medium"
         >
           Request a new link
         </Link>

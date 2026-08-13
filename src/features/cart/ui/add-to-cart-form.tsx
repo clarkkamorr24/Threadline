@@ -115,7 +115,7 @@ export function AddToCartForm({
 
   const optionClasses = (isSelected: boolean, isAvailable: boolean): string =>
     cn(
-      'border-line relative h-[46px] min-w-12 border px-3 text-[13px] transition-colors',
+      'border-line relative h-11.5 min-w-12 border px-3 text-[13px] transition-colors',
       'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
       isSelected && 'bg-primary text-primary-foreground border-foreground font-medium',
       !isSelected && isAvailable && 'hover:border-foreground',
@@ -183,12 +183,12 @@ export function AddToCartForm({
       ) : null}
 
       {isSoldOut ? (
-        <div className="bg-secondary text-ink-55 flex h-[52px] items-center justify-center text-[15px]">
+        <div className="bg-secondary text-ink-55 flex h-13 items-center justify-center text-[15px]">
           Sold out
         </div>
       ) : atCartLimit ? (
         <div className="flex flex-col gap-2">
-          <div className="bg-secondary text-ink-55 flex h-[52px] items-center justify-center text-[15px]">
+          <div className="bg-secondary text-ink-55 flex h-13 items-center justify-center text-[15px]">
             Maximum already in bag
           </div>
           <p className="text-ink-55 text-[13px]">
@@ -211,7 +211,7 @@ export function AddToCartForm({
               </span>
               <button
                 type="button"
-                className="h-[52px] w-[46px] text-lg disabled:opacity-40"
+                className="h-13 w-11.5 text-lg disabled:opacity-40"
                 onClick={() => setQuantity((current) => Math.max(1, current - 1))}
                 disabled={quantity <= 1 || isPending}
                 aria-label="Decrease quantity"
@@ -223,7 +223,7 @@ export function AddToCartForm({
               </output>
               <button
                 type="button"
-                className="h-[52px] w-[46px] text-lg disabled:opacity-40"
+                className="h-13 w-11.5 text-lg disabled:opacity-40"
                 onClick={() => setQuantity((current) => Math.min(maxQuantity || 1, current + 1))}
                 disabled={needsSelection || quantity >= maxQuantity || isPending}
                 aria-label="Increase quantity"
@@ -236,7 +236,7 @@ export function AddToCartForm({
               type="button"
               onClick={handleAdd}
               disabled={needsSelection || isPending}
-              className="bg-primary text-primary-foreground flex h-[52px] flex-1 items-center justify-center gap-2 text-[15px] font-medium disabled:opacity-60"
+              className="bg-primary text-primary-foreground flex h-13 flex-1 items-center justify-center gap-2 text-[15px] font-medium disabled:opacity-60"
             >
               {isPending ? null : <ShoppingBag aria-hidden="true" className="size-4" />}
               {isPending

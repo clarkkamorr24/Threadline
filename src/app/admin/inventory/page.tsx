@@ -103,7 +103,7 @@ export default async function AdminInventoryPage() {
                   <TableHead>Product</TableHead>
                   <TableHead>SKU</TableHead>
                   <TableHead>In stock</TableHead>
-                  <TableHead className="w-[200px]">Level</TableHead>
+                  <TableHead className="w-50">Level</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
@@ -117,7 +117,7 @@ export default async function AdminInventoryPage() {
                     <TableRow key={row.variantId}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="relative h-[46px] w-[38px] shrink-0 overflow-hidden bg-[#e6e4e1]">
+                          <div className="relative h-11.5 w-9.5 shrink-0 overflow-hidden bg-[#e6e4e1]">
                             {row.imageUrl ? (
                               <Image
                                 src={row.imageUrl}
@@ -143,7 +143,7 @@ export default async function AdminInventoryPage() {
                       <TableCell className="text-ink-70 font-mono text-xs">{row.sku}</TableCell>
                       <TableCell className="font-semibold">{row.stock}</TableCell>
                       <TableCell>
-                        <div className="bg-secondary h-[7px] w-40">
+                        <div className="bg-secondary h-1.75 w-40">
                           <div className={cn('h-full', state.bar)} style={{ width: `${percent}%` }} />
                         </div>
                       </TableCell>

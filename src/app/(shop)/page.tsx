@@ -65,7 +65,7 @@ export default async function HomePage() {
       <Newsletter />
 
       {featured.length === 0 && newest.items.length === 0 ? (
-        <section className="mx-auto w-full max-w-[1440px] px-5 py-24 lg:px-10">
+        <section className="mx-auto w-full max-w-360 px-5 py-24 lg:px-10">
           <p className="text-ink-70 text-[15px]">
             The catalogue is empty.{' '}
             <Link href={ROUTES.products} className="text-brand">

@@ -62,7 +62,7 @@ export function ProductGallery({ images, productName, activeImageUrl }: ProductG
                 aria-label={`View image ${index + 1} of ${images.length} for ${productName}`}
                 aria-current={index === activeIndex}
                 className={cn(
-                  'focus-visible:ring-ring relative h-[88px] w-[70px] shrink-0 overflow-hidden border transition-colors focus-visible:ring-2',
+                  'focus-visible:ring-ring relative h-22 w-17.5 shrink-0 overflow-hidden border transition-colors focus-visible:ring-2',
                   index === activeIndex ? 'border-foreground' : 'border-line hover:border-line-strong',
                 )}
               >

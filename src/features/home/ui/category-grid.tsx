@@ -25,7 +25,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           <Link
             key={category.id}
             href={ROUTES.category(category.slug)}
-            className="card-hover group relative flex min-h-[260px] items-end p-6"
+            className="card-hover group relative flex min-h-65 items-end p-6"
           >
             <ProductMedia
               src={category.imageUrl}

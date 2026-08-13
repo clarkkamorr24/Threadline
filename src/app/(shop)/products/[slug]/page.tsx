@@ -76,7 +76,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div>
       <nav
         aria-label="Breadcrumb"
-        className="text-ink-55 mx-auto max-w-360 px-5 pt-[22px] font-mono text-xs lg:px-10"
+        className="text-ink-55 mx-auto max-w-360 px-5 pt-5.5 font-mono text-xs lg:px-10"
       >
         <Link href={ROUTES.home} className="hover:text-foreground">
           Home
@@ -104,7 +104,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         initialColor={product.colors.length === 1 ? (product.colors[0] ?? null) : null}
         initialSize={product.sizes.length === 1 ? (product.sizes[0] ?? null) : null}
       >
-        <div className="border-line-strong mx-auto mt-[18px] grid max-w-360 border-t-2 lg:grid-cols-[1.15fr_1fr]">
+        <div className="border-line-strong mx-auto mt-4.5 grid max-w-360 border-t-2 lg:grid-cols-[1.15fr_1fr]">
           <div className="border-line-strong p-5 lg:border-r-2">
             <VariantGallery variants={product.variants} productName={product.name} />
           </div>
@@ -118,7 +118,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.name}
             </h1>
 
-            <div className="border-line mb-5 flex items-center gap-3 border-b pb-[22px]">
+            <div className="border-line mb-5 flex items-center gap-3 border-b pb-5.5">
               <span className="text-[28px] font-semibold">
                 {product.hasPriceRange ? (
                   <span className="text-ink-55 text-lg">from </span>
@@ -150,11 +150,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 initialIsFavorited={favorited}
                 canFavorite={user?.role === 'USER'}
                 isAuthenticated={user !== null}
-                className="border-line-strong mt-0 size-[52px] shrink-0 rounded-none border"
+                className="border-line-strong mt-0 size-13 shrink-0 rounded-none border"
               />
             </div>
 
-            <ul className="border-line text-ink-70 mt-[26px] flex flex-col gap-3 border-t pt-[18px] text-[13px]">
+            <ul className="border-line text-ink-70 mt-6.5 flex flex-col gap-3 border-t pt-4.5 text-[13px]">
               <li className="flex items-center gap-2.5">
                 <Truck aria-hidden="true" className="text-brand size-4 shrink-0" />
                 Free shipping over {formatMoney(FREE_SHIPPING_THRESHOLD_CENTS)} · ships in 1–2 days

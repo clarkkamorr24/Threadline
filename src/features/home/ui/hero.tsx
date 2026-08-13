@@ -12,12 +12,12 @@ interface HeroProps {
 export function Hero({ featured }: HeroProps) {
   return (
     <section className="border-line-strong grid border-b-2 lg:grid-cols-[1.05fr_1fr]">
-      <div className="border-line-strong flex flex-col justify-between px-5 py-14 lg:border-r-2 lg:px-10 lg:pt-[70px] lg:pb-16">
+      <div className="border-line-strong flex flex-col justify-between px-5 py-14 lg:border-r-2 lg:px-10 lg:pt-17.5 lg:pb-16">
         <div>
           <span className="text-brand font-mono text-[11px] tracking-[0.16em] uppercase">
             Fall Collection 2026
           </span>
-          <h1 className="font-display mt-[22px] text-[46px] leading-[0.92] font-extrabold tracking-[-0.03em] md:text-[64px] lg:text-[96px]">
+          <h1 className="font-display mt-5.5 text-[46px] leading-[0.92] font-extrabold tracking-[-0.03em] md:text-[64px] lg:text-[96px]">
             Objects
             <br />
             worth
@@ -26,7 +26,7 @@ export function Hero({ featured }: HeroProps) {
           </h1>
         </div>
 
-        <div className="mt-11 max-w-[420px]">
+        <div className="mt-11 max-w-105">
           <p className="text-ink-70 text-base leading-[1.5]">
             Curated essentials designed for everyday life — built from honest materials, made to
             be lived in and kept for years.
@@ -34,14 +34,14 @@ export function Hero({ featured }: HeroProps) {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href={ROUTES.products}
-              className="bg-primary text-primary-foreground inline-flex items-center gap-1.5 px-[26px] py-[14px] text-sm font-medium"
+              className="bg-primary text-primary-foreground inline-flex items-center gap-1.5 px-6.5 py-3.5 text-sm font-medium"
             >
               Explore Collection
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
             <Link
               href={`${ROUTES.products}?sort=newest`}
-              className="border-line-strong hover:border-foreground inline-flex items-center border px-[26px] py-[14px] text-sm font-medium transition-colors"
+              className="border-line-strong hover:border-foreground inline-flex items-center border px-6.5 py-3.5 text-sm font-medium transition-colors"
             >
               New Arrivals
             </Link>
@@ -49,7 +49,7 @@ export function Hero({ featured }: HeroProps) {
         </div>
       </div>
 
-      <div className="relative min-h-[360px] lg:min-h-[560px]">
+      <div className="relative min-h-90 lg:min-h-140">
         <ProductMedia
           src={featured?.primaryImage?.url ?? null}
           alt={featured?.primaryImage?.alt ?? featured?.name ?? ''}
@@ -62,7 +62,7 @@ export function Hero({ featured }: HeroProps) {
         {featured ? (
           <Link
             href={ROUTES.product(featured.slug)}
-            className="border-line-strong bg-background absolute top-6 right-6 max-w-[190px] border p-4"
+            className="border-line-strong bg-background absolute top-6 right-6 max-w-47.5 border p-4"
           >
             <div className="text-brand font-mono text-[10px] tracking-[0.1em] uppercase">
               Featured

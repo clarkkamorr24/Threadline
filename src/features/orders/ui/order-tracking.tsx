@@ -62,7 +62,7 @@ export function OrderTracking({ status }: OrderTrackingProps) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  'absolute top-[17px] left-[calc(50%+18px)] right-[calc(-50%+18px)] h-0.5',
+                  'absolute top-4.25 left-[calc(50%+18px)] right-[calc(-50%+18px)] h-0.5',
                   index < activeIndex ? 'bg-brand' : 'bg-line-strong',
                 )}
               />

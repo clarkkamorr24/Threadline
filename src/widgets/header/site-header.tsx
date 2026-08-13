@@ -42,7 +42,7 @@ export async function SiteHeader() {
       </div>
 
       <header className="border-line-strong bg-background/88 supports-backdrop-filter:bg-background/80 sticky top-0 z-40 border-b-2 backdrop-blur-[10px]">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-8 px-5 py-4 lg:px-10">
+        <div className="mx-auto flex max-w-360 items-center gap-8 px-5 py-4 lg:px-10">
           <MobileNav items={navItems} />
 
           <Link

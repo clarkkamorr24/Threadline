@@ -57,7 +57,7 @@ export function CartLineItem({ item, compact = false, onNavigate }: CartLineItem
     <li
       className={cn(
         'border-line flex border-b',
-        compact ? 'gap-3.5 py-[18px]' : 'gap-5 py-6 pr-0 lg:pr-8',
+        compact ? 'gap-3.5 py-4.5' : 'gap-5 py-6 pr-0 lg:pr-8',
       )}
     >
       <Link
@@ -65,7 +65,7 @@ export function CartLineItem({ item, compact = false, onNavigate }: CartLineItem
         onClick={onNavigate}
         className={cn(
           'relative shrink-0 overflow-hidden bg-[#e6e4e1]',
-          compact ? 'h-24 w-[76px]' : 'h-[140px] w-[110px]',
+          compact ? 'h-24 w-19' : 'h-35 w-27.5',
         )}
       >
         {item.imageUrl ? (
@@ -129,7 +129,7 @@ export function CartLineItem({ item, compact = false, onNavigate }: CartLineItem
         <div
           className={cn(
             'flex items-center justify-between',
-            compact ? 'mt-3' : 'mt-auto pt-[18px]',
+            compact ? 'mt-3' : 'mt-auto pt-4.5',
           )}
         >
           <div className={cn('flex items-center border', compact ? 'border-line' : 'border-line-strong')}>
@@ -145,7 +145,7 @@ export function CartLineItem({ item, compact = false, onNavigate }: CartLineItem
             <span
               className={cn(
                 'text-center tabular-nums',
-                compact ? 'w-[26px] text-[13px]' : 'w-[34px] text-sm',
+                compact ? 'w-6.5 text-[13px]' : 'w-8.5 text-sm',
               )}
             >
               {item.quantity}

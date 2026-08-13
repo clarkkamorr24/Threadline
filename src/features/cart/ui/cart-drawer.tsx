@@ -53,9 +53,9 @@ export function CartDrawer({ cart }: CartDrawerProps) {
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="bg-background flex h-full w-full max-w-[440px] flex-col shadow-2xl"
+        className="bg-background flex h-full w-full max-w-110 flex-col shadow-2xl"
       >
-        <div className="border-line-strong flex items-center justify-between border-b-2 px-6 py-[22px]">
+        <div className="border-line-strong flex items-center justify-between border-b-2 px-6 py-5.5">
           <h2 className="font-display text-xl font-extrabold">Your bag ({cart.itemCount})</h2>
           <button
             type="button"
@@ -63,7 +63,7 @@ export function CartDrawer({ cart }: CartDrawerProps) {
             aria-label="Close bag"
             className="grid size-9 place-items-center"
           >
-            <X aria-hidden="true" className="size-[18px]" />
+            <X aria-hidden="true" className="size-4.5" />
           </button>
         </div>
 
@@ -92,7 +92,7 @@ export function CartDrawer({ cart }: CartDrawerProps) {
               <Link
                 href={ROUTES.checkout}
                 onClick={close}
-                className="bg-primary text-primary-foreground flex items-center justify-center px-4 py-[15px] text-sm font-medium"
+                className="bg-primary text-primary-foreground flex items-center justify-center px-4 py-3.75 text-sm font-medium"
               >
                 Checkout · {formatMoney(cart.totals.totalCents)}
               </Link>
@@ -109,13 +109,13 @@ export function CartDrawer({ cart }: CartDrawerProps) {
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-10 text-center">
             <div className="size-20 rounded-full bg-[repeating-linear-gradient(135deg,#e6e4e1_0_11px,#eceae7_11px_22px)]" />
             <div className="font-display text-xl font-extrabold">Your bag is empty</div>
-            <p className="text-ink-70 max-w-[240px] text-sm">
+            <p className="text-ink-70 max-w-60 text-sm">
               Nothing here yet. Explore the collection and add something worth keeping.
             </p>
             <Link
               href={ROUTES.products}
               onClick={close}
-              className="bg-primary text-primary-foreground px-6 py-[13px] text-sm font-medium"
+              className="bg-primary text-primary-foreground px-6 py-3.25 text-sm font-medium"
             >
               Start shopping
             </Link>

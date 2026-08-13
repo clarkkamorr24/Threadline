@@ -126,7 +126,7 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-primary text-primary-foreground mt-1 flex items-center justify-center px-4 py-[15px] text-[15px] font-medium disabled:opacity-60"
+            className="bg-primary text-primary-foreground mt-1 flex items-center justify-center px-4 py-3.75 text-[15px] font-medium disabled:opacity-60"
           >
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>

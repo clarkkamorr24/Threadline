@@ -15,12 +15,12 @@ export function ValueStrip() {
         <div
           key={item}
           className={[
-            'border-line flex flex-1 items-center gap-2.5 px-[22px] py-4',
+            'border-line flex flex-1 items-center gap-2.5 px-5.5 py-4',
             index < items.length - 1 ? 'border-r' : '',
             index > 0 ? 'hidden md:flex' : '',
           ].join(' ')}
         >
-          <span className="bg-brand size-[5px] shrink-0 rounded-full" />
+          <span className="bg-brand size-1.25 shrink-0 rounded-full" />
           {item}
         </div>
       ))}

@@ -128,7 +128,7 @@ export default async function AdminDashboardPage() {
                   className="border-line flex items-center gap-3 border-b py-2.25 last:border-b-0"
                 >
                   <span className="text-ink-55 w-4 font-mono text-xs">{index + 1}</span>
-                  <div className="relative h-[46px] w-[38px] shrink-0 overflow-hidden bg-[#e6e4e1]">
+                  <div className="relative h-11.5 w-9.5 shrink-0 overflow-hidden bg-[#e6e4e1]">
                     {product.imageUrl ? (
                       <Image
                         src={product.imageUrl}
