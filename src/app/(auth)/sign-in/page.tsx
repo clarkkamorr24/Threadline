@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ROUTES } from '@/constants/routes';
+import { AuthErrorNotice } from '@/features/auth/ui/auth-error-notice';
 import { SignInForm } from '@/features/auth/ui/sign-in-form';
 
 export const metadata: Metadata = {
@@ -26,12 +28,22 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
   return (
     <>
-      <div className="mb-6 flex flex-col gap-1 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-        <p className="text-muted-foreground text-sm">Sign in to your account to continue.</p>
-      </div>
+      <span className="text-brand font-mono text-[11px] tracking-[0.16em] uppercase">
+        Welcome back
+      </span>
+      <h1 className="font-display mt-3 mb-2 text-[34px] font-extrabold tracking-[-0.02em] md:text-[40px]">
+        Sign in
+      </h1>
+      <p className="text-ink-70 mb-7 text-sm">
+        New to Threadline?{' '}
+        <Link href={ROUTES.signUp} className="text-brand hover:underline">
+          Create an account
+        </Link>
+      </p>
 
-      <SignInForm redirectTo={resolveRedirectTo(params.redirectTo)} initialError={error} />
+      <AuthErrorNotice fallback={error} />
+
+      <SignInForm redirectTo={resolveRedirectTo(params.redirectTo)} />
     </>
   );
 }

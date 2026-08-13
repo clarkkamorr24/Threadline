@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ROUTES } from '@/constants/routes';
 import { SignUpForm } from '@/features/auth/ui/sign-up-form';
@@ -25,12 +26,20 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
 
   return (
     <>
-      <div className="mb-6 flex flex-col gap-1 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
-        <p className="text-muted-foreground text-sm">
-          Save your cart, track orders and check out faster.
+      <>
+        <span className="text-brand font-mono text-[11px] tracking-[0.16em] uppercase">
+          Join Threadline
+        </span>
+        <h1 className="font-display mt-3 mb-2 text-[34px] font-extrabold tracking-[-0.02em] md:text-[40px]">
+          Create account
+        </h1>
+        <p className="text-ink-70 mb-7 text-sm">
+          Already have one?{' '}
+          <Link href={ROUTES.signIn} className="text-brand hover:underline">
+            Sign in
+          </Link>
         </p>
-      </div>
+      </>
 
       <SignUpForm redirectTo={resolveRedirectTo(params.redirectTo)} />
     </>

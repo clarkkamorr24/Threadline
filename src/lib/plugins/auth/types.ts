@@ -27,6 +27,8 @@ export interface CredentialsAuthPlugin extends AuthPluginBase {
   readonly kind: 'credentials';
   signIn(client: SupabaseClient, credentials: AuthCredentials): Promise<AuthOutcome>;
   signUp(client: SupabaseClient, input: AuthSignUpInput, redirectTo: string): Promise<AuthOutcome>;
+  requestPasswordReset(client: SupabaseClient, email: string, redirectTo: string): Promise<void>;
+  updatePassword(client: SupabaseClient, password: string): Promise<void>;
 }
 
 export interface OAuthAuthPlugin extends AuthPluginBase {

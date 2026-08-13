@@ -20,6 +20,25 @@ function resolveAvatarUrl(supabaseUser: SupabaseUser): string | null {
   return typeof candidate === 'string' && candidate.trim() ? candidate : null;
 }
 
+function resolveSignInProviders(supabaseUser: SupabaseUser): string[] {
+  const fromIdentities = (supabaseUser.identities ?? [])
+    .map((identity) => identity.provider)
+    .filter((provider): provider is string => Boolean(provider));
+
+  const metadata = supabaseUser.app_metadata as {
+    provider?: unknown;
+    providers?: unknown;
+  };
+
+  const fromMetadata = Array.isArray(metadata.providers)
+    ? metadata.providers.filter((provider): provider is string => typeof provider === 'string')
+    : typeof metadata.provider === 'string'
+      ? [metadata.provider]
+      : [];
+
+  return [...new Set([...fromIdentities, ...fromMetadata])];
+}
+
 async function provisionProfile(supabaseUser: SupabaseUser): Promise<AuthenticatedUser> {
   const email = supabaseUser.email?.toLowerCase();
 
@@ -30,10 +49,13 @@ async function provisionProfile(supabaseUser: SupabaseUser): Promise<Authenticat
   const { ADMIN_EMAILS } = getServerEnv();
   const role = ADMIN_EMAILS.includes(email) ? 'ADMIN' : 'USER';
 
+  const signInProviders = resolveSignInProviders(supabaseUser);
+
   const profile = await db.user.upsert({
     where: { id: supabaseUser.id },
     update: {
       email,
+      ...(signInProviders.length > 0 ? { signInProviders } : {}),
       ...(role === 'ADMIN' ? { role } : {}),
     },
     create: {
@@ -41,6 +63,7 @@ async function provisionProfile(supabaseUser: SupabaseUser): Promise<Authenticat
       email,
       name: resolveDisplayName(supabaseUser),
       avatarUrl: resolveAvatarUrl(supabaseUser),
+      signInProviders,
       role,
     },
     select: { id: true, email: true, name: true, avatarUrl: true, role: true },
@@ -63,14 +86,32 @@ export const getCurrentUser = cache(async (): Promise<AuthenticatedUser | null> 
 
   const profile = await db.user.findUnique({
     where: { id: user.id },
-    select: { id: true, email: true, name: true, avatarUrl: true, role: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatarUrl: true,
+      role: true,
+      signInProviders: true,
+    },
   });
 
   if (!profile) {
     return provisionProfile(user);
   }
 
-  return applyAdminAllowList(profile);
+  const { signInProviders, ...authenticated } = profile;
+  const current = resolveSignInProviders(user);
+  const missing = current.filter((provider) => !signInProviders.includes(provider));
+
+  if (missing.length > 0) {
+    await db.user.update({
+      where: { id: user.id },
+      data: { signInProviders: [...signInProviders, ...missing] },
+    });
+  }
+
+  return applyAdminAllowList(authenticated);
 });
 
 async function applyAdminAllowList(

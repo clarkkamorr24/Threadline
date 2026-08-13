@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import type { Metadata } from 'next';
 import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +14,7 @@ import { ROUTES } from '@/constants/routes';
 import { parseAdminListQuery, type AdminListParams } from '@/features/admin-table/model/query';
 import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
 import { AdminSearch } from '@/features/admin-table/ui/admin-search';
+import { UserAvatar } from '@/entities/user/ui/user-avatar';
 import { USER_ROLES, getUserInitials } from '@/entities/user/model/types';
 import type { UserRoleValue } from '@/entities/user/model/types';
 import { UserActiveToggle } from '@/features/admin-users/ui/user-active-toggle';
@@ -88,19 +88,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      {user.avatarUrl ? (
-                        <Image
-                          src={user.avatarUrl}
-                          alt=""
-                          width={32}
-                          height={32}
-                          className="size-8 shrink-0 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="bg-secondary text-secondary-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-medium">
-                          {getUserInitials(user)}
-                        </span>
-                      )}
+                      <UserAvatar src={user.avatarUrl} initials={getUserInitials(user)} size={32} />
                       <div className="min-w-0">
                         <p className="truncate font-medium">
                           {user.name ?? '—'}

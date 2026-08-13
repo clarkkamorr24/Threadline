@@ -13,7 +13,10 @@ export const ROUTES = {
   profile: '/account/profile',
   signIn: '/sign-in',
   signUp: '/sign-up',
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
   authCallback: '/auth/callback',
+  authConfirm: '/auth/confirm',
   admin: {
     root: '/admin',
     products: '/admin/products',

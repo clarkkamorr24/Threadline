@@ -22,6 +22,8 @@ interface UseAuthActionsResult {
   readonly signIn: (input: SignInInput) => Promise<void>;
   readonly signUp: (input: SignUpInput) => Promise<void>;
   readonly signInWithProvider: (providerId: AuthProviderId) => Promise<void>;
+  readonly requestPasswordReset: (email: string) => Promise<boolean>;
+  readonly updatePassword: (password: string) => Promise<boolean>;
   readonly oauthProviders: readonly { id: AuthProviderId; label: string }[];
   readonly isSubmitting: boolean;
   readonly pendingProvider: AuthProviderId | null;
@@ -95,6 +97,47 @@ export function useAuthActions({ redirectTo }: UseAuthActionsOptions): UseAuthAc
     [redirectTo, router, supabase, toast, toMessage],
   );
 
+  const requestPasswordReset = useCallback(
+    async (email: string): Promise<boolean> => {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+
+      const confirmUrl = `${clientEnv.NEXT_PUBLIC_SITE_URL}${ROUTES.authConfirm}?next=${encodeURIComponent(ROUTES.resetPassword)}`;
+
+      try {
+        await getCredentialsPlugin().requestPasswordReset(supabase, email, confirmUrl);
+        return true;
+      } catch (error) {
+        setErrorMessage(toMessage(error, 'Could not send the reset link. Please try again.'));
+        return false;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [supabase, toMessage],
+  );
+
+  const updatePassword = useCallback(
+    async (password: string): Promise<boolean> => {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+
+      try {
+        await getCredentialsPlugin().updatePassword(supabase, password);
+        toast.success('Password updated', 'You can now sign in with your new password.');
+        router.refresh();
+        router.push(redirectTo);
+        return true;
+      } catch (error) {
+        setErrorMessage(toMessage(error, 'Could not update your password.'));
+        return false;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [redirectTo, router, supabase, toast, toMessage],
+  );
+
   const signInWithProvider = useCallback(
     async (providerId: AuthProviderId): Promise<void> => {
       setPendingProvider(providerId);
@@ -130,6 +173,8 @@ export function useAuthActions({ redirectTo }: UseAuthActionsOptions): UseAuthAc
     signIn,
     signUp,
     signInWithProvider,
+    requestPasswordReset,
+    updatePassword,
     oauthProviders,
     isSubmitting,
     pendingProvider,

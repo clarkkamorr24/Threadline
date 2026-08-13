@@ -15,6 +15,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(url);
   };
   if (providerError) {
+    console.error('[auth/callback] Provider returned an error:', providerError);
+
+    if (/exchange external code/i.test(providerError)) {
+      return failWith(
+        'Sign-in with that provider could not be completed. Its credentials look misconfigured — try email and password for now.',
+      );
+    }
+
     return failWith(providerError);
   }
 

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -21,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { AuthenticatedUser } from '@/entities/user/model/types';
+import { UserAvatar } from '@/entities/user/ui/user-avatar';
 import { getUserInitials } from '@/entities/user/model/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/useToast';
@@ -95,15 +95,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
         ) : null}
 
         <div className="flex items-center gap-4">
-          <div className="bg-secondary text-secondary-foreground relative size-16 shrink-0 overflow-hidden rounded-full">
-            {avatarUrl ? (
-              <Image src={avatarUrl} alt="" fill sizes="64px" className="object-cover" />
-            ) : (
-              <span className="flex size-full items-center justify-center text-lg font-medium">
-                {getUserInitials(user)}
-              </span>
-            )}
-          </div>
+          <UserAvatar
+            src={avatarUrl}
+            initials={getUserInitials(user)}
+            size={64}
+            className="text-lg"
+          />
 
           {supportsUploads ? (
             <div>

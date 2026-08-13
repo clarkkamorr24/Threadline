@@ -66,10 +66,10 @@ export function OAuthButtons({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
-        <span className="bg-border h-px flex-1" />
-        <span className="text-muted-foreground text-xs">or continue with</span>
-        <span className="bg-border h-px flex-1" />
+      <div className="my-1.5 flex items-center gap-3.5">
+        <span className="bg-line h-px flex-1" />
+        <span className="text-ink-55 font-mono text-[11px] tracking-[0.08em] uppercase">or</span>
+        <span className="bg-line h-px flex-1" />
       </div>
 
       <div className="grid gap-2">
@@ -84,9 +84,10 @@ export function OAuthButtons({
               isLoading={pendingProvider === provider.id}
               disabled={disabled || (pendingProvider !== null && pendingProvider !== provider.id)}
               onClick={() => onSelect(provider.id)}
+              className="h-auto justify-center py-3.25"
             >
               {Icon && pendingProvider !== provider.id ? <Icon className="size-4" /> : null}
-              {provider.label}
+              Continue with {provider.label}
             </Button>
           );
         })}
