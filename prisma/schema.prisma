@@ -41,6 +41,7 @@ model User {
   orders    Order[]
   addresses Address[]
   favorites Favorite[]
+  reviews   Review[]
 
   @@index([role])
   @@index([createdAt])
@@ -78,6 +79,7 @@ model Product {
   cartItems  CartItem[]
   orderItems OrderItem[]
   favorites  Favorite[]
+  reviews    Review[]
 
   @@index([status, createdAt])
   @@index([status, basePriceCents])
@@ -167,6 +169,25 @@ model Favorite {
   @@index([userId, createdAt])
   @@index([userId, productId, variantId])
   @@map("favorites")
+}
+
+model Review {
+  id              String   @id @default(cuid())
+  productId       String
+  userId          String   @db.Uuid
+  rating          Int
+  title           String
+  body            String
+  isVerifiedBuyer Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId, createdAt])
+  @@map("reviews")
 }
 
 model Address {

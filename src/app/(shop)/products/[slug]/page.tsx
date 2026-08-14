@@ -6,16 +6,22 @@ import { FREE_SHIPPING_THRESHOLD_CENTS } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
 import { ProductSelectionProvider } from '@/entities/product/model/product-selection';
 import { ProductGrid } from '@/entities/product/ui/product-grid';
+import { formatAverage } from '@/entities/review/model/types';
+import { StarRating } from '@/entities/review/ui/star-rating';
 import { ProductTabs } from '@/features/catalog/ui/product-tabs';
 import { VariantGallery } from '@/features/catalog/ui/variant-gallery';
 import { AddToCartForm } from '@/features/cart/ui/add-to-cart-form';
 import { FavoriteButton } from '@/features/favorites/ui/favorite-button';
+import { ReviewSection } from '@/features/reviews/ui/review-section';
 import { getCurrentUser } from '@/lib/auth/session';
 import { isAppError } from '@/lib/errors';
 import { getCartVariantQuantities } from '@/services/cartService';
 import { isFavorited } from '@/services/favoriteService';
 import { getProductBySlug, getRelatedProducts } from '@/services/productService';
+import { getReviewSummary, getUserReview, listReviews } from '@/services/reviewService';
 import { formatMoney } from '@/utils/money';
+
+const REVIEWS_SHOWN = 8;
 
 interface ProductPageProps {
   readonly params: Promise<{ slug: string }>;
@@ -58,19 +64,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const primaryCategory = product.categories[0] ?? null;
 
-  const [user, related] = await Promise.all([
+  const [user, related, reviewSummary, reviews] = await Promise.all([
     getCurrentUser(),
-    getRelatedProducts(product.id, product.categories.map((category) => category.id), 4),
+    getRelatedProducts(
+      product.id,
+      product.categories.map((category) => category.id),
+      4,
+    ),
+    getReviewSummary(product.id),
+    listReviews(product.id, REVIEWS_SHOWN),
   ]);
-  
-  const [favorited, cartQuantities] =
+
+  const [favorited, cartQuantities, ownReview] =
     user?.role === 'USER'
       ? await Promise.all([
           isFavorited(user.id, product.id, null),
           getCartVariantQuantities(user.id),
+          getUserReview(user.id, product.id),
         ])
-      : [false, {}];
-
+      : [false, {}, null];
 
   return (
     <div>
@@ -88,10 +100,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {primaryCategory ? (
           <>
             {' / '}
-            <Link
-              href={ROUTES.category(primaryCategory.slug)}
-              className="hover:text-foreground"
-            >
+            <Link href={ROUTES.category(primaryCategory.slug)} className="hover:text-foreground">
               {primaryCategory.name}
             </Link>
           </>
@@ -118,11 +127,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.name}
             </h1>
 
+            {reviewSummary.total > 0 ? (
+              <a href="#reviews" className="mb-5 flex w-fit items-center gap-2.5">
+                <StarRating value={reviewSummary.average} size={16} />
+                <span className="text-[13px] font-semibold">
+                  {formatAverage(reviewSummary.average)}
+                </span>
+                <span className="text-ink-55 hover:text-foreground text-[13px] underline-offset-4 hover:underline">
+                  · {reviewSummary.total} review{reviewSummary.total === 1 ? '' : 's'}
+                </span>
+              </a>
+            ) : null}
+
             <div className="border-line mb-5 flex items-center gap-3 border-b pb-5.5">
               <span className="text-[28px] font-semibold">
-                {product.hasPriceRange ? (
-                  <span className="text-ink-55 text-lg">from </span>
-                ) : null}
+                {product.hasPriceRange ? <span className="text-ink-55 text-lg">from </span> : null}
                 {formatMoney(product.priceCents)}
               </span>
               {!product.inStock ? (
@@ -172,6 +191,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
         description={product.description}
         material={product.material}
         categoryName={primaryCategory?.name ?? 'Threadline'}
+      />
+
+      <ReviewSection
+        productId={product.id}
+        productSlug={product.slug}
+        summary={reviewSummary}
+        reviews={reviews}
+        ownReview={ownReview}
+        canReview={user?.role === 'USER'}
+        signInHref={`${ROUTES.signIn}?redirectTo=${encodeURIComponent(`${ROUTES.product(product.slug)}#reviews`)}`}
       />
 
       {related.length > 0 ? (
