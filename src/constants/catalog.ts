@@ -1,5 +1,5 @@
 export const PRODUCTS_PER_PAGE = 12;
-export const ADMIN_ROWS_PER_PAGE = 25;
+export const ADMIN_ROWS_PER_PAGE = 10;
 export const ORDER_HISTORY_STEP = 10;
 export const ORDER_HISTORY_MAX = 200;
 export const MAX_PAGE_SIZE = 60;

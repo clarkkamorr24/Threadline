@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { clientEnv } from '@/config/env';
 import { ROUTES } from '@/constants/routes';
+import { SUSPENDED_MESSAGE } from '@/entities/user/model/types';
+import { getAccountStatusAction } from '@/features/auth/api/actions';
 import { useToast } from '@/hooks/useToast';
 import {
   getCredentialsPlugin,
@@ -47,8 +49,7 @@ export function useAuthActions({ redirectTo }: UseAuthActionsOptions): UseAuthAc
   );
 
   const toMessage = useCallback(
-    (error: unknown, fallback: string): string =>
-      isAppError(error) ? error.message : fallback,
+    (error: unknown, fallback: string): string => (isAppError(error) ? error.message : fallback),
     [],
   );
 
@@ -59,6 +60,15 @@ export function useAuthActions({ redirectTo }: UseAuthActionsOptions): UseAuthAc
 
       try {
         await getCredentialsPlugin().signIn(supabase, input);
+
+        const status = await getAccountStatusAction({});
+
+        if (status.success && status.data.isSuspended) {
+          await supabase.auth.signOut();
+          setErrorMessage(SUSPENDED_MESSAGE);
+          return false;
+        }
+
         router.refresh();
         router.push(redirectTo);
         return true;

@@ -7,13 +7,12 @@ import { NotFoundError, ValidationError } from '@/lib/errors';
 
 export interface AdminUserQuery {
   readonly search: string | null;
-  readonly role: UserRoleValue | null;
   readonly page: number;
   readonly pageSize: number;
 }
 
 function buildUserWhere(query: AdminUserQuery): Prisma.UserWhereInput {
-  const conditions: Prisma.UserWhereInput[] = [];
+  const conditions: Prisma.UserWhereInput[] = [{ role: 'USER' }];
 
   if (query.search) {
     conditions.push({
@@ -24,11 +23,7 @@ function buildUserWhere(query: AdminUserQuery): Prisma.UserWhereInput {
     });
   }
 
-  if (query.role) {
-    conditions.push({ role: query.role });
-  }
-
-  return conditions.length > 0 ? { AND: conditions } : {};
+  return { AND: conditions };
 }
 
 const adminUserSelect = {
@@ -105,10 +100,7 @@ export async function getUserStats(): Promise<UserStats> {
   return { totalUsers, adminCount, newThisMonth };
 }
 
-export async function updateUserRole(
-  userId: string,
-  role: UserRoleValue,
-): Promise<AdminUserRow> {
+export async function setUserActive(userId: string, isActive: boolean): Promise<AdminUserRow> {
   const target = await db.user.findUnique({
     where: { id: userId },
     select: { id: true, role: true },
@@ -118,28 +110,8 @@ export async function updateUserRole(
     throw new NotFoundError('User');
   }
 
-  if (target.role === 'ADMIN' && role !== 'ADMIN') {
-    const adminCount = await db.user.count({ where: { role: 'ADMIN' } });
-
-    if (adminCount <= 1) {
-      throw new ValidationError('You cannot remove the last administrator.');
-    }
-  }
-
-  const updated = await db.user.update({
-    where: { id: userId },
-    data: { role },
-    select: adminUserSelect,
-  });
-
-  return toAdminUserRow(updated);
-}
-
-export async function setUserActive(userId: string, isActive: boolean): Promise<AdminUserRow> {
-  const target = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
-
-  if (!target) {
-    throw new NotFoundError('User');
+  if (target.role === 'ADMIN') {
+    throw new ValidationError('Administrator accounts cannot be suspended.');
   }
 
   const updated = await db.user.update({
@@ -163,7 +135,7 @@ export async function updateProfile(
   const updated = await db.user.update({
     where: { id: userId },
     data: { name: input.name, avatarUrl: input.avatarUrl },
-    select: { id: true, email: true, name: true, avatarUrl: true, role: true },
+    select: { id: true, email: true, name: true, avatarUrl: true, role: true, isActive: true },
   });
 
   return updated;

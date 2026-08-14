@@ -15,10 +15,8 @@ import { parseAdminListQuery, type AdminListParams } from '@/features/admin-tabl
 import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
 import { AdminSearch } from '@/features/admin-table/ui/admin-search';
 import { UserAvatar } from '@/entities/user/ui/user-avatar';
-import { USER_ROLES, getUserInitials } from '@/entities/user/model/types';
-import type { UserRoleValue } from '@/entities/user/model/types';
+import { getUserInitials } from '@/entities/user/model/types';
 import { UserActiveToggle } from '@/features/admin-users/ui/user-active-toggle';
-import { UserRoleSelect } from '@/features/admin-users/ui/user-role-select';
 import { requireAdmin } from '@/lib/auth/session';
 import { listUsers } from '@/services/userService';
 import { formatMoney } from '@/utils/money';
@@ -30,28 +28,21 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 interface AdminUsersPageProps {
-  readonly searchParams: Promise<AdminListParams & { role?: string }>;
-}
-
-function parseRole(value: string | undefined): UserRoleValue | null {
-  return value && (USER_ROLES as readonly string[]).includes(value)
-    ? (value as UserRoleValue)
-    : null;
+  readonly searchParams: Promise<AdminListParams>;
 }
 
 export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
-  const admin = await requireAdmin();
+  await requireAdmin();
   const params = await searchParams;
-  const listQuery = parseAdminListQuery(params);
 
-  const result = await listUsers({ ...listQuery, role: parseRole(params.role) });
+  const result = await listUsers(parseAdminListQuery(params));
 
   return (
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="font-display text-[22px] font-extrabold">Users</h1>
         <p className="text-ink-55 text-sm">
-          {result.total} registered {result.total === 1 ? 'account' : 'accounts'}.
+          {result.total} customer {result.total === 1 ? 'account' : 'accounts'}.
         </p>
       </header>
 
@@ -65,7 +56,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
       {result.items.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No users yet"
+          title="No customers yet"
           description="Accounts appear here once someone signs up."
         />
       ) : (
@@ -77,7 +68,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 <TableHead>Joined</TableHead>
                 <TableHead className="text-right">Orders</TableHead>
                 <TableHead className="text-right">Spent</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>
                   <span className="sr-only">Account</span>
                 </TableHead>
@@ -90,18 +81,8 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                     <div className="flex items-center gap-3">
                       <UserAvatar src={user.avatarUrl} initials={getUserInitials(user)} size={32} />
                       <div className="min-w-0">
-                        <p className="truncate font-medium">
-                          {user.name ?? '—'}
-                          {user.id === admin.id ? (
-                            <span className="text-muted-foreground font-normal"> (you)</span>
-                          ) : null}
-                        </p>
+                        <p className="truncate font-medium">{user.name ?? '—'}</p>
                         <p className="text-muted-foreground truncate text-xs">{user.email}</p>
-                        {!user.isActive ? (
-                          <Badge variant="secondary" className="mt-1">
-                            Disabled
-                          </Badge>
-                        ) : null}
                       </div>
                     </div>
                   </TableCell>
@@ -117,19 +98,16 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                     {formatMoney(user.totalSpentCents)}
                   </TableCell>
                   <TableCell>
-                    <UserRoleSelect
-                      userId={user.id}
-                      userEmail={user.email}
-                      role={user.role}
-                      isSelf={user.id === admin.id}
-                    />
+                    <Badge variant={user.isActive ? 'success' : 'destructive'}>
+                      {user.isActive ? 'Active' : 'Suspended'}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <UserActiveToggle
                       userId={user.id}
                       userEmail={user.email}
+                      userName={user.name}
                       isActive={user.isActive}
-                      isSelf={user.id === admin.id}
                     />
                   </TableCell>
                 </TableRow>

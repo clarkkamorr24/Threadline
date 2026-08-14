@@ -39,9 +39,7 @@ function MicrosoftIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-const PROVIDER_ICONS: Partial<
-  Record<AuthProviderId, ComponentType<SVGProps<SVGSVGElement>>>
-> = {
+const PROVIDER_ICONS: Partial<Record<AuthProviderId, ComponentType<SVGProps<SVGSVGElement>>>> = {
   github: Github,
   google: GoogleIcon,
   azure: MicrosoftIcon,

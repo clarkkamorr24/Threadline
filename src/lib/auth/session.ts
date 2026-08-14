@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { getServerEnv } from '@/config/env';
 import { ROUTES } from '@/constants/routes';
+import { SUSPENDED_MESSAGE } from '@/entities/user/model/types';
 import type { AuthenticatedUser } from '@/entities/user/model/types';
 import { ForbiddenError, UnauthorizedError } from '@/lib/errors';
 import { db } from '@/lib/db';
@@ -66,7 +67,7 @@ async function provisionProfile(supabaseUser: SupabaseUser): Promise<Authenticat
       signInProviders,
       role,
     },
-    select: { id: true, email: true, name: true, avatarUrl: true, role: true },
+    select: { id: true, email: true, name: true, avatarUrl: true, role: true, isActive: true },
   });
 
   return profile;
@@ -92,6 +93,7 @@ export const getCurrentUser = cache(async (): Promise<AuthenticatedUser | null> 
       name: true,
       avatarUrl: true,
       role: true,
+      isActive: true,
       signInProviders: true,
     },
   });
@@ -114,9 +116,7 @@ export const getCurrentUser = cache(async (): Promise<AuthenticatedUser | null> 
   return applyAdminAllowList(authenticated);
 });
 
-async function applyAdminAllowList(
-  profile: AuthenticatedUser,
-): Promise<AuthenticatedUser> {
+async function applyAdminAllowList(profile: AuthenticatedUser): Promise<AuthenticatedUser> {
   const { ADMIN_EMAILS } = getServerEnv();
 
   if (profile.role === 'ADMIN' || !ADMIN_EMAILS.includes(profile.email.toLowerCase())) {
@@ -126,7 +126,7 @@ async function applyAdminAllowList(
   const promoted = await db.user.update({
     where: { id: profile.id },
     data: { role: 'ADMIN' },
-    select: { id: true, email: true, name: true, avatarUrl: true, role: true },
+    select: { id: true, email: true, name: true, avatarUrl: true, role: true, isActive: true },
   });
 
   console.info(`[auth] Promoted ${promoted.email} to ADMIN via ADMIN_EMAILS.`);
@@ -134,12 +134,15 @@ async function applyAdminAllowList(
   return promoted;
 }
 
-
 export async function requireUser(): Promise<AuthenticatedUser> {
   const user = await getCurrentUser();
 
   if (!user) {
     throw new UnauthorizedError();
+  }
+
+  if (!user.isActive) {
+    throw new ForbiddenError(SUSPENDED_MESSAGE);
   }
 
   return user;
@@ -172,6 +175,10 @@ export async function requireUserOrRedirect(returnTo: string): Promise<Authentic
 
   if (!user) {
     redirect(`${ROUTES.signIn}?redirectTo=${encodeURIComponent(returnTo)}`);
+  }
+
+  if (!user.isActive) {
+    throw new ForbiddenError(SUSPENDED_MESSAGE);
   }
 
   return user;

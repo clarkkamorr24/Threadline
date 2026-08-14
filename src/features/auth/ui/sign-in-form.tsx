@@ -66,8 +66,8 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
         <Alert className="border-brand text-brand rounded-none">
           <CircleAlert aria-hidden="true" />
           <AlertDescription>
-            This account was created with {oauthHint}. Use “Continue with {oauthHint}” below
-            instead of a password.
+            This account was created with {oauthHint}. Use “Continue with {oauthHint}” below instead
+            of a password.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -120,10 +120,7 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
           />
 
           <div className="flex justify-end">
-            <Link
-              href={ROUTES.forgotPassword}
-              className="text-brand text-[13px] hover:underline"
-            >
+            <Link href={ROUTES.forgotPassword} className="text-brand text-[13px] hover:underline">
               Forgot password?
             </Link>
           </div>

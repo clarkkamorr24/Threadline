@@ -1,12 +1,15 @@
 export const USER_ROLES = ['USER', 'ADMIN'] as const;
 export type UserRoleValue = (typeof USER_ROLES)[number];
 
+export const SUSPENDED_MESSAGE = 'Your account has been suspended.';
+
 export interface AuthenticatedUser {
   readonly id: string;
   readonly email: string;
   readonly name: string | null;
   readonly avatarUrl: string | null;
   readonly role: UserRoleValue;
+  readonly isActive: boolean;
 }
 
 export interface AdminUserRow {

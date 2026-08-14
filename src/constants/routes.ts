@@ -17,6 +17,7 @@ export const ROUTES = {
   resetPassword: '/reset-password',
   authCallback: '/auth/callback',
   authConfirm: '/auth/confirm',
+  authSuspended: '/auth/suspended',
   admin: {
     root: '/admin',
     products: '/admin/products',

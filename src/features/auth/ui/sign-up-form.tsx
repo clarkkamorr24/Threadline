@@ -126,12 +126,7 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@email.com"
-                    {...field}
-                  />
+                  <Input type="email" autoComplete="email" placeholder="you@email.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -85,12 +85,7 @@ export function ForgotPasswordForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@email.com"
-                  {...field}
-                />
+                <Input type="email" autoComplete="email" placeholder="you@email.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -105,7 +100,10 @@ export function ForgotPasswordForm() {
           {isSubmitting ? 'Sending…' : 'Send reset link'}
         </button>
 
-        <Link href={ROUTES.signIn} className="text-ink-70 hover:text-foreground text-center text-sm">
+        <Link
+          href={ROUTES.signIn}
+          className="text-ink-70 hover:text-foreground text-center text-sm"
+        >
           ← Back to sign in
         </Link>
       </form>

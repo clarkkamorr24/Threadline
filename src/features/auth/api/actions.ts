@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { createAction } from '@/lib/serverAction';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 const OAUTH_LABELS: Readonly<Record<string, string>> = {
   google: 'Google',
@@ -13,6 +14,28 @@ const OAUTH_LABELS: Readonly<Record<string, string>> = {
 const lookupSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
 });
+
+export const getAccountStatusAction = createAction(
+  'auth.accountStatus',
+  z.object({}),
+  async (): Promise<{ isSuspended: boolean }> => {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { isSuspended: false };
+    }
+
+    const profile = await db.user.findUnique({
+      where: { id: user.id },
+      select: { isActive: true },
+    });
+
+    return { isSuspended: profile !== null && !profile.isActive };
+  },
+);
 
 export interface SignInMethodHint {
   readonly oauthOnly: boolean;
@@ -30,7 +53,8 @@ export const describeSignInMethodAction = createAction(
 
     const providers = profile?.signInProviders ?? [];
     const oauthProviders = providers.filter((provider) => provider !== 'email');
-    const oauthOnly = providers.length > 0 && oauthProviders.length > 0 && !providers.includes('email');
+    const oauthOnly =
+      providers.length > 0 && oauthProviders.length > 0 && !providers.includes('email');
 
     if (!oauthOnly) {
       return { oauthOnly: false, providerLabel: null };

@@ -15,6 +15,10 @@ export default async function ShopLayout({ children }: { readonly children: Reac
     redirect(ROUTES.admin.root);
   }
 
+  if (user && !user.isActive) {
+    redirect(ROUTES.authSuspended);
+  }
+
   const cart = user ? await getCart(user.id) : EMPTY_CART;
 
   return (
