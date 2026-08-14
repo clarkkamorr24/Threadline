@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants/routes';
 import { OrderStatusBadge } from '@/entities/order/ui/order-status-badge';
 import { requireUserOrRedirect } from '@/lib/auth/session';
 import { listOrders } from '@/services/orderService';
+import { formatShortDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
 
 export const metadata: Metadata = {
@@ -71,12 +72,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         #{order.orderNumber}
                       </div>
                       <div className="text-ink-55 mt-1 font-mono text-[11px]">
-                        {new Date(order.placedAt).toLocaleDateString('en-PH', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}{' '}
-                        · {order.itemCount} item{order.itemCount === 1 ? '' : 's'}
+                        {formatShortDateTime(order.placedAt)} · {order.itemCount} item
+                        {order.itemCount === 1 ? '' : 's'}
                       </div>
                     </div>
 

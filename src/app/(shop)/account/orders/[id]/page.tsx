@@ -9,6 +9,7 @@ import { OrderStatusBadge } from '@/entities/order/ui/order-status-badge';
 import { requireUserOrRedirect } from '@/lib/auth/session';
 import { isAppError } from '@/lib/errors';
 import { confirmPendingPayment, getOrderById } from '@/services/orderService';
+import { formatDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
 
 export const metadata: Metadata = {
@@ -54,14 +55,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Order {order.orderNumber}</h1>
-          <p className="text-muted-foreground text-sm">
-            Placed{' '}
-            {new Date(order.placedAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
+          <p className="text-muted-foreground text-sm">Placed {formatDateTime(order.placedAt)}</p>
         </div>
         <OrderStatusBadge status={order.status} />
       </header>
@@ -94,7 +88,9 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                         {item.productName}
                       </Link>
                     </h2>
-                    <p className="text-muted-foreground mt-0.5 text-sm">{item.color} - {item.size}</p>
+                    <p className="text-muted-foreground mt-0.5 text-sm">
+                      {item.color} - {item.size}
+                    </p>
                     <p className="text-muted-foreground text-sm">
                       {formatMoney(item.unitPriceCents)} × {item.quantity}
                     </p>
@@ -116,9 +112,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 <div key={row.label} className="flex justify-between">
                   <dt className="text-muted-foreground">{row.label}</dt>
                   <dd>
-                    {row.label === 'Shipping' && row.value === 0
-                      ? 'Free'
-                      : formatMoney(row.value)}
+                    {row.label === 'Shipping' && row.value === 0 ? 'Free' : formatMoney(row.value)}
                   </dd>
                 </div>
               ))}

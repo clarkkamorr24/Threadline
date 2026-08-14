@@ -8,15 +8,22 @@ export interface InventorySummary {
   readonly lowOrOutCount: number;
 }
 
-export interface InventoryRow {
+export interface InventoryVariant {
   readonly variantId: string;
-  readonly productId: string;
-  readonly productName: string;
   readonly sku: string;
   readonly size: string;
   readonly color: string;
   readonly stock: number;
+}
+
+export interface InventoryProduct {
+  readonly productId: string;
+  readonly productName: string;
   readonly imageUrl: string | null;
+  readonly totalUnits: number;
+  readonly lowCount: number;
+  readonly outCount: number;
+  readonly variants: readonly InventoryVariant[];
 }
 
 export async function getInventorySummary(): Promise<InventorySummary> {
@@ -37,35 +44,56 @@ export async function getInventorySummary(): Promise<InventorySummary> {
   };
 }
 
-export async function listInventory(limit = 100): Promise<readonly InventoryRow[]> {
-  const rows = await db.productVariant.findMany({
-    where: { product: { status: { not: 'ARCHIVED' } } },
+export async function listInventory(limit = 100): Promise<readonly InventoryProduct[]> {
+  const rows = await db.product.findMany({
+    where: { status: { not: 'ARCHIVED' } },
     select: {
       id: true,
-      productId: true,
-      sku: true,
-      size: true,
-      color: true,
-      stock: true,
-      product: { select: { name: true } },
-      images: {
-        select: { url: true },
-        orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-        take: 1,
+      name: true,
+      variants: {
+        select: {
+          id: true,
+          sku: true,
+          size: true,
+          color: true,
+          stock: true,
+          images: {
+            select: { url: true },
+            orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+            take: 1,
+          },
+        },
+        orderBy: [{ stock: 'asc' }, { sku: 'asc' }],
       },
     },
-    orderBy: [{ stock: 'asc' }, { sku: 'asc' }],
     take: limit,
   });
 
-  return rows.map((row) => ({
-    variantId: row.id,
-    productId: row.productId,
-    productName: row.product.name,
-    sku: row.sku,
-    size: row.size,
-    color: row.color,
-    stock: row.stock,
-    imageUrl: row.images[0]?.url ?? null,
-  }));
+  const products = rows.map((row) => {
+    const variants = row.variants.map((variant) => ({
+      variantId: variant.id,
+      sku: variant.sku,
+      size: variant.size,
+      color: variant.color,
+      stock: variant.stock,
+    }));
+
+    return {
+      productId: row.id,
+      productName: row.name,
+      imageUrl: row.variants.flatMap((variant) => variant.images)[0]?.url ?? null,
+      totalUnits: variants.reduce((sum, variant) => sum + variant.stock, 0),
+      lowCount: variants.filter(
+        (variant) => variant.stock > 0 && variant.stock <= LOW_STOCK_THRESHOLD,
+      ).length,
+      outCount: variants.filter((variant) => variant.stock === 0).length,
+      variants,
+    };
+  });
+
+  return products.sort((a, b) => {
+    const urgency = b.outCount + b.lowCount - (a.outCount + a.lowCount);
+
+    return urgency !== 0 ? urgency : a.totalUnits - b.totalUnits;
+  });
 }

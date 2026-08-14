@@ -8,6 +8,7 @@ import { ROUTES } from '@/constants/routes';
 import { OrderStatusSelect } from '@/features/admin-orders/ui/order-status-select';
 import { isAppError } from '@/lib/errors';
 import { getOrderForAdmin } from '@/services/orderService';
+import { formatDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
 
 export const metadata: Metadata = {
@@ -51,14 +52,7 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-[22px] font-extrabold">Order {order.orderNumber}</h1>
-          <p className="text-ink-55 text-sm">
-            Placed{' '}
-            {new Date(order.placedAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
+          <p className="text-ink-55 text-sm">Placed {formatDateTime(order.placedAt)}</p>
         </div>
         <OrderStatusSelect
           orderId={order.id}
@@ -94,10 +88,7 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
                   <div className="flex flex-1 justify-between gap-4">
                     <div className="min-w-0">
                       <h2 className="truncate text-sm font-medium">
-                        <Link
-                          href={ROUTES.product(item.productSlug)}
-                          className="hover:underline"
-                        >
+                        <Link href={ROUTES.product(item.productSlug)} className="hover:underline">
                           {item.productName}
                         </Link>
                       </h2>
@@ -129,9 +120,7 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
                 <div key={row.label} className="flex justify-between">
                   <dt className="text-muted-foreground">{row.label}</dt>
                   <dd>
-                    {row.label === 'Shipping' && row.value === 0
-                      ? 'Free'
-                      : formatMoney(row.value)}
+                    {row.label === 'Shipping' && row.value === 0 ? 'Free' : formatMoney(row.value)}
                   </dd>
                 </div>
               ))}

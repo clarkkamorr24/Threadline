@@ -23,6 +23,7 @@ import { ORDER_STATUSES } from '@/entities/order/model/types';
 import type { OrderStatusValue } from '@/entities/order/model/types';
 import { OrderStatusSelect } from '@/features/admin-orders/ui/order-status-select';
 import { listAllOrders } from '@/services/orderService';
+import { formatShortDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
 
 export const metadata: Metadata = {
@@ -66,7 +67,9 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
 
       <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
         <Button asChild variant={activeStatus === null ? 'default' : 'outline'} size="sm">
-          <Link href={buildAdminListHref(ROUTES.admin.orders, params, { status: null, page: null })}>
+          <Link
+            href={buildAdminListHref(ROUTES.admin.orders, params, { status: null, page: null })}
+          >
             All
           </Link>
         </Button>
@@ -120,16 +123,10 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                   </TableCell>
                   <TableCell className="min-w-0">
                     <p className="truncate text-sm">{order.customerName ?? '—'}</p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {order.customerEmail}
-                    </p>
+                    <p className="text-muted-foreground truncate text-xs">{order.customerEmail}</p>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {new Date(order.placedAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                    {formatShortDateTime(order.placedAt)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{order.itemCount}</TableCell>
                   <TableCell className="text-right font-medium tabular-nums">
