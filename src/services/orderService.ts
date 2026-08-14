@@ -2,6 +2,7 @@ import 'server-only';
 import { randomInt } from 'node:crypto';
 import { Prisma } from '@/generated/prisma/client';
 import type {
+  AdminOrderDetail,
   AdminOrderRow,
   OrderDetail,
   OrderLineItem,
@@ -12,7 +13,12 @@ import type {
 import { canTransition } from '@/entities/order/model/types';
 import type { Paginated } from '@/entities/product/model/types';
 import { db } from '@/lib/db';
-import { ConflictError, InsufficientStockError, NotFoundError, ValidationError } from '@/lib/errors';
+import {
+  ConflictError,
+  InsufficientStockError,
+  NotFoundError,
+  ValidationError,
+} from '@/lib/errors';
 import { getPaymentPlugin } from '@/lib/plugins/payment/registry';
 import { calculateTotals } from '@/utils/pricing';
 
@@ -43,7 +49,16 @@ const orderDetailSelect = {
   },
 } satisfies Prisma.OrderSelect;
 
+const adminOrderDetailSelect = {
+  ...orderDetailSelect,
+  paymentProvider: true,
+  paymentMethod: true,
+  paymentReference: true,
+  user: { select: { name: true, email: true, avatarUrl: true } },
+} satisfies Prisma.OrderSelect;
+
 type OrderDetailRow = Prisma.OrderGetPayload<{ select: typeof orderDetailSelect }>;
+type AdminOrderDetailRow = Prisma.OrderGetPayload<{ select: typeof adminOrderDetailSelect }>;
 
 function toOrderLineItem(row: OrderDetailRow['items'][number]): OrderLineItem {
   return {
@@ -75,6 +90,18 @@ function toOrderDetail(row: OrderDetailRow): OrderDetail {
     placedAt: row.createdAt.toISOString(),
     items: row.items.map(toOrderLineItem),
     itemCount: row.items.reduce((count, item) => count + item.quantity, 0),
+  };
+}
+
+function toAdminOrderDetail(row: AdminOrderDetailRow): AdminOrderDetail {
+  return {
+    ...toOrderDetail(row),
+    customerName: row.user.name,
+    customerEmail: row.user.email,
+    customerAvatarUrl: row.user.avatarUrl,
+    paymentProvider: row.paymentProvider,
+    paymentMethod: row.paymentMethod,
+    paymentReference: row.paymentReference,
   };
 }
 
@@ -352,6 +379,8 @@ export async function listAllOrders(query: AdminOrderQuery): Promise<Paginated<A
         status: true,
         totalCents: true,
         createdAt: true,
+        paymentProvider: true,
+        paymentMethod: true,
         user: { select: { email: true, name: true } },
         items: { select: { quantity: true } },
       },
@@ -372,6 +401,8 @@ export async function listAllOrders(query: AdminOrderQuery): Promise<Paginated<A
       placedAt: row.createdAt.toISOString(),
       customerEmail: row.user.email,
       customerName: row.user.name,
+      paymentProvider: row.paymentProvider,
+      paymentMethod: row.paymentMethod,
     })),
     total,
     page: query.page,
@@ -380,14 +411,17 @@ export async function listAllOrders(query: AdminOrderQuery): Promise<Paginated<A
   };
 }
 
-export async function getOrderForAdmin(orderId: string): Promise<OrderDetail> {
-  const row = await db.order.findUnique({ where: { id: orderId }, select: orderDetailSelect });
+export async function getOrderForAdmin(orderId: string): Promise<AdminOrderDetail> {
+  const row = await db.order.findUnique({
+    where: { id: orderId },
+    select: adminOrderDetailSelect,
+  });
 
   if (!row) {
     throw new NotFoundError('Order');
   }
 
-  return toOrderDetail(row);
+  return toAdminOrderDetail(row);
 }
 
 export async function attachPaymentReference(
@@ -471,8 +505,8 @@ export async function updateOrderStatus(
   const updated = await db.order.update({
     where: { id: orderId },
     data: { status: nextStatus },
-    select: orderDetailSelect,
+    select: adminOrderDetailSelect,
   });
 
-  return toOrderDetail(updated);
+  return toAdminOrderDetail(updated);
 }

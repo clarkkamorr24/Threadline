@@ -18,13 +18,17 @@ export default async function AdminLayout({ children }: { readonly children: Rea
   }
 
   return (
-    <div className="bg-background grid min-h-dvh lg:grid-cols-[248px_1fr]">
-      <AdminSidebar name={user.name ?? user.email} initials={getUserInitials(user)} />
+    <div className="bg-background grid min-h-dvh lg:grid-cols-[248px_1fr] print:block print:min-h-0">
+      <div className="print:hidden">
+        <AdminSidebar name={user.name ?? user.email} initials={getUserInitials(user)} />
+      </div>
 
       <div className="flex min-w-0 flex-col">
-        <AdminTopbar />
+        <div className="print:hidden">
+          <AdminTopbar />
+        </div>
 
-        <main className="flex-1 px-5 pt-7 pb-16 lg:px-8">{children}</main>
+        <main className="flex-1 px-5 pt-7 pb-16 lg:px-8 print:p-0">{children}</main>
       </div>
     </div>
   );

@@ -73,7 +73,18 @@ export interface OrderDetail extends OrderSummary {
   readonly taxCents: number;
 }
 
+export interface AdminOrderDetail extends OrderDetail {
+  readonly customerName: string | null;
+  readonly customerEmail: string;
+  readonly customerAvatarUrl: string | null;
+  readonly paymentProvider: string | null;
+  readonly paymentMethod: string | null;
+  readonly paymentReference: string | null;
+}
+
 export interface AdminOrderRow extends OrderSummary {
   readonly customerEmail: string;
   readonly customerName: string | null;
+  readonly paymentProvider: string | null;
+  readonly paymentMethod: string | null;
 }

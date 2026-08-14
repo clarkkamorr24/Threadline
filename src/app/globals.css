@@ -212,6 +212,28 @@
   }
 }
 
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  .invoice-sheet {
+    width: 210mm;
+    min-height: 297mm;
+  }
+
+  .invoice-sheet * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 @keyframes marquee {
   from {
     transform: translateX(var(--marquee-offset, -50%));

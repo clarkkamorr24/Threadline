@@ -31,6 +31,7 @@ export const ROUTES = {
     analytics: '/admin/analytics',
     orders: '/admin/orders',
     order: (id: string) => `/admin/orders/${id}`,
+    orderInvoice: (id: string) => `/admin/orders/${id}/invoice`,
   },
 } as const;
 

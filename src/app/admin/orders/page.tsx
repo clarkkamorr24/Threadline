@@ -21,6 +21,7 @@ import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
 import { AdminSearch } from '@/features/admin-table/ui/admin-search';
 import { ORDER_STATUSES } from '@/entities/order/model/types';
 import type { OrderStatusValue } from '@/entities/order/model/types';
+import { PaymentMark } from '@/entities/order/ui/payment-mark';
 import { OrderStatusSelect } from '@/features/admin-orders/ui/order-status-select';
 import { listAllOrders } from '@/services/orderService';
 import { formatShortDateTime } from '@/utils/datetime';
@@ -106,8 +107,9 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                 <TableHead>Customer</TableHead>
                 <TableHead>Placed</TableHead>
                 <TableHead className="text-right">Items</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead>Payment</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,8 +131,13 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                     {formatShortDateTime(order.placedAt)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{order.itemCount}</TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
-                    {formatMoney(order.totalCents)}
+                  <TableCell>
+                    <PaymentMark
+                      method={order.paymentMethod}
+                      provider={order.paymentProvider}
+                      height={16}
+                      hideLabel
+                    />
                   </TableCell>
                   <TableCell>
                     <OrderStatusSelect
@@ -138,6 +145,9 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                       orderNumber={order.orderNumber}
                       status={order.status}
                     />
+                  </TableCell>
+                  <TableCell className="text-right font-medium tabular-nums">
+                    {formatMoney(order.totalCents)}
                   </TableCell>
                 </TableRow>
               ))}
