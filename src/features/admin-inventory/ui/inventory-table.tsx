@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useState } from 'react';
-import { ChevronRight, ImageOff } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, ImageOff } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -14,8 +14,13 @@ import {
 } from '@/components/ui/table';
 import { ROUTES } from '@/constants/routes';
 import { LOW_STOCK_THRESHOLD } from '@/constants/store';
+import { buildAdminListHref } from '@/features/admin-table/model/query';
 import { cn } from '@/lib/utils';
-import type { InventoryProduct } from '@/services/adminInventoryService';
+import type {
+  InventoryProduct,
+  InventorySort,
+  SortDirection,
+} from '@/services/adminInventoryService';
 
 const BAR_CEILING = 20;
 
@@ -69,17 +74,84 @@ function StockBar({ percent, bar }: { readonly percent: number; readonly bar: st
   );
 }
 
-export function InventoryTable({ products }: { readonly products: readonly InventoryProduct[] }) {
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+interface SortLinkProps {
+  readonly column: InventorySort;
+  readonly label: string;
+  readonly params: Readonly<Record<string, string | undefined>>;
+  readonly sort: InventorySort;
+  readonly direction: SortDirection;
+}
 
-  function toggle(productId: string): void {
-    setExpanded((current) => {
+function SortLink({ column, label, params, sort, direction }: SortLinkProps) {
+  const isActive = sort === column;
+  const nextDirection = isActive && direction === 'asc' ? 'desc' : 'asc';
+  const Icon = !isActive ? ArrowUpDown : direction === 'asc' ? ArrowUp : ArrowDown;
+
+  return (
+    <Link
+      href={buildAdminListHref(ROUTES.admin.inventory, params, {
+        sort: column,
+        dir: nextDirection,
+        page: null,
+      })}
+      className={cn(
+        'hover:text-foreground inline-flex items-center gap-1.5 transition-colors',
+        isActive ? 'text-foreground' : 'text-ink-55',
+      )}
+    >
+      {label}
+      <Icon aria-hidden="true" className={cn('size-3.5', !isActive && 'opacity-60')} />
+    </Link>
+  );
+}
+
+interface InventoryTableProps {
+  readonly products: readonly InventoryProduct[];
+  readonly params: Readonly<Record<string, string | undefined>>;
+  readonly sort: InventorySort;
+  readonly direction: SortDirection;
+}
+
+export function InventoryTable({ products, params, sort, direction }: InventoryTableProps) {
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
+
+  function isExpanded(product: InventoryProduct): boolean {
+    if (opened.has(product.productId)) {
+      return true;
+    }
+
+    return product.matchedVariant && !collapsed.has(product.productId);
+  }
+
+  function ariaSort(column: InventorySort): 'ascending' | 'descending' | 'none' {
+    if (sort !== column) {
+      return 'none';
+    }
+
+    return direction === 'asc' ? 'ascending' : 'descending';
+  }
+
+  function toggle(product: InventoryProduct): void {
+    const open = isExpanded(product);
+
+    setOpened((current) => {
       const next = new Set(current);
-
-      if (!next.delete(productId)) {
-        next.add(productId);
+      if (open) {
+        next.delete(product.productId);
+      } else {
+        next.add(product.productId);
       }
+      return next;
+    });
 
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (open) {
+        next.add(product.productId);
+      } else {
+        next.delete(product.productId);
+      }
       return next;
     });
   }
@@ -89,17 +161,41 @@ export function InventoryTable({ products }: { readonly products: readonly Inven
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Product</TableHead>
+            <TableHead aria-sort={ariaSort('name')}>
+              <SortLink
+                column="name"
+                label="Product"
+                params={params}
+                sort={sort}
+                direction={direction}
+              />
+            </TableHead>
             <TableHead>SKU</TableHead>
-            <TableHead>In stock</TableHead>
+            <TableHead aria-sort={ariaSort('stock')}>
+              <SortLink
+                column="stock"
+                label="In stock"
+                params={params}
+                sort={sort}
+                direction={direction}
+              />
+            </TableHead>
             <TableHead className="w-50">Level</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead aria-sort={ariaSort('status')}>
+              <SortLink
+                column="status"
+                label="Status"
+                params={params}
+                sort={sort}
+                direction={direction}
+              />
+            </TableHead>
             <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.map((product) => {
-            const isOpen = expanded.has(product.productId);
+            const isOpen = isExpanded(product);
             const state = productState(product);
             const needsRestock = product.outCount + product.lowCount;
             const ceiling = Math.max(1, product.variants.length) * BAR_CEILING;
@@ -111,7 +207,7 @@ export function InventoryTable({ products }: { readonly products: readonly Inven
                   <TableCell>
                     <button
                       type="button"
-                      onClick={() => toggle(product.productId)}
+                      onClick={() => toggle(product)}
                       aria-expanded={isOpen}
                       className="flex w-full items-center gap-3 text-left"
                     >

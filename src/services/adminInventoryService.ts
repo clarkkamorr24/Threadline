@@ -1,6 +1,20 @@
 import 'server-only';
+import type { Prisma } from '@/generated/prisma/client';
 import { LOW_STOCK_THRESHOLD } from '@/constants/store';
+import type { Paginated } from '@/entities/product/model/types';
 import { db } from '@/lib/db';
+
+export const INVENTORY_SORTS = ['name', 'stock', 'status'] as const;
+export type InventorySort = (typeof INVENTORY_SORTS)[number];
+export type SortDirection = 'asc' | 'desc';
+
+export interface InventoryQuery {
+  readonly search: string | null;
+  readonly sort: InventorySort;
+  readonly direction: SortDirection;
+  readonly page: number;
+  readonly pageSize: number;
+}
 
 export interface InventorySummary {
   readonly totalUnits: number;
@@ -23,7 +37,46 @@ export interface InventoryProduct {
   readonly totalUnits: number;
   readonly lowCount: number;
   readonly outCount: number;
+  readonly matchedVariant: boolean;
   readonly variants: readonly InventoryVariant[];
+}
+
+function buildInventoryWhere(search: string | null): Prisma.ProductWhereInput {
+  const base: Prisma.ProductWhereInput = { status: { not: 'ARCHIVED' } };
+
+  if (!search) {
+    return base;
+  }
+
+  const contains = { contains: search, mode: 'insensitive' } as const;
+
+  return {
+    AND: [
+      base,
+      {
+        OR: [
+          { name: contains },
+          {
+            variants: {
+              some: { OR: [{ sku: contains }, { color: contains }, { size: contains }] },
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function statusRank(product: {
+  outCount: number;
+  lowCount: number;
+  variants: readonly unknown[];
+}): number {
+  if (product.variants.length > 0 && product.outCount === product.variants.length) {
+    return 2;
+  }
+
+  return product.outCount + product.lowCount > 0 ? 1 : 0;
 }
 
 export async function getInventorySummary(): Promise<InventorySummary> {
@@ -44,9 +97,9 @@ export async function getInventorySummary(): Promise<InventorySummary> {
   };
 }
 
-export async function listInventory(limit = 100): Promise<readonly InventoryProduct[]> {
+export async function listInventory(query: InventoryQuery): Promise<Paginated<InventoryProduct>> {
   const rows = await db.product.findMany({
-    where: { status: { not: 'ARCHIVED' } },
+    where: buildInventoryWhere(query.search),
     select: {
       id: true,
       name: true,
@@ -66,8 +119,9 @@ export async function listInventory(limit = 100): Promise<readonly InventoryProd
         orderBy: [{ stock: 'asc' }, { sku: 'asc' }],
       },
     },
-    take: limit,
   });
+
+  const needle = query.search?.toLowerCase() ?? null;
 
   const products = rows.map((row) => {
     const variants = row.variants.map((variant) => ({
@@ -87,13 +141,41 @@ export async function listInventory(limit = 100): Promise<readonly InventoryProd
         (variant) => variant.stock > 0 && variant.stock <= LOW_STOCK_THRESHOLD,
       ).length,
       outCount: variants.filter((variant) => variant.stock === 0).length,
+      matchedVariant:
+        needle !== null &&
+        variants.some((variant) =>
+          [variant.sku, variant.color, variant.size].some((field) =>
+            field.toLowerCase().includes(needle),
+          ),
+        ),
       variants,
     };
   });
 
-  return products.sort((a, b) => {
-    const urgency = b.outCount + b.lowCount - (a.outCount + a.lowCount);
+  const factor = query.direction === 'asc' ? 1 : -1;
 
-    return urgency !== 0 ? urgency : a.totalUnits - b.totalUnits;
+  products.sort((a, b) => {
+    if (query.sort === 'name') {
+      return a.productName.localeCompare(b.productName) * factor;
+    }
+
+    if (query.sort === 'stock') {
+      return (a.totalUnits - b.totalUnits) * factor;
+    }
+
+    const rank = statusRank(a) - statusRank(b);
+
+    return (rank !== 0 ? rank : a.totalUnits - b.totalUnits) * factor;
   });
+
+  const total = products.length;
+  const start = (query.page - 1) * query.pageSize;
+
+  return {
+    items: products.slice(start, start + query.pageSize),
+    total,
+    page: query.page,
+    pageSize: query.pageSize,
+    totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
+  };
 }

@@ -1,8 +1,17 @@
 import type { Metadata } from 'next';
 import { TriangleAlert } from 'lucide-react';
+import { ROUTES } from '@/constants/routes';
 import { LOW_STOCK_THRESHOLD } from '@/constants/store';
 import { InventoryTable } from '@/features/admin-inventory/ui/inventory-table';
-import { getInventorySummary, listInventory } from '@/services/adminInventoryService';
+import { parseAdminListQuery, type AdminListParams } from '@/features/admin-table/model/query';
+import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
+import { AdminSearch } from '@/features/admin-table/ui/admin-search';
+import {
+  INVENTORY_SORTS,
+  getInventorySummary,
+  listInventory,
+} from '@/services/adminInventoryService';
+import type { InventorySort, SortDirection } from '@/services/adminInventoryService';
 import { cn } from '@/lib/utils';
 import { formatMoney } from '@/utils/money';
 
@@ -12,8 +21,30 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminInventoryPage() {
-  const [summary, products] = await Promise.all([getInventorySummary(), listInventory(100)]);
+interface AdminInventoryPageProps {
+  readonly searchParams: Promise<AdminListParams & { sort?: string; dir?: string }>;
+}
+
+function parseSort(value: string | undefined): InventorySort {
+  return value && (INVENTORY_SORTS as readonly string[]).includes(value)
+    ? (value as InventorySort)
+    : 'status';
+}
+
+function parseDirection(value: string | undefined): SortDirection {
+  return value === 'asc' ? 'asc' : 'desc';
+}
+
+export default async function AdminInventoryPage({ searchParams }: AdminInventoryPageProps) {
+  const params = await searchParams;
+  const listQuery = parseAdminListQuery(params);
+  const sort = parseSort(params.sort);
+  const direction = parseDirection(params.dir);
+
+  const [summary, result] = await Promise.all([
+    getInventorySummary(),
+    listInventory({ ...listQuery, sort, direction }),
+  ]);
 
   const cells = [
     { label: 'Total units in stock', value: String(summary.totalUnits), warn: false },
@@ -49,17 +80,41 @@ export default async function AdminInventoryPage() {
         </div>
       ) : null}
 
+      <AdminSearch
+        basePath={ROUTES.admin.inventory}
+        params={params}
+        placeholder="Search by product, SKU, colour or size…"
+        label="Search inventory"
+      />
+
       <section className="border-line border">
         <div className="border-line-strong border-b-2 px-5 py-4">
           <h2 className="font-display text-base font-extrabold">Stock levels</h2>
         </div>
 
-        {products.length === 0 ? (
-          <p className="text-ink-55 px-5 py-10 text-center text-sm">No products yet.</p>
+        {result.items.length === 0 ? (
+          <p className="text-ink-55 px-5 py-10 text-center text-sm">
+            {listQuery.search ? `Nothing matches “${listQuery.search}”.` : 'No products yet.'}
+          </p>
         ) : (
-          <InventoryTable products={products} />
+          <InventoryTable
+            products={result.items}
+            params={params}
+            sort={sort}
+            direction={direction}
+          />
         )}
       </section>
+
+      <AdminPagination
+        basePath={ROUTES.admin.inventory}
+        params={params}
+        page={result.page}
+        pageSize={result.pageSize}
+        total={result.total}
+        totalPages={result.totalPages}
+        noun="products"
+      />
     </div>
   );
 }
