@@ -18,7 +18,12 @@ import { isAppError } from '@/lib/errors';
 import { getCartVariantQuantities } from '@/services/cartService';
 import { isFavorited } from '@/services/favoriteService';
 import { getProductBySlug, getRelatedProducts } from '@/services/productService';
-import { getReviewSummary, getUserReview, listReviews } from '@/services/reviewService';
+import {
+  getReviewSummary,
+  getUserReview,
+  hasReceivedProduct,
+  listReviews,
+} from '@/services/reviewService';
 import { formatMoney } from '@/utils/money';
 
 const REVIEWS_SHOWN = 8;
@@ -75,14 +80,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
     listReviews(product.id, REVIEWS_SHOWN),
   ]);
 
-  const [favorited, cartQuantities, ownReview] =
+  const [favorited, cartQuantities, ownReview, hasReceived] =
     user?.role === 'USER'
       ? await Promise.all([
           isFavorited(user.id, product.id, null),
           getCartVariantQuantities(user.id),
           getUserReview(user.id, product.id),
+          hasReceivedProduct(user.id, product.id),
         ])
-      : [false, {}, null];
+      : [false, {}, null, false];
 
   return (
     <div>
@@ -199,7 +205,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         summary={reviewSummary}
         reviews={reviews}
         ownReview={ownReview}
-        canReview={user?.role === 'USER'}
+        isShopper={user?.role === 'USER'}
+        hasReceived={hasReceived}
         signInHref={`${ROUTES.signIn}?redirectTo=${encodeURIComponent(`${ROUTES.product(product.slug)}#reviews`)}`}
       />
 

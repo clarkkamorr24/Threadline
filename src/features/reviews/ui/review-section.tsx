@@ -9,7 +9,8 @@ interface ReviewSectionProps {
   readonly summary: ReviewSummary;
   readonly reviews: readonly ReviewModel[];
   readonly ownReview: ReviewModel | null;
-  readonly canReview: boolean;
+  readonly isShopper: boolean;
+  readonly hasReceived: boolean;
   readonly signInHref: string;
 }
 
@@ -27,7 +28,8 @@ export function ReviewSection({
   summary,
   reviews,
   ownReview,
-  canReview,
+  isShopper,
+  hasReceived,
   signInHref,
 }: ReviewSectionProps) {
   return (
@@ -75,8 +77,9 @@ export function ReviewSection({
         <ReviewForm
           productId={productId}
           productSlug={productSlug}
-          existing={canReview ? ownReview : null}
-          isAuthenticated={canReview}
+          existing={isShopper ? ownReview : null}
+          isAuthenticated={isShopper}
+          hasReceived={hasReceived}
           signInHref={signInHref}
         />
       </div>

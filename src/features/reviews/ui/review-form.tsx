@@ -43,6 +43,7 @@ interface ReviewFormProps {
   readonly productSlug: string;
   readonly existing: ReviewModel | null;
   readonly isAuthenticated: boolean;
+  readonly hasReceived: boolean;
   readonly signInHref: string;
 }
 
@@ -53,6 +54,7 @@ export function ReviewForm({
   productSlug,
   existing,
   isAuthenticated,
+  hasReceived,
   signInHref,
 }: ReviewFormProps) {
   const router = useRouter();
@@ -81,6 +83,15 @@ export function ReviewForm({
       <Button asChild variant="outline" className="mt-5 w-full justify-center">
         <a href={signInHref}>Sign in to review</a>
       </Button>
+    );
+  }
+
+  if (!hasReceived) {
+    return (
+      <p className="border-line text-ink-55 mt-5 border-t pt-4 text-[13px] leading-[1.6]">
+        Reviews are open to customers who have received this piece. Yours will unlock once your
+        order is marked delivered.
+      </p>
     );
   }
 

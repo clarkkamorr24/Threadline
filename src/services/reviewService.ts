@@ -6,7 +6,7 @@ import {
 } from '@/entities/review/model/types';
 import type { ReviewModel, ReviewSummary } from '@/entities/review/model/types';
 import { db } from '@/lib/db';
-import { NotFoundError } from '@/lib/errors';
+import { ForbiddenError, NotFoundError } from '@/lib/errors';
 
 const STAR_ORDER = [5, 4, 3, 2, 1] as const;
 
@@ -110,11 +110,11 @@ export async function getUserReview(
   return row ? toModel(row) : null;
 }
 
-export async function hasPurchased(userId: string, productId: string): Promise<boolean> {
+export async function hasReceivedProduct(userId: string, productId: string): Promise<boolean> {
   const order = await db.order.findFirst({
     where: {
       userId,
-      status: { not: 'CANCELLED' },
+      status: 'DELIVERED',
       items: { some: { productId } },
     },
     select: { id: true },
@@ -133,8 +133,11 @@ export async function upsertReview(userId: string, input: CreateReviewInput): Pr
     throw new NotFoundError('That product is no longer available.');
   }
 
+  if (!(await hasReceivedProduct(userId, input.productId))) {
+    throw new ForbiddenError('You can review this product once your order has been delivered.');
+  }
+
   const rating = Math.min(Math.max(Math.round(input.rating), REVIEW_RATING_MIN), REVIEW_RATING_MAX);
-  const isVerifiedBuyer = await hasPurchased(userId, input.productId);
 
   const row = await db.review.upsert({
     where: { productId_userId: { productId: input.productId, userId } },
@@ -144,13 +147,13 @@ export async function upsertReview(userId: string, input: CreateReviewInput): Pr
       rating,
       title: input.title,
       body: input.body,
-      isVerifiedBuyer,
+      isVerifiedBuyer: true,
     },
     update: {
       rating,
       title: input.title,
       body: input.body,
-      isVerifiedBuyer,
+      isVerifiedBuyer: true,
     },
     select: {
       id: true,

@@ -33,6 +33,7 @@ export function AddToCartForm({
   const router = useRouter();
   const toast = useToast();
   const [quantity, setQuantity] = useState(1);
+  const [pendingAction, setPendingAction] = useState<'add' | 'buy' | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const sizes = useMemo(() => distinct(variants.map((variant) => variant.size)), [variants]);
@@ -90,7 +91,7 @@ export function AddToCartForm({
     }
   }
 
-  function handleAdd(): void {
+  function submit(mode: 'add' | 'buy'): void {
     if (!isAuthenticated) {
       router.push(`${ROUTES.signIn}?redirectTo=${encodeURIComponent(window.location.pathname)}`);
       return;
@@ -100,14 +101,26 @@ export function AddToCartForm({
       return;
     }
 
+    setPendingAction(mode);
+
     startTransition(async () => {
       const result = await addToCartAction({ variantId: selectedVariant.id, quantity });
 
       if (!result.success) {
-        toast.error('Could not add to cart', result.error.message);
+        setPendingAction(null);
+        toast.error(
+          mode === 'buy' ? 'Could not start checkout' : 'Could not add to cart',
+          result.error.message,
+        );
         return;
       }
 
+      if (mode === 'buy') {
+        router.push(ROUTES.checkout);
+        return;
+      }
+
+      setPendingAction(null);
       toast.success('Added to cart', `${quantity} × ${productName}`);
       router.refresh();
     });
@@ -234,18 +247,29 @@ export function AddToCartForm({
 
             <button
               type="button"
-              onClick={handleAdd}
+              onClick={() => submit('add')}
               disabled={needsSelection || isPending}
               className="bg-primary text-primary-foreground flex h-13 flex-1 items-center justify-center gap-2 text-[15px] font-medium disabled:opacity-60"
             >
-              {isPending ? null : <ShoppingBag aria-hidden="true" className="size-4" />}
-              {isPending
+              {pendingAction === 'add' ? null : (
+                <ShoppingBag aria-hidden="true" className="size-4" />
+              )}
+              {pendingAction === 'add'
                 ? 'Adding…'
                 : needsSelection
                   ? 'Select an option'
                   : `Add to Cart · ${formatMoney(unitPriceCents * quantity)}`}
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => submit('buy')}
+            disabled={needsSelection || isPending}
+            className="border-line-strong hover:border-foreground flex h-12.5 w-full items-center justify-center border text-[15px] font-medium transition-colors disabled:opacity-60"
+          >
+            {pendingAction === 'buy' ? 'Taking you to checkout…' : 'Buy it now'}
+          </button>
 
           {selectedVariant && (inCart > 0 || availableStock <= 5) ? (
             <p className="text-ink-55 text-[13px]">
