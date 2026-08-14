@@ -19,7 +19,7 @@ interface UseAuthActionsOptions {
 }
 
 interface UseAuthActionsResult {
-  readonly signIn: (input: SignInInput) => Promise<void>;
+  readonly signIn: (input: SignInInput) => Promise<boolean>;
   readonly signUp: (input: SignUpInput) => Promise<void>;
   readonly signInWithProvider: (providerId: AuthProviderId) => Promise<void>;
   readonly requestPasswordReset: (email: string) => Promise<boolean>;
@@ -53,7 +53,7 @@ export function useAuthActions({ redirectTo }: UseAuthActionsOptions): UseAuthAc
   );
 
   const signIn = useCallback(
-    async (input: SignInInput): Promise<void> => {
+    async (input: SignInInput): Promise<boolean> => {
       setIsSubmitting(true);
       setErrorMessage(null);
 
@@ -61,8 +61,10 @@ export function useAuthActions({ redirectTo }: UseAuthActionsOptions): UseAuthAc
         await getCredentialsPlugin().signIn(supabase, input);
         router.refresh();
         router.push(redirectTo);
+        return true;
       } catch (error) {
         setErrorMessage(toMessage(error, 'Could not sign in. Please try again.'));
+        return false;
       } finally {
         setIsSubmitting(false);
       }

@@ -14,7 +14,6 @@ const FOOTER_SECTIONS = [
     heading: 'Company',
     links: [
       { label: 'Our story', href: ROUTES.products },
-      { label: 'Admin →', href: ROUTES.admin.root },
     ],
   },
   {
@@ -64,7 +63,7 @@ export function SiteFooter() {
 
       <div className="border-line text-ink-55 mx-auto flex max-w-360 flex-wrap justify-between gap-2 border-t px-5 py-6 font-mono text-[11px] tracking-[0.06em] uppercase lg:px-10">
         <span>© {new Date().getFullYear()} Threadline</span>
-        <span>A demonstration storefront</span>
+        <span>Built by Clark Amor</span>
       </div>
     </footer>
   );

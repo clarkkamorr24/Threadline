@@ -23,7 +23,7 @@ export function BrandStory() {
         <span className="text-brand font-mono text-[11px] tracking-[0.14em] uppercase">
           Our story
         </span>
-        <h2 className="font-display my-4.5 text-[28px] leading-[1.02] font-extrabold tracking-[-0.025em] md:text-[40px]">
+        <h2 className="font-display my-4.5 text-[28px] leading-[1.02] font-extrabold tracking-tight md:text-[40px]">
           We make fewer things, better.
         </h2>
         <p className="text-ink-70 max-w-115 text-base leading-[1.6]">

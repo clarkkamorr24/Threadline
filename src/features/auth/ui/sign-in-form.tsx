@@ -44,7 +44,12 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
 
   async function onSubmit(values: SignInInput): Promise<void> {
     setOauthHint(null);
-    await signIn(values);
+
+    const signedIn = await signIn(values);
+
+    if (signedIn) {
+      return;
+    }
 
     const hint = await describeSignInMethodAction({ email: values.email });
 

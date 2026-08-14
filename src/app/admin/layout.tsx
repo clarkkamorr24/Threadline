@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { readonly children: Rea
       <AdminSidebar name={user.name ?? user.email} initials={getUserInitials(user)} />
 
       <div className="flex min-w-0 flex-col">
-        <AdminTopbar email={user.email} />
+        <AdminTopbar />
 
         <main className="flex-1 px-5 pt-7 pb-16 lg:px-8">{children}</main>
       </div>

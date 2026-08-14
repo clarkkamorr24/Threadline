@@ -54,11 +54,11 @@ export async function SiteHeader() {
 
           <nav aria-label="Categories" className="hidden md:block">
             <ul className="flex items-center gap-6 text-[13px]">
-              <li>
+              {/* <li>
                 <Link href={ROUTES.products} className="hover:text-brand transition-colors">
                   Shop
                 </Link>
-              </li>
+              </li> */}
               {navItems.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="hover:text-brand transition-colors">

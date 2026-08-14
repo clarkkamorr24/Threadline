@@ -51,7 +51,9 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  if (user && matchesPrefix(pathname, GUEST_ONLY_PREFIXES)) {
+  const isServerAction = request.headers.get('next-action') !== null;
+
+  if (user && !isServerAction && matchesPrefix(pathname, GUEST_ONLY_PREFIXES)) {
     return NextResponse.redirect(new URL(ROUTES.home, request.url));
   }
 

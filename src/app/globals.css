@@ -152,6 +152,7 @@
 
   --animate-in: enter 150ms ease-out;
   --animate-out: exit 120ms ease-in;
+  --animate-marquee: marquee 38s linear infinite;
 }
 
 @layer base {
@@ -208,5 +209,14 @@
   to {
     opacity: 0;
     transform: scale(0.97);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(var(--marquee-offset, -50%));
+  }
+  to {
+    transform: translateX(0);
   }
 }

@@ -13,8 +13,14 @@ interface UserAvatarProps {
 export function UserAvatar({ src, initials, size = 28, className }: UserAvatarProps) {
   const [failed, setFailed] = useState(false);
 
-  const shared = cn('shrink-0 rounded-full object-cover', className);
-  const style = { width: size, height: size };
+  const shared = cn('aspect-square shrink-0 rounded-full object-cover', className);
+  const style = {
+    width: size,
+    height: size,
+    minWidth: size,
+    minHeight: size,
+    maxWidth: 'none' as const,
+  };
 
   if (!src || failed) {
     return (
@@ -38,6 +44,7 @@ export function UserAvatar({ src, initials, size = 28, className }: UserAvatarPr
       alt=""
       width={size}
       height={size}
+      style={style}
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
       className={shared}

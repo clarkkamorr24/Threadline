@@ -37,7 +37,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
             />
             <div className="relative flex w-full items-end justify-between">
               <div>
-                <div className="font-display text-[26px] font-extrabold">{category.name}</div>
+                <div className="font-display text-[26px] font-extrabold text-accent">{category.name}</div>
                 <div className="text-ink-55 mt-0.5 font-mono text-[11px]">
                   {category.productCount ?? 0} pieces
                 </div>

@@ -7,7 +7,6 @@ import {
   Boxes,
   FolderTree,
   LayoutDashboard,
-  LogOut,
   Package,
   ShoppingCart,
   Users,
@@ -81,14 +80,6 @@ export function AdminSidebar({ name, initials }: AdminSidebarProps) {
             <div className="font-mono text-[10px] text-white/45">Store admin</div>
           </div>
         </div>
-
-        <Link
-          href={ROUTES.home}
-          className="mt-1.5 flex items-center gap-3 border-l-2 border-transparent px-3.5 py-2.75 text-sm text-white/60 transition-colors hover:bg-white/6 hover:text-white"
-        >
-          <LogOut aria-hidden="true" className="size-4.5 shrink-0" />
-          Exit to store
-        </Link>
       </div>
     </aside>
   );

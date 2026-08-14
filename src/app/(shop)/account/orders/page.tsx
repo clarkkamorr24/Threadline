@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ADMIN_ROWS_PER_PAGE } from '@/constants/catalog';
+import { ORDER_HISTORY_MAX, ORDER_HISTORY_STEP } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
 import { OrderStatusBadge } from '@/entities/order/ui/order-status-badge';
 import { requireUserOrRedirect } from '@/lib/auth/session';
@@ -14,21 +14,40 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 interface OrdersPageProps {
-  readonly searchParams: Promise<{ page?: string }>;
+  readonly searchParams: Promise<{ show?: string }>;
+}
+
+function parseShow(value: string | undefined): number {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < ORDER_HISTORY_STEP) {
+    return ORDER_HISTORY_STEP;
+  }
+
+  return Math.min(parsed, ORDER_HISTORY_MAX);
 }
 
 export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const user = await requireUserOrRedirect(ROUTES.orders);
-  const { page: rawPage } = await searchParams;
+  const { show: rawShow } = await searchParams;
 
-  const parsedPage = Number(rawPage);
-  const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const show = parseShow(rawShow);
+  const orders = await listOrders(user.id, 1, show);
 
-  const orders = await listOrders(user.id, page, ADMIN_ROWS_PER_PAGE);
+  const shown = orders.items.length;
+  const hasMore = shown < orders.total;
+  const atCap = !hasMore && orders.total > ORDER_HISTORY_STEP;
 
   return (
     <div>
-      <h2 className="font-display mb-4 text-[22px] font-extrabold">Order history</h2>
+      <div className="mb-4 flex items-baseline justify-between gap-3">
+        <h2 className="font-display text-[22px] font-extrabold">Order history</h2>
+        {orders.total > 0 ? (
+          <span className="text-ink-55 font-mono text-[11px]">
+            {shown} of {orders.total}
+          </span>
+        ) : null}
+      </div>
 
       {orders.items.length === 0 ? (
         <div className="border-line border px-5 py-16 text-center">
@@ -42,66 +61,57 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         </div>
       ) : (
         <>
-          <ul className="border-line border">
-            {orders.items.map((order) => (
-              <li key={order.id} className="border-line border-b last:border-b-0">
-                <div className="flex flex-wrap items-center gap-4 px-5 py-5">
-                  <div className="min-w-0 flex-1">
-                    <div className="font-display text-base font-extrabold">
-                      #{order.orderNumber}
+          <div className="border-line max-h-220 overflow-y-auto overscroll-contain border">
+            <ul>
+              {orders.items.map((order) => (
+                <li key={order.id} className="border-line border-b last:border-b-0">
+                  <div className="flex flex-wrap items-center gap-4 px-5 py-5">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-display text-base font-extrabold">
+                        #{order.orderNumber}
+                      </div>
+                      <div className="text-ink-55 mt-1 font-mono text-[11px]">
+                        {new Date(order.placedAt).toLocaleDateString('en-PH', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}{' '}
+                        · {order.itemCount} item{order.itemCount === 1 ? '' : 's'}
+                      </div>
                     </div>
-                    <div className="text-ink-55 mt-1 font-mono text-[11px]">
-                      {new Date(order.placedAt).toLocaleDateString('en-PH', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}{' '}
-                      · {order.itemCount} item{order.itemCount === 1 ? '' : 's'}
+
+                    <OrderStatusBadge status={order.status} />
+
+                    <div className="w-22.5 text-right text-base font-semibold">
+                      {formatMoney(order.totalCents)}
                     </div>
+
+                    <Link
+                      href={ROUTES.order(order.id)}
+                      className="border-line-strong hover:border-foreground border px-4 py-2.25 text-[13px] transition-colors"
+                    >
+                      Track
+                    </Link>
                   </div>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-                  <OrderStatusBadge status={order.status} />
-
-                  <div className="w-22.5 text-right text-base font-semibold">
-                    {formatMoney(order.totalCents)}
-                  </div>
-
-                  <Link
-                    href={ROUTES.order(order.id)}
-                    className="border-line-strong hover:border-foreground border px-4 py-2.25 text-[13px] transition-colors"
-                  >
-                    Track
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {orders.totalPages > 1 ? (
-            <nav
-              aria-label="Pagination"
-              className="border-line mt-6 flex items-center justify-center gap-3 border-t pt-6"
-            >
-              {page > 1 ? (
-                <Link
-                  href={`${ROUTES.orders}?page=${page - 1}`}
-                  className="border-line-strong border px-4 py-2 text-[13px]"
-                >
-                  Previous
-                </Link>
-              ) : null}
-              <span className="text-ink-55 font-mono text-xs">
-                Page {orders.page} of {orders.totalPages}
-              </span>
-              {page < orders.totalPages ? (
-                <Link
-                  href={`${ROUTES.orders}?page=${page + 1}`}
-                  className="border-line-strong border px-4 py-2 text-[13px]"
-                >
-                  Next
-                </Link>
-              ) : null}
-            </nav>
+          {hasMore ? (
+            <div className="mt-6 flex justify-center">
+              <Link
+                scroll={false}
+                href={`${ROUTES.orders}?show=${Math.min(show + ORDER_HISTORY_STEP, ORDER_HISTORY_MAX)}`}
+                className="border-line-strong hover:border-foreground border px-6.5 py-3 text-sm font-medium transition-colors"
+              >
+                See more orders
+              </Link>
+            </div>
+          ) : atCap ? (
+            <p className="text-ink-55 mt-6 text-center font-mono text-[11px] tracking-[0.06em] uppercase">
+              You have reached the bottom
+            </p>
           ) : null}
         </>
       )}

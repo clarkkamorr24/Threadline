@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 
@@ -19,11 +18,8 @@ function titleFor(pathname: string): string {
   return TITLES.find((entry) => pathname.startsWith(entry.prefix))?.title ?? 'Dashboard';
 }
 
-interface AdminTopbarProps {
-  readonly email: string;
-}
 
-export function AdminTopbar({ email }: AdminTopbarProps) {
+export function AdminTopbar() {
   const pathname = usePathname();
 
   return (
@@ -33,13 +29,6 @@ export function AdminTopbar({ email }: AdminTopbarProps) {
       </h1>
 
       <div className="ml-auto flex items-center gap-3">
-        <span className="text-ink-55 hidden font-mono text-[11px] sm:inline">{email}</span>
-        <Link
-          href={ROUTES.home}
-          className="border-line-strong hover:border-foreground border px-3.5 py-2 text-[13px] transition-colors lg:hidden"
-        >
-          Exit
-        </Link>
         <form action="/auth/sign-out" method="post">
           <button
             type="submit"
