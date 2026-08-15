@@ -5,17 +5,8 @@ import { z } from 'zod';
 import { ROUTES } from '@/constants/routes';
 import { requireAdmin } from '@/lib/auth/session';
 import { createAction } from '@/lib/serverAction';
-import {
-  createProduct,
-  deleteProduct,
-  updateProduct,
-} from '@/services/adminProductService';
-import {
-  createProductSchema,
-  toProductWriteModel,
-  updateProductSchema,
-} from '../model/schema';
-
+import { createProduct, deleteProduct, updateProduct } from '@/services/adminProductService';
+import { createProductSchema, toProductWriteModel, updateProductSchema } from '../model/schema';
 
 function revalidateCatalog(slug?: string): void {
   revalidatePath(ROUTES.admin.products);

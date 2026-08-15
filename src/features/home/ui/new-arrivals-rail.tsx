@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 import type { ProductSummary } from '@/entities/product/model/types';
@@ -15,10 +15,37 @@ interface NewArrivalsRailProps {
 }
 
 export function NewArrivalsRail({ products, isAuthenticated }: NewArrivalsRailProps) {
-  const railRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement | null>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(true);
 
-  function scrollBy(direction: -1 | 1): void {
-    railRef.current?.scrollBy({ left: direction * 302, behavior: 'smooth' });
+  const measure = useCallback((node: HTMLDivElement | null): void => {
+    if (!node) {
+      return;
+    }
+
+    const maxScroll = node.scrollWidth - node.clientWidth;
+
+    setAtStart(node.scrollLeft <= 1);
+    setAtEnd(node.scrollLeft >= maxScroll - 1);
+  }, []);
+
+  const attachRail = useCallback(
+    (node: HTMLDivElement | null): void => {
+      railRef.current = node;
+      measure(node);
+    },
+    [measure],
+  );
+
+  function page(direction: -1 | 1): void {
+    const rail = railRef.current;
+
+    if (!rail) {
+      return;
+    }
+
+    rail.scrollBy({ left: direction * rail.clientWidth, behavior: 'smooth' });
   }
 
   return (
@@ -35,17 +62,19 @@ export function NewArrivalsRail({ products, isAuthenticated }: NewArrivalsRailPr
         <div className="hidden gap-2 md:flex">
           <button
             type="button"
-            onClick={() => scrollBy(-1)}
-            aria-label="Previous"
-            className="border-line-strong hover:border-foreground grid size-10 place-items-center border transition-colors"
+            onClick={() => page(-1)}
+            aria-label="Previous products"
+            disabled={atStart}
+            className="border-line-strong hover:border-foreground grid size-10 place-items-center border transition-colors disabled:pointer-events-none disabled:opacity-35"
           >
             <ChevronLeft aria-hidden="true" className="size-4" />
           </button>
           <button
             type="button"
-            onClick={() => scrollBy(1)}
-            aria-label="Next"
-            className="border-line-strong hover:border-foreground grid size-10 place-items-center border transition-colors"
+            onClick={() => page(1)}
+            aria-label="Next products"
+            disabled={atEnd}
+            className="border-line-strong hover:border-foreground grid size-10 place-items-center border transition-colors disabled:pointer-events-none disabled:opacity-35"
           >
             <ChevronRight aria-hidden="true" className="size-4" />
           </button>
@@ -53,19 +82,20 @@ export function NewArrivalsRail({ products, isAuthenticated }: NewArrivalsRailPr
       </div>
 
       <div
-        ref={railRef}
-        className="mx-auto flex max-w-360 snap-x snap-mandatory gap-0.5 overflow-x-auto px-5 pb-2 lg:px-10"
+        ref={attachRail}
+        onScroll={(event) => measure(event.currentTarget)}
+        className="mx-auto flex max-w-360 snap-x snap-mandatory [scrollbar-width:none] gap-0.5 overflow-x-auto px-5 pb-2 lg:px-10 [&::-webkit-scrollbar]:hidden"
       >
         {products.map((product) => (
           <article
             key={product.id}
-            className="border-line bg-background card-hover group w-75 shrink-0 snap-start border"
+            className="border-line bg-background card-hover group shrink-0 basis-full snap-start border sm:basis-[calc((100%-0.125rem)/2)] md:basis-[calc((100%-0.25rem)/3)] lg:basis-[calc((100%-0.375rem)/4)]"
           >
             <Link href={ROUTES.product(product.slug)} className="relative block h-85">
               <ProductMedia
                 src={product.primaryImage?.url ?? null}
                 alt={product.primaryImage?.alt ?? product.name}
-                sizes="300px"
+                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
                 label="product"
                 className="absolute inset-0"
               />

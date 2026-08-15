@@ -60,8 +60,8 @@ export function DeleteProductButton({ productId, productName }: DeleteProductBut
         <DialogHeader>
           <DialogTitle>Delete “{productName}”?</DialogTitle>
           <DialogDescription>
-            This removes the product and its images permanently. Products that appear on past
-            orders cannot be deleted — archive those instead.
+            This removes the product and its images permanently. Products that appear on past orders
+            cannot be deleted — archive those instead.
           </DialogDescription>
         </DialogHeader>
 

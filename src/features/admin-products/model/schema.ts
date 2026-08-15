@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { MAX_VARIANTS, MAX_VARIANT_IMAGES } from '@/constants/catalog';
 import { PRODUCT_STATUSES } from '@/entities/product/model/types';
+import { isKnownColor, titleCaseColor } from '@/utils/colors';
 import { toCents } from '@/utils/money';
+
+export const COLOUR_HINT =
+  'Use a colour the storefront can show a swatch for, such as Navy, Sand or Charcoal.';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -19,7 +23,13 @@ export const variantImageSchema = z.object({
 export const variantSchema = z.object({
   id: z.string().nullish(),
   size: z.string().trim().min(1, 'Size is required.').max(30),
-  color: z.string().trim().min(1, 'Colour is required.').max(40),
+  color: z
+    .string()
+    .trim()
+    .min(1, 'Colour is required.')
+    .max(40)
+    .refine(isKnownColor, COLOUR_HINT)
+    .transform(titleCaseColor),
   sku: z
     .string()
     .trim()
@@ -130,6 +140,8 @@ export function validateVariants(
 
     if (!variant.color?.trim()) {
       issues.push({ index, field: 'color', message: 'Colour is required.' });
+    } else if (!isKnownColor(variant.color)) {
+      issues.push({ index, field: 'color', message: COLOUR_HINT });
     }
 
     if (variant.images.length === 0) {

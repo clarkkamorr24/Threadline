@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { MAX_VARIANTS, MAX_VARIANT_IMAGES } from '@/constants/catalog';
 import { getStorageCapabilities } from '@/lib/plugins/storage/capabilities';
 import { MAX_IMAGE_BYTES, isAllowedImageType } from '@/lib/plugins/storage/types';
+import { ColorSelect } from './color-select';
 
 export type DraftImage =
   | { readonly kind: 'uploaded'; readonly url: string; readonly storageKey: string | null }
@@ -259,7 +260,7 @@ export function VariantEditor({
                   disabled={disabled}
                   aria-invalid={issueFor(index, 'size') !== null}
                 />
-                 {issueFor(index, 'size') ? (
+                {issueFor(index, 'size') ? (
                   <p className="text-destructive text-xs">{issueFor(index, 'size')}</p>
                 ) : null}
               </div>
@@ -268,13 +269,12 @@ export function VariantEditor({
                 <Label htmlFor={`variant-color-${index}`} className="text-xs">
                   Colour
                 </Label>
-                <Input
+                <ColorSelect
                   id={`variant-color-${index}`}
                   value={variant.color}
-                  placeholder="Navy"
-                  onChange={(event) => update(index, { color: event.target.value })}
+                  onChange={(next) => update(index, { color: next })}
                   disabled={disabled}
-                  aria-invalid={issueFor(index, 'color') !== null}
+                  invalid={issueFor(index, 'color') !== null}
                 />
                 {issueFor(index, 'color') ? (
                   <p className="text-destructive text-xs">{issueFor(index, 'color')}</p>
@@ -329,8 +329,7 @@ export function VariantEditor({
                   value={variant.priceOverride ?? ''}
                   onChange={(event) =>
                     update(index, {
-                      priceOverride:
-                        event.target.value === '' ? null : event.target.valueAsNumber,
+                      priceOverride: event.target.value === '' ? null : event.target.valueAsNumber,
                     })
                   }
                   disabled={disabled}
@@ -350,7 +349,9 @@ export function VariantEditor({
                 <ul className="grid grid-cols-4 gap-2 sm:grid-cols-6">
                   {variant.images.map((image, imageIndex) => (
                     <li
-                      key={image.kind === 'pending' ? image.previewUrl : `${image.url}-${imageIndex}`}
+                      key={
+                        image.kind === 'pending' ? image.previewUrl : `${image.url}-${imageIndex}`
+                      }
                       className="group relative"
                     >
                       <div className="bg-muted relative aspect-square overflow-hidden rounded-md border">
@@ -362,7 +363,13 @@ export function VariantEditor({
                             className="absolute inset-0 size-full object-cover"
                           />
                         ) : (
-                          <Image src={image.url} alt="" fill sizes="96px" className="object-cover" />
+                          <Image
+                            src={image.url}
+                            alt=""
+                            fill
+                            sizes="96px"
+                            className="object-cover"
+                          />
                         )}
                       </div>
                       {imageIndex === 0 ? (
