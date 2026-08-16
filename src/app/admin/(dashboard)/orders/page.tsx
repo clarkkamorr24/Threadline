@@ -38,8 +38,10 @@ interface AdminOrdersPageProps {
 }
 
 function parseStatus(value: string | undefined): OrderStatusValue | null {
-  return value && (ORDER_STATUSES as readonly string[]).includes(value)
-    ? (value as OrderStatusValue)
+  const upper = value?.trim().toUpperCase();
+
+  return upper && (ORDER_STATUSES as readonly string[]).includes(upper)
+    ? (upper as OrderStatusValue)
     : null;
 }
 
@@ -81,7 +83,12 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
             variant={activeStatus === status ? 'default' : 'outline'}
             size="sm"
           >
-            <Link href={buildAdminListHref(ROUTES.admin.orders, params, { status, page: null })}>
+            <Link
+              href={buildAdminListHref(ROUTES.admin.orders, params, {
+                status: status.toLowerCase(),
+                page: null,
+              })}
+            >
               {status.charAt(0) + status.slice(1).toLowerCase()}
             </Link>
           </Button>

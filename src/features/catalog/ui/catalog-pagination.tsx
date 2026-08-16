@@ -35,10 +35,16 @@ export function CatalogPagination({ page, totalPages, searchParams }: CatalogPag
   const isLast = page >= totalPages;
 
   return (
-    <nav aria-label="Pagination" className="border-line mt-6 flex items-center justify-center gap-3 border-t pt-6">
+    <nav
+      aria-label="Pagination"
+      className="border-line mt-6 flex items-center justify-center gap-3 border-t pt-6"
+    >
       {isFirst ? (
         <span
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'pointer-events-none opacity-50')}
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'sm' }),
+            'pointer-events-none opacity-50',
+          )}
           aria-disabled="true"
         >
           <ChevronLeft aria-hidden="true" />
@@ -61,7 +67,10 @@ export function CatalogPagination({ page, totalPages, searchParams }: CatalogPag
 
       {isLast ? (
         <span
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'pointer-events-none opacity-50')}
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'sm' }),
+            'pointer-events-none opacity-50',
+          )}
           aria-disabled="true"
         >
           Next

@@ -20,6 +20,7 @@ export const ROUTES = {
   authSuspended: '/auth/suspended',
   admin: {
     root: '/admin',
+    login: '/admin/login',
     products: '/admin/products',
     newProduct: '/admin/products/new',
     editProduct: (id: string) => `/admin/products/${id}`,
@@ -28,6 +29,7 @@ export const ROUTES = {
     editCategory: (id: string) => `/admin/categories/${id}`,
     users: '/admin/users',
     inventory: '/admin/inventory',
+    notifications: '/admin/notifications',
     analytics: '/admin/analytics',
     orders: '/admin/orders',
     order: (id: string) => `/admin/orders/${id}`,
@@ -38,5 +40,6 @@ export const ROUTES = {
 export const PROTECTED_PREFIXES = ['/account', '/cart', '/checkout', '/admin'] as const;
 
 export const ADMIN_PREFIX = '/admin';
+export const ADMIN_LOGIN_PATH = '/admin/login';
 
 export const GUEST_ONLY_PREFIXES = ['/sign-in', '/sign-up'] as const;

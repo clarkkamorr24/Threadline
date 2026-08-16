@@ -4,7 +4,6 @@ import { PRODUCT_SORT_OPTIONS } from '@/constants/catalog';
 import type { ProductQuery } from '@/entities/product/model/types';
 import { toCents } from '@/utils/money';
 
-
 const SORT_VALUES = PRODUCT_SORT_OPTIONS.map((option) => option.value);
 
 function firstValue(value: string | string[] | undefined): string | undefined {
@@ -33,15 +32,15 @@ const searchParamsSchema = z.object({
   category: z
     .string()
     .optional()
-    .transform((value) => value?.trim() || null),
+    .transform((value) => value?.trim().toLowerCase() || null),
   size: z
     .string()
     .optional()
-    .transform((value) => value?.trim() || null),
+    .transform((value) => value?.trim().toLowerCase() || null),
   color: z
     .string()
     .optional()
-    .transform((value) => value?.trim() || null),
+    .transform((value) => value?.trim().toLowerCase() || null),
   minPrice: optionalPositiveNumber,
   maxPrice: optionalPositiveNumber,
   inStock: z
@@ -73,9 +72,9 @@ export function parseProductQuery(params: RawSearchParams): ProductQuery {
     category: firstValue(params.category),
     size: firstValue(params.size),
     color: firstValue(params.color),
-    minPrice: firstValue(params.minPrice),
-    maxPrice: firstValue(params.maxPrice),
-    inStock: firstValue(params.inStock),
+    minPrice: firstValue(params.minprice),
+    maxPrice: firstValue(params.maxprice),
+    inStock: firstValue(params.instock),
     sort: firstValue(params.sort),
     page: firstValue(params.page),
   });
@@ -105,10 +104,10 @@ export function buildProductSearchParams(
   const params = new URLSearchParams();
 
   if (query.search) params.set('q', query.search);
-  if (query.categorySlug) params.set('category', query.categorySlug);
-  if (query.minPriceCents != null) params.set('minPrice', String(query.minPriceCents / 100));
-  if (query.maxPriceCents != null) params.set('maxPrice', String(query.maxPriceCents / 100));
-  if (query.inStockOnly) params.set('inStock', 'true');
+  if (query.categorySlug) params.set('category', query.categorySlug.toLowerCase());
+  if (query.minPriceCents != null) params.set('minprice', String(query.minPriceCents / 100));
+  if (query.maxPriceCents != null) params.set('maxprice', String(query.maxPriceCents / 100));
+  if (query.inStockOnly) params.set('instock', 'true');
   if (query.sort && query.sort !== DEFAULT_PRODUCT_SORT) params.set('sort', query.sort);
   if (query.page && query.page > 1) params.set('page', String(query.page));
 

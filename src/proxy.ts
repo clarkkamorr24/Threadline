@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import {
+  ADMIN_LOGIN_PATH,
   ADMIN_PREFIX,
   GUEST_ONLY_PREFIXES,
   PROTECTED_PREFIXES,
@@ -10,9 +11,7 @@ import {
 } from '@/constants/routes';
 
 function matchesPrefix(pathname: string, prefixes: readonly string[]): boolean {
-  return prefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
+  return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 export default async function proxy(request: NextRequest) {
@@ -45,6 +44,10 @@ export default async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  if (pathname === ADMIN_LOGIN_PATH) {
+    return response;
+  }
+
   if (!user && matchesPrefix(pathname, PROTECTED_PREFIXES)) {
     const signInUrl = new URL(ROUTES.signIn, request.url);
     signInUrl.searchParams.set('redirectTo', `${pathname}${request.nextUrl.search}`);
@@ -58,7 +61,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   if (!user && pathname.startsWith(ADMIN_PREFIX)) {
-    return NextResponse.redirect(new URL(ROUTES.signIn, request.url));
+    return NextResponse.redirect(new URL(ROUTES.admin.login, request.url));
   }
 
   return response;

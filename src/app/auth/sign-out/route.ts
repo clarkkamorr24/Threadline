@@ -1,10 +1,24 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { ROUTES } from '@/constants/routes';
+import { db } from '@/lib/db';
 import { createSupabaseRouteClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const response = NextResponse.redirect(new URL(ROUTES.home, request.nextUrl.origin), {
+  const probe = NextResponse.next();
+  const probeClient = createSupabaseRouteClient(request, probe);
+
+  const {
+    data: { user },
+  } = await probeClient.auth.getUser();
+
+  const profile = user
+    ? await db.user.findUnique({ where: { id: user.id }, select: { role: true } })
+    : null;
+
+  const destination = profile?.role === 'ADMIN' ? ROUTES.admin.login : ROUTES.home;
+
+  const response = NextResponse.redirect(new URL(destination, request.nextUrl.origin), {
     status: 303,
   });
 

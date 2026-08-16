@@ -84,10 +84,7 @@ export default async function AdminCategoriesPage() {
                           <Pencil aria-hidden="true" />
                         </Link>
                       </Button>
-                      <DeleteCategoryButton
-                        categoryId={category.id}
-                        categoryName={category.name}
-                      />
+                      <DeleteCategoryButton categoryId={category.id} categoryName={category.name} />
                     </div>
                   </TableCell>
                 </TableRow>

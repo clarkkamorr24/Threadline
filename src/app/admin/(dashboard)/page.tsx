@@ -48,7 +48,11 @@ export default async function AdminDashboardPage() {
     catalog.totalOrders > 0 ? Math.round(catalog.revenueCents / catalog.totalOrders) : 0;
 
   const metrics = [
-    { label: 'Revenue', value: formatMoney(catalog.revenueCents), delta: deltaLabel(thisMonth, lastMonth) },
+    {
+      label: 'Revenue',
+      value: formatMoney(catalog.revenueCents),
+      delta: deltaLabel(thisMonth, lastMonth),
+    },
     { label: 'Orders', value: String(catalog.totalOrders), delta: null },
     { label: 'Avg order value', value: formatMoney(averageOrderCents), delta: null },
     {

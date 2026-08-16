@@ -2,6 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import type { AdminNotificationFeed } from '@/services/adminNotificationService';
+import { AdminNotifications } from './admin-notifications';
 
 const TITLES: readonly { readonly prefix: string; readonly title: string }[] = [
   { prefix: ROUTES.admin.newProduct, title: 'Add product' },
@@ -12,14 +14,14 @@ const TITLES: readonly { readonly prefix: string; readonly title: string }[] = [
   { prefix: ROUTES.admin.inventory, title: 'Inventory' },
   { prefix: ROUTES.admin.analytics, title: 'Analytics' },
   { prefix: ROUTES.admin.users, title: 'Customers' },
+  { prefix: ROUTES.admin.notifications, title: 'Notifications' },
 ];
 
 function titleFor(pathname: string): string {
   return TITLES.find((entry) => pathname.startsWith(entry.prefix))?.title ?? 'Dashboard';
 }
 
-
-export function AdminTopbar() {
+export function AdminTopbar({ feed }: { readonly feed: AdminNotificationFeed }) {
   const pathname = usePathname();
 
   return (
@@ -29,6 +31,8 @@ export function AdminTopbar() {
       </h1>
 
       <div className="ml-auto flex items-center gap-3">
+        <AdminNotifications feed={feed} />
+
         <form action="/auth/sign-out" method="post">
           <button
             type="submit"

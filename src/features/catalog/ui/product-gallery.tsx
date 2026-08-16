@@ -63,7 +63,9 @@ export function ProductGallery({ images, productName, activeImageUrl }: ProductG
                 aria-current={index === activeIndex}
                 className={cn(
                   'focus-visible:ring-ring relative h-22 w-17.5 shrink-0 overflow-hidden border transition-colors focus-visible:ring-2',
-                  index === activeIndex ? 'border-foreground' : 'border-line hover:border-line-strong',
+                  index === activeIndex
+                    ? 'border-foreground'
+                    : 'border-line hover:border-line-strong',
                 )}
               >
                 <Image src={image.url} alt="" fill sizes="70px" className="object-cover" />
@@ -93,7 +95,6 @@ export function ProductGallery({ images, productName, activeImageUrl }: ProductG
           }}
         />
       </div>
-
     </div>
   );
 }

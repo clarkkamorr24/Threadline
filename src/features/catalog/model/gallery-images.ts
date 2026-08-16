@@ -19,9 +19,7 @@ export function pickGalleryVariant(
   return byColor ?? variants[0] ?? null;
 }
 
-export function distinctImages(
-  images: readonly ProductImageModel[],
-): readonly ProductImageModel[] {
+export function distinctImages(images: readonly ProductImageModel[]): readonly ProductImageModel[] {
   const seen = new Set<string>();
 
   return images.filter((image) => {

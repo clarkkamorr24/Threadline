@@ -4,13 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { PRODUCT_SORT_OPTIONS } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
 import type { CategoryModel } from '@/entities/product/model/types';
@@ -23,7 +17,7 @@ interface CatalogFiltersProps {
   readonly colors: readonly string[];
 }
 
-const FILTER_KEYS = ['category', 'size', 'color', 'inStock', 'sort'] as const;
+const FILTER_KEYS = ['category', 'size', 'color', 'instock', 'sort'] as const;
 
 function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
   const router = useRouter();
@@ -43,12 +37,14 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
 
   const toggleParam = useCallback(
     (key: string, value: string): void => {
+      const normalised = value.toLowerCase();
+
       router.push(
         buildUrl((params) => {
-          if (params.get(key) === value) {
+          if (params.get(key) === normalised) {
             params.delete(key);
           } else {
-            params.set(key, value);
+            params.set(key, normalised);
           }
         }),
       );
@@ -57,10 +53,10 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
   );
 
   const activeSort = searchParams.get('sort') ?? PRODUCT_SORT_OPTIONS[0].value;
-  const activeCategory = searchParams.get('category');
-  const activeSize = searchParams.get('size');
-  const activeColor = searchParams.get('color');
-  const inStockOnly = searchParams.get('inStock') === 'true';
+  const activeCategory = searchParams.get('category')?.toLowerCase() ?? null;
+  const activeSize = searchParams.get('size')?.toLowerCase() ?? null;
+  const activeColor = searchParams.get('color')?.toLowerCase() ?? null;
+  const inStockOnly = searchParams.get('instock') === 'true';
   const hasFilters = FILTER_KEYS.some((key) => searchParams.get(key) !== null);
 
   return (
@@ -85,9 +81,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
             <button
               key={option.value}
               type="button"
-              onClick={() =>
-                router.push(buildUrl((params) => params.set('sort', option.value)))
-              }
+              onClick={() => router.push(buildUrl((params) => params.set('sort', option.value)))}
               aria-pressed={activeSort === option.value}
               className="flex items-center gap-2.5 py-1.25 text-left text-[13px]"
             >
@@ -140,10 +134,10 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
                 key={size}
                 type="button"
                 onClick={() => toggleParam('size', size)}
-                aria-pressed={activeSize === size}
+                aria-pressed={activeSize === size.toLowerCase()}
                 className={cn(
                   'border-line h-9.5 min-w-10 border px-2 text-xs transition-colors',
-                  activeSize === size
+                  activeSize === size.toLowerCase()
                     ? 'bg-primary text-primary-foreground border-foreground'
                     : 'hover:border-foreground',
                 )}
@@ -166,11 +160,11 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
                 onClick={() => toggleParam('color', color)}
                 title={color}
                 aria-label={color}
-                aria-pressed={activeColor === color}
+                aria-pressed={activeColor === color.toLowerCase()}
                 style={{ backgroundColor: colorToHex(color) }}
                 className={cn(
                   'border-line size-6.5 rounded-full border',
-                  activeColor === color &&
+                  activeColor === color.toLowerCase() &&
                     'ring-foreground ring-offset-background ring-2 ring-offset-2',
                 )}
               />
@@ -183,7 +177,7 @@ function FilterPanel({ categories, sizes, colors }: CatalogFiltersProps) {
         <h3 className="mb-3 text-[13px] font-semibold">Availability</h3>
         <button
           type="button"
-          onClick={() => toggleParam('inStock', 'true')}
+          onClick={() => toggleParam('instock', 'true')}
           aria-pressed={inStockOnly}
           className="flex items-center gap-2.5 text-[13px]"
         >

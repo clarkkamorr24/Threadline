@@ -28,7 +28,11 @@ export default async function AdminAnalyticsPage() {
     catalog.totalOrders > 0 ? Math.round(catalog.revenueCents / catalog.totalOrders) : 0;
 
   const metrics = [
-    { label: 'Total revenue', value: formatMoney(catalog.revenueCents), hint: 'excludes cancelled' },
+    {
+      label: 'Total revenue',
+      value: formatMoney(catalog.revenueCents),
+      hint: 'excludes cancelled',
+    },
     { label: 'Orders', value: String(catalog.totalOrders), hint: 'all time' },
     { label: 'Avg order value', value: formatMoney(averageOrderCents), hint: 'revenue / orders' },
     {

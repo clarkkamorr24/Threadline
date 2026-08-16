@@ -54,10 +54,7 @@ export function ProductTabs({ description, material, categoryName }: ProductTabs
         {active === 'Materials & Specs' ? (
           <dl className="grid gap-x-10 sm:grid-cols-2">
             {specs.map((spec) => (
-              <div
-                key={spec.label}
-                className="border-line flex justify-between border-b py-3"
-              >
+              <div key={spec.label} className="border-line flex justify-between border-b py-3">
                 <dt className="text-ink-55 font-mono text-xs uppercase">{spec.label}</dt>
                 <dd className="text-sm">{spec.value}</dd>
               </div>
@@ -67,8 +64,8 @@ export function ProductTabs({ description, material, categoryName }: ProductTabs
 
         {active === 'Care' ? (
           <p className="text-ink-70 text-[15px] leading-[1.7]">
-            Cold machine wash inside out with like colours. Do not tumble dry — lay flat or hang
-            in shade. Warm iron if needed. Store folded to keep the shape.
+            Cold machine wash inside out with like colours. Do not tumble dry — lay flat or hang in
+            shade. Warm iron if needed. Store folded to keep the shape.
           </p>
         ) : null}
       </div>

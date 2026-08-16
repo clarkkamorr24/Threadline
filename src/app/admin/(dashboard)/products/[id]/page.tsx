@@ -71,11 +71,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
         <h1 className="font-display text-[22px] font-extrabold">{product.name}</h1>
       </header>
 
-      <ProductForm
-        categories={categories}
-        productId={product.id}
-        defaultValues={defaultValues}
-      />
+      <ProductForm categories={categories} productId={product.id} defaultValues={defaultValues} />
     </div>
   );
 }

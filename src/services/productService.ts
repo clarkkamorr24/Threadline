@@ -108,9 +108,7 @@ const SORT_ORDER: Readonly<Record<ProductSort, Prisma.ProductOrderByWithRelation
 };
 
 function buildWhere(query: ProductQuery): Prisma.ProductWhereInput {
-  const conditions: Prisma.ProductWhereInput[] = [
-    { status: 'ACTIVE' },
-  ];
+  const conditions: Prisma.ProductWhereInput[] = [{ status: 'ACTIVE' }];
 
   if (query.search) {
     conditions.push({
@@ -129,11 +127,15 @@ function buildWhere(query: ProductQuery): Prisma.ProductWhereInput {
   }
 
   if (query.size) {
-    conditions.push({ variants: { some: { size: query.size } } });
+    conditions.push({
+      variants: { some: { size: { equals: query.size, mode: 'insensitive' } } },
+    });
   }
 
   if (query.color) {
-    conditions.push({ variants: { some: { color: query.color } } });
+    conditions.push({
+      variants: { some: { color: { equals: query.color, mode: 'insensitive' } } },
+    });
   }
 
   if (query.minPriceCents !== null || query.maxPriceCents !== null) {

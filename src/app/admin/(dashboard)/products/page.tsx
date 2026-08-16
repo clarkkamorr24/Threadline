@@ -161,10 +161,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
                           <Pencil aria-hidden="true" />
                         </Link>
                       </Button>
-                      <DeleteProductButton
-                        productId={product.id}
-                        productName={product.name}
-                      />
+                      <DeleteProductButton productId={product.id} productName={product.name} />
                     </div>
                   </TableCell>
                 </TableRow>

@@ -35,7 +35,9 @@ export default async function NewProductPage() {
     status: 'DRAFT',
     featured: false,
     categoryIds: [firstCategory.id],
-    variants: [{ id: null, size: '', color: '', sku: '', stock: 0, priceOverride: null, images: [] }],
+    variants: [
+      { id: null, size: '', color: '', sku: '', stock: 0, priceOverride: null, images: [] },
+    ],
   };
 
   return (

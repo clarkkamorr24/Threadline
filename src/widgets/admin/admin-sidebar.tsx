@@ -35,7 +35,10 @@ export function AdminSidebar({ name, initials }: AdminSidebarProps) {
   return (
     <aside className="bg-admin-sidebar sticky top-0 hidden h-screen flex-col px-3.5 py-5.5 text-[#f4f3f1] lg:flex">
       <div className="px-3 pt-1.5 pb-5.5">
-        <Link href={ROUTES.admin.root} className="font-display text-[19px] font-extrabold text-white">
+        <Link
+          href={ROUTES.admin.root}
+          className="font-display text-[19px] font-extrabold text-white"
+        >
           THREADLINE<span className="text-brand">.</span>
         </Link>
       </div>
