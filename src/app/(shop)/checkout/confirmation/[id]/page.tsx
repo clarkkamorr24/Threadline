@@ -87,8 +87,8 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
         <p className="text-ink-70 text-base">
           {isAwaitingPayment ? (
             <>
-              Your order <strong className="text-foreground">#{order.orderNumber}</strong> is
-              saved but payment has not completed yet.
+              Your order <strong className="text-foreground">#{order.orderNumber}</strong> is saved
+              but payment has not completed yet.
             </>
           ) : (
             <>

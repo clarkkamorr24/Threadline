@@ -1,12 +1,6 @@
 import { cn } from '@/lib/utils';
 
-export const CHECKOUT_STEPS = [
-  'Cart',
-  'Information',
-  'Shipping',
-  'Payment',
-  'Complete',
-] as const;
+export const CHECKOUT_STEPS = ['Cart', 'Information', 'Shipping', 'Payment', 'Complete'] as const;
 
 interface CheckoutProgressProps {
   readonly activeIndex: number;

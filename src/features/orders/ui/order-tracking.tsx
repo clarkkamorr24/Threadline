@@ -37,9 +37,7 @@ export function OrderTracking({ status }: OrderTrackingProps) {
               aria-hidden="true"
               className={cn(
                 'mx-auto grid size-9 place-items-center rounded-full border-2',
-                isReached
-                  ? 'bg-brand border-brand text-white'
-                  : 'border-line-strong text-ink-55',
+                isReached ? 'bg-brand border-brand text-white' : 'border-line-strong text-ink-55',
               )}
             >
               {isDone ? (
@@ -62,7 +60,7 @@ export function OrderTracking({ status }: OrderTrackingProps) {
               <span
                 aria-hidden="true"
                 className={cn(
-                  'absolute top-4.25 left-[calc(50%+18px)] right-[calc(-50%+18px)] h-0.5',
+                  'absolute top-4.25 right-[calc(-50%+18px)] left-[calc(50%+18px)] h-0.5',
                   index < activeIndex ? 'bg-brand' : 'bg-line-strong',
                 )}
               />

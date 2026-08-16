@@ -14,7 +14,6 @@ import {
 } from '@/services/cartService';
 import { addToCartSchema, removeCartItemSchema, updateCartItemSchema } from '../model/schema';
 
-
 function revalidateCartViews(): void {
   revalidatePath(ROUTES.cart);
   revalidatePath('/', 'layout');
@@ -53,13 +52,9 @@ export const removeCartItemAction = createAction(
   },
 );
 
-export const clearCartAction = createAction(
-  'cart.clear',
-  z.void(),
-  async (): Promise<Cart> => {
-    const user = await requireShopper();
-    const cart = await clearCart(user.id);
-    revalidateCartViews();
-    return cart;
-  },
-);
+export const clearCartAction = createAction('cart.clear', z.void(), async (): Promise<Cart> => {
+  const user = await requireShopper();
+  const cart = await clearCart(user.id);
+  revalidateCartViews();
+  return cart;
+});

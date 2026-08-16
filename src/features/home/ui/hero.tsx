@@ -28,8 +28,8 @@ export function Hero({ featured }: HeroProps) {
 
         <div className="mt-11 max-w-105">
           <p className="text-ink-70 text-base leading-[1.5]">
-            Curated essentials designed for everyday life — built from honest materials, made to
-            be lived in and kept for years.
+            Curated essentials designed for everyday life — built from honest materials, made to be
+            lived in and kept for years.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link

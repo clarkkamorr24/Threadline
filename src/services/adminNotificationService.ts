@@ -1,35 +1,18 @@
 import 'server-only';
+import { ROUTES } from '@/constants/routes';
 import { LOW_STOCK_THRESHOLD } from '@/constants/store';
+import type { FeedItem, NotificationFeed } from '@/entities/notification/model/types';
 import { db } from '@/lib/db';
+import {
+  dismissStoredNotification,
+  isStoredNotificationKey,
+  listStoredNotifications,
+  markStoredNotificationsRead,
+} from '@/services/notificationService';
 
-export type NotificationSeverity = 'out' | 'low';
+export const STOCK_KEY_PREFIX = 'stock:';
 
-export interface AdminNotification {
-  readonly key: string;
-  readonly severity: NotificationSeverity;
-  readonly productId: string;
-  readonly productName: string;
-  readonly sku: string;
-  readonly size: string;
-  readonly color: string;
-  readonly stock: number;
-  readonly isRead: boolean;
-}
-
-export interface AdminNotificationFeed {
-  readonly items: readonly AdminNotification[];
-  readonly unreadCount: number;
-  readonly total: number;
-}
-
-function alertKey(variantId: string, severity: NotificationSeverity): string {
-  return `stock:${variantId}:${severity}`;
-}
-
-export async function getAdminNotifications(
-  userId: string,
-  limit?: number,
-): Promise<AdminNotificationFeed> {
+async function listStockAlerts(userId: string): Promise<readonly FeedItem[]> {
   const [variants, states] = await Promise.all([
     db.productVariant.findMany({
       where: {
@@ -55,9 +38,9 @@ export async function getAdminNotifications(
 
   const byKey = new Map(states.map((state) => [state.key, state]));
 
-  const items = variants.flatMap((variant) => {
-    const severity: NotificationSeverity = variant.stock === 0 ? 'out' : 'low';
-    const key = alertKey(variant.id, severity);
+  return variants.flatMap((variant) => {
+    const isOut = variant.stock === 0;
+    const key = `${STOCK_KEY_PREFIX}${variant.id}:${isOut ? 'out' : 'low'}`;
     const state = byKey.get(key);
 
     if (state?.dismissedAt) {
@@ -67,17 +50,28 @@ export async function getAdminNotifications(
     return [
       {
         key,
-        severity,
-        productId: variant.productId,
-        productName: variant.product.name,
-        sku: variant.sku,
-        size: variant.size,
-        color: variant.color,
-        stock: variant.stock,
+        title: variant.product.name,
+        detail: `${variant.color} · ${variant.size} · ${variant.sku}`,
+        meta: isOut ? 'Out of stock' : `${variant.stock} left — restock soon`,
+        href: ROUTES.admin.editProduct(variant.productId),
+        tone: isOut ? ('critical' as const) : ('warning' as const),
         isRead: state?.readAt != null,
+        sortAt: isOut ? 1 : 0,
       },
     ];
   });
+}
+
+export async function getAdminNotifications(
+  userId: string,
+  limit?: number,
+): Promise<NotificationFeed> {
+  const [stock, stored] = await Promise.all([
+    listStockAlerts(userId),
+    listStoredNotifications(userId, true),
+  ]);
+
+  const items = [...stored, ...stock].sort((a, b) => b.sortAt - a.sortAt);
 
   return {
     items: limit === undefined ? items : items.slice(0, limit),
@@ -86,7 +80,12 @@ export async function getAdminNotifications(
   };
 }
 
-export async function dismissNotification(userId: string, key: string): Promise<void> {
+export async function dismissAdminNotification(userId: string, key: string): Promise<void> {
+  if (isStoredNotificationKey(key)) {
+    await dismissStoredNotification(userId, key);
+    return;
+  }
+
   const now = new Date();
 
   await db.adminNotificationState.upsert({
@@ -96,25 +95,25 @@ export async function dismissNotification(userId: string, key: string): Promise<
   });
 }
 
-export async function markAllNotificationsRead(userId: string): Promise<number> {
-  const { items } = await getAdminNotifications(userId);
-  const unread = items.filter((item) => !item.isRead);
-
-  if (unread.length === 0) {
-    return 0;
-  }
-
+export async function markAllAdminNotificationsRead(userId: string): Promise<number> {
+  const stock = await listStockAlerts(userId);
+  const unreadStock = stock.filter((item) => !item.isRead);
   const now = new Date();
 
-  await db.$transaction(
-    unread.map((item) =>
-      db.adminNotificationState.upsert({
-        where: { userId_key: { userId, key: item.key } },
-        create: { userId, key: item.key, readAt: now },
-        update: { readAt: now },
-      }),
-    ),
-  );
+  const [storedCount] = await Promise.all([
+    markStoredNotificationsRead(userId),
+    unreadStock.length === 0
+      ? Promise.resolve(null)
+      : db.$transaction(
+          unreadStock.map((item) =>
+            db.adminNotificationState.upsert({
+              where: { userId_key: { userId, key: item.key } },
+              create: { userId, key: item.key, readAt: now },
+              update: { readAt: now },
+            }),
+          ),
+        ),
+  ]);
 
-  return unread.length;
+  return storedCount + unreadStock.length;
 }

@@ -4,7 +4,9 @@ import { FREE_SHIPPING_THRESHOLD_CENTS } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
 import { formatMoney } from '@/utils/money';
 import { getCurrentUser } from '@/lib/auth/session';
+import { CustomerNotifications } from '@/features/notifications/ui/customer-notifications';
 import { getCartItemCount } from '@/services/cartService';
+import { listStoredNotifications } from '@/services/notificationService';
 import { listCategories } from '@/services/productService';
 import { CartButton } from './cart-button';
 import { HeaderSearch } from './header-search';
@@ -16,6 +18,27 @@ async function CartBadge() {
   const count = user ? await getCartItemCount(user.id) : 0;
 
   return <CartButton itemCount={count} />;
+}
+
+async function NotificationBadge() {
+  const user = await getCurrentUser();
+
+  if (user?.role !== 'USER') {
+    return null;
+  }
+
+  const items = await listStoredNotifications(user.id, false);
+
+  return (
+    <CustomerNotifications
+      userId={user.id}
+      feed={{
+        items: items.slice(0, 8),
+        unreadCount: items.filter((item) => !item.isRead).length,
+        total: items.length,
+      }}
+    />
+  );
 }
 
 async function safeListCategories() {
@@ -71,6 +94,9 @@ export async function SiteHeader() {
 
           <div className="ml-auto flex items-center gap-1">
             <HeaderSearch />
+            <Suspense fallback={null}>
+              <NotificationBadge />
+            </Suspense>
             <Suspense fallback={<CartButton itemCount={0} />}>
               <CartBadge />
             </Suspense>

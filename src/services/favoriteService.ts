@@ -81,8 +81,7 @@ export async function listFavorites(userId: string): Promise<readonly FavoriteIt
           : null,
         categories: row.product.categories,
         colors: [...new Set(row.product.variants.map((variant) => variant.color))],
-        defaultVariantId:
-          row.product.variants.find((variant) => variant.stock > 0)?.id ?? null,
+        defaultVariantId: row.product.variants.find((variant) => variant.stock > 0)?.id ?? null,
       },
     };
   });

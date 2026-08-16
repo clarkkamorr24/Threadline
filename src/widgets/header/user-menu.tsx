@@ -43,9 +43,7 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuContent>
         <DropdownMenuLabel className="flex flex-col gap-0.5">
           <span className="truncate">{user.name ?? 'Your account'}</span>
-          <span className="text-muted-foreground truncate text-xs font-normal">
-            {user.email}
-          </span>
+          <span className="text-muted-foreground truncate text-xs font-normal">{user.email}</span>
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />

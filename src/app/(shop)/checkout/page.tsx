@@ -27,7 +27,7 @@ export default async function CheckoutPage() {
   const user = await requireUserOrRedirect(ROUTES.checkout);
   const cart = await getCart(user.id);
   const paymentMethods = listPaymentMethods();
-  console.log("paymentMethods", paymentMethods)
+  console.log('paymentMethods', paymentMethods);
   if (cart.items.length === 0 || cart.hasStockIssues) {
     redirect(ROUTES.cart);
   }
@@ -43,8 +43,7 @@ export default async function CheckoutPage() {
         <Alert variant="destructive" className="rounded-none">
           <CircleAlert aria-hidden="true" />
           <AlertDescription>
-            Payments are unavailable right now, so orders cannot be placed. Please try again
-            later.
+            Payments are unavailable right now, so orders cannot be placed. Please try again later.
           </AlertDescription>
         </Alert>
       ) : (

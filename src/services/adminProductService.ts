@@ -1,6 +1,10 @@
 import 'server-only';
 import type { Prisma } from '@/generated/prisma/client';
-import type { AdminProductRow, Paginated, ProductStatusValue } from '@/entities/product/model/types';
+import type {
+  AdminProductRow,
+  Paginated,
+  ProductStatusValue,
+} from '@/entities/product/model/types';
 import type { ProductWriteModel } from '@/features/admin-products/model/schema';
 import { db } from '@/lib/db';
 import { ConflictError, NotFoundError } from '@/lib/errors';
@@ -191,10 +195,7 @@ export async function createProduct(input: ProductWriteModel): Promise<{ id: str
   }
 }
 
-export async function updateProduct(
-  id: string,
-  input: ProductWriteModel,
-): Promise<{ id: string }> {
+export async function updateProduct(id: string, input: ProductWriteModel): Promise<{ id: string }> {
   const { variants, categoryIds, ...productData } = input;
 
   const existing = await db.product.findUnique({

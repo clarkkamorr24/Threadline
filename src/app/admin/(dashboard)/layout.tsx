@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { readonly children: Rea
 
       <div className="flex min-w-0 flex-col">
         <div className="print:hidden">
-          <AdminTopbar feed={feed} />
+          <AdminTopbar feed={feed} userId={user.id} />
         </div>
 
         <main className="flex-1 px-5 pt-7 pb-16 lg:px-8 print:p-0">{children}</main>

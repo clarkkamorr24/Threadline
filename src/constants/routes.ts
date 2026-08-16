@@ -8,6 +8,7 @@ export const ROUTES = {
   orderConfirmation: (id: string) => `/checkout/confirmation/${id}`,
   favorites: '/account/favorites',
   orders: '/account/orders',
+  notifications: '/account/notifications',
   order: (id: string) => `/account/orders/${id}`,
   account: '/account',
   profile: '/account/profile',

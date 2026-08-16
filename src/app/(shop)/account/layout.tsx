@@ -11,9 +11,7 @@ export default async function AccountLayout({ children }: { readonly children: R
     <div className="mx-auto max-w-360 px-5 pt-9 pb-16 lg:px-10">
       <header className="border-line-strong mb-7 flex flex-wrap items-end justify-between gap-4 border-b-2 pb-6">
         <div>
-          <div className="text-brand font-mono text-xs tracking-[0.14em] uppercase">
-            My account
-          </div>
+          <div className="text-brand font-mono text-xs tracking-[0.14em] uppercase">My account</div>
           <h1 className="font-display mt-2 text-[30px] font-extrabold tracking-[-0.03em] md:text-[44px]">
             Hello{firstName ? `, ${firstName}` : ''}.
           </h1>

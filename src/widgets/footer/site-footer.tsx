@@ -12,9 +12,7 @@ const FOOTER_SECTIONS = [
   },
   {
     heading: 'Company',
-    links: [
-      { label: 'Our story', href: ROUTES.products },
-    ],
+    links: [{ label: 'Our story', href: ROUTES.products }],
   },
   {
     heading: 'Support',

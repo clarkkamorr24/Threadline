@@ -20,6 +20,7 @@ import {
   ValidationError,
 } from '@/lib/errors';
 import { getPaymentPlugin } from '@/lib/plugins/payment/registry';
+import { notifyOrderPlaced, notifyOrderStatusChanged } from '@/services/notificationService';
 import { calculateTotals } from '@/utils/pricing';
 
 const orderDetailSelect = {
@@ -51,6 +52,7 @@ const orderDetailSelect = {
 
 const adminOrderDetailSelect = {
   ...orderDetailSelect,
+  userId: true,
   paymentProvider: true,
   paymentMethod: true,
   paymentReference: true,
@@ -122,7 +124,7 @@ export interface PlaceOrderInput {
 }
 
 export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
-  return db.$transaction(
+  const order = await db.$transaction(
     async (tx) => {
       const cart = await tx.cart.findUnique({
         where: { userId: input.userId },
@@ -213,6 +215,19 @@ export async function placeOrder(input: PlaceOrderInput): Promise<OrderDetail> {
       isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
     },
   );
+
+  const customer = await db.user.findUnique({
+    where: { id: input.userId },
+    select: { name: true, email: true },
+  });
+
+  await notifyOrderPlaced(
+    order.id,
+    order.orderNumber,
+    customer?.name?.trim() || customer?.email || null,
+  );
+
+  return order;
 }
 
 interface CreateOrderData {
@@ -507,6 +522,8 @@ export async function updateOrderStatus(
     data: { status: nextStatus },
     select: adminOrderDetailSelect,
   });
+
+  await notifyOrderStatusChanged(updated.userId, updated.id, updated.orderNumber, nextStatus);
 
   return toAdminOrderDetail(updated);
 }

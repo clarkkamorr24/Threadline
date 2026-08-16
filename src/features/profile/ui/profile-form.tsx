@@ -86,8 +86,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex max-w-lg flex-col gap-5" noValidate>
-        {submitError ?? uploadError ? (
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex max-w-lg flex-col gap-5"
+        noValidate
+      >
+        {(submitError ?? uploadError) ? (
           <Alert variant="destructive">
             <CircleAlert aria-hidden="true" />
             <AlertDescription>{submitError ?? uploadError}</AlertDescription>

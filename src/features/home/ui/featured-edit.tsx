@@ -65,9 +65,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
               <div className="font-display mt-1 text-[22px] font-extrabold">{large.name}</div>
             </div>
             <div className="text-lg font-semibold">
-              {large.hasPriceRange ? (
-                <span className="text-ink-55 text-sm">from </span>
-              ) : null}
+              {large.hasPriceRange ? <span className="text-ink-55 text-sm">from </span> : null}
               {formatMoney(large.priceCents)}
             </div>
           </div>
@@ -75,10 +73,7 @@ export function FeaturedEdit({ large, small, isAuthenticated }: FeaturedEditProp
 
         <div className="bg-line-strong grid gap-0.5">
           {small.map((product) => (
-            <article
-              key={product.id}
-              className="card-hover bg-background group grid grid-cols-2"
-            >
+            <article key={product.id} className="card-hover bg-background group grid grid-cols-2">
               <Link href={ROUTES.product(product.slug)} className="relative min-h-52.5">
                 <ProductMedia
                   src={product.primaryImage?.url ?? null}

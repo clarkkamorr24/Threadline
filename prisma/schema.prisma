@@ -18,6 +18,11 @@ enum ProductStatus {
   ARCHIVED
 }
 
+enum NotificationType {
+  ORDER_PLACED
+  ORDER_STATUS
+}
+
 enum OrderStatus {
   PENDING
   PROCESSING
@@ -43,6 +48,7 @@ model User {
   favorites Favorite[]
   reviews   Review[]
   notificationStates AdminNotificationState[]
+  notifications      Notification[]
 
   @@index([role])
   @@index([createdAt])
@@ -191,6 +197,25 @@ model Review {
   @@map("reviews")
 }
 
+model Notification {
+  id           String           @id @default(cuid())
+  userId       String           @db.Uuid
+  type         NotificationType
+  orderId      String?
+  orderNumber  String
+  status       OrderStatus?
+  customerName String?
+  readAt       DateTime?
+  dismissedAt  DateTime?
+  createdAt    DateTime         @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([userId, dismissedAt, createdAt])
+  @@map("notifications")
+}
+
 model AdminNotificationState {
   id          String    @id @default(cuid())
   userId      String    @db.Uuid
@@ -245,8 +270,9 @@ model Order {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  user  User        @relation(fields: [userId], references: [id], onDelete: Restrict)
-  items OrderItem[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items         OrderItem[]
+  notifications Notification[]
 
   @@index([userId, createdAt])
   @@index([status, createdAt])

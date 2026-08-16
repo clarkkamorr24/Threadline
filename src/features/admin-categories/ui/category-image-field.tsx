@@ -20,11 +20,7 @@ interface CategoryImageFieldProps {
   readonly disabled?: boolean;
 }
 
-export function CategoryImageField({
-  value,
-  onChange,
-  disabled = false,
-}: CategoryImageFieldProps) {
+export function CategoryImageField({ value, onChange, disabled = false }: CategoryImageFieldProps) {
   const { supportsUploads } = getStorageCapabilities();
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -104,11 +100,7 @@ export function CategoryImageField({
           {previewSrc ? (
             value?.kind === 'pending' ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={previewSrc}
-                alt=""
-                className="absolute inset-0 size-full object-cover"
-              />
+              <img src={previewSrc} alt="" className="absolute inset-0 size-full object-cover" />
             ) : (
               <Image src={previewSrc} alt="" fill sizes="96px" className="object-cover" />
             )

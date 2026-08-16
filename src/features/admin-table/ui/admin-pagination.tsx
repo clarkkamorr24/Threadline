@@ -59,7 +59,12 @@ export function AdminPagination({
             <span className="tabular-nums">{totalPages}</span>
           </span>
 
-          <Button asChild={page < totalPages} variant="outline" size="sm" disabled={page >= totalPages}>
+          <Button
+            asChild={page < totalPages}
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+          >
             {page < totalPages ? (
               <Link href={buildAdminListHref(basePath, params, { page: page + 1 })}>Next</Link>
             ) : (

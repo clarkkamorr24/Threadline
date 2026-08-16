@@ -5,11 +5,7 @@ import { z } from 'zod';
 import { ROUTES } from '@/constants/routes';
 import { requireAdmin } from '@/lib/auth/session';
 import { createAction } from '@/lib/serverAction';
-import {
-  createCategory,
-  deleteCategory,
-  updateCategory,
-} from '@/services/adminCategoryService';
+import { createCategory, deleteCategory, updateCategory } from '@/services/adminCategoryService';
 import { categorySchema, updateCategorySchema } from '../model/schema';
 
 function revalidateCategoryViews(): void {

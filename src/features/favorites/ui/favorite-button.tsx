@@ -41,7 +41,7 @@ export function FavoriteButton({
       router.push(`${ROUTES.signIn}?redirectTo=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
-    
+
     const next = !isFavorited;
     setIsFavorited(next);
 

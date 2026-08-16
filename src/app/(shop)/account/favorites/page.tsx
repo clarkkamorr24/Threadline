@@ -76,10 +76,7 @@ export default async function FavoritesPage() {
               <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
                 <div className="min-w-0">
                   <h2 className="truncate text-sm font-medium">
-                    <Link
-                      href={ROUTES.product(favorite.product.slug)}
-                      className="hover:underline"
-                    >
+                    <Link href={ROUTES.product(favorite.product.slug)} className="hover:underline">
                       {favorite.product.name}
                     </Link>
                   </h2>

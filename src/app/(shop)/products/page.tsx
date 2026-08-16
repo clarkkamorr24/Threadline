@@ -36,9 +36,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     ? categories.find((category) => category.slug === query.categorySlug)
     : undefined;
 
-  const title = query.search
-    ? `“${query.search}”`
-    : (activeCategory?.name ?? 'All products');
+  const title = query.search ? `“${query.search}”` : (activeCategory?.name ?? 'All products');
 
   const hasFilters =
     query.categorySlug !== null ||
@@ -90,9 +88,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <ProductGrid
             products={result.items}
             isAuthenticated={user !== null}
-            emptyTitle={
-              hasFilters ? 'No products match those filters' : 'No products yet'
-            }
+            emptyTitle={hasFilters ? 'No products match those filters' : 'No products yet'}
             emptyDescription={
               hasFilters
                 ? 'Try removing a filter or two.'

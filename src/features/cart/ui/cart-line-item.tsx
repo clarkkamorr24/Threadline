@@ -121,18 +121,18 @@ export function CartLineItem({ item, compact = false, onNavigate }: CartLineItem
         </div>
 
         {exceedsStock ? (
-          <p className="text-destructive mt-1 text-xs">
-            Only {item.availableStock} left in stock
-          </p>
+          <p className="text-destructive mt-1 text-xs">Only {item.availableStock} left in stock</p>
         ) : null}
 
         <div
-          className={cn(
-            'flex items-center justify-between',
-            compact ? 'mt-3' : 'mt-auto pt-4.5',
-          )}
+          className={cn('flex items-center justify-between', compact ? 'mt-3' : 'mt-auto pt-4.5')}
         >
-          <div className={cn('flex items-center border', compact ? 'border-line' : 'border-line-strong')}>
+          <div
+            className={cn(
+              'flex items-center border',
+              compact ? 'border-line' : 'border-line-strong',
+            )}
+          >
             <button
               type="button"
               onClick={() => changeQuantity(item.quantity - 1)}

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 const TABS = [
   { label: 'Overview', href: ROUTES.account },
   { label: 'Orders', href: ROUTES.orders },
+  { label: 'Notifications', href: ROUTES.notifications },
   { label: 'Wishlist', href: ROUTES.favorites },
   { label: 'Profile', href: ROUTES.profile },
 ] as const;
@@ -29,7 +30,7 @@ export function AccountTabs() {
             className={cn(
               'border-l-2 px-3.5 py-2.75 text-sm whitespace-nowrap transition-colors',
               isActive
-                ? 'border-brand bg-[color-mix(in_srgb,var(--ink)_5%,transparent)] text-foreground font-semibold'
+                ? 'border-brand text-foreground bg-[color-mix(in_srgb,var(--ink)_5%,transparent)] font-semibold'
                 : 'text-ink-70 hover:text-foreground border-transparent hover:bg-[color-mix(in_srgb,var(--ink)_5%,transparent)]',
             )}
           >

@@ -38,9 +38,19 @@ interface CheckoutFormProps {
 const ADDRESS_FIELDS = [
   { name: 'fullName', label: 'Full name', autoComplete: 'name', wide: true },
   { name: 'line1', label: 'Address', autoComplete: 'address-line1', wide: true },
-  { name: 'line2', label: 'Apartment, suite (optional)', autoComplete: 'address-line2', wide: true },
+  {
+    name: 'line2',
+    label: 'Apartment, suite (optional)',
+    autoComplete: 'address-line2',
+    wide: true,
+  },
   { name: 'city', label: 'City', autoComplete: 'address-level2', wide: false },
-  { name: 'state', label: 'Province / State (optional)', autoComplete: 'address-level1', wide: false },
+  {
+    name: 'state',
+    label: 'Province / State (optional)',
+    autoComplete: 'address-level1',
+    wide: false,
+  },
   { name: 'postalCode', label: 'Postal code', autoComplete: 'postal-code', wide: false },
   { name: 'country', label: 'Country', autoComplete: 'country-name', wide: false },
 ] as const;
@@ -230,9 +240,7 @@ export function CheckoutForm({
               disabled={isSubmitting}
               className="bg-primary text-primary-foreground mt-6 flex w-full items-center justify-center px-4 py-4.25 text-[15px] font-medium disabled:opacity-60"
             >
-              {isSubmitting
-                ? 'Placing order…'
-                : `Place order · ${formatMoney(totals.totalCents)}`}
+              {isSubmitting ? 'Placing order…' : `Place order · ${formatMoney(totals.totalCents)}`}
             </button>
           </section>
         </div>
@@ -266,9 +274,7 @@ export function CheckoutForm({
                     {[item.size, item.color].filter(Boolean).join(' · ')} · Qty {item.quantity}
                   </div>
                 </div>
-                <div className="text-sm whitespace-nowrap">
-                  {formatMoney(item.lineTotalCents)}
-                </div>
+                <div className="text-sm whitespace-nowrap">{formatMoney(item.lineTotalCents)}</div>
               </li>
             ))}
           </ul>

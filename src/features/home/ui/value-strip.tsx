@@ -16,10 +16,7 @@ export function ValueStrip() {
 
   return (
     <div className="border-line-strong text-ink-70 overflow-hidden border-b-2 text-xs tracking-[0.06em] uppercase">
-      <div
-        style={track}
-        className="animate-marquee flex w-max hover:[animation-play-state:paused]"
-      >
+      <div style={track} className="animate-marquee flex w-max hover:[animation-play-state:paused]">
         {Array.from({ length: MARQUEE_COPIES }, (_, copy) => (
           <div key={copy} className="flex shrink-0" aria-hidden={copy > 0 || undefined}>
             {items.map((item) => (

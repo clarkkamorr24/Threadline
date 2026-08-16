@@ -92,7 +92,11 @@ export function CategoryForm({ categoryId, defaultValues }: CategoryFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex max-w-2xl flex-col gap-4" noValidate>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex max-w-2xl flex-col gap-4"
+        noValidate
+      >
         {submitError ? (
           <Alert variant="destructive">
             <CircleAlert aria-hidden="true" />
