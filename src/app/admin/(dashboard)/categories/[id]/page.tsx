@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants/routes';
 import { CategoryForm } from '@/features/admin-categories/ui/category-form';
 import { isAppError } from '@/lib/errors';
 import { getCategoryForEdit } from '@/services/adminCategoryService';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Edit category · Admin',
@@ -17,6 +18,8 @@ interface EditCategoryPageProps {
 }
 
 export default async function EditCategoryPage({ params }: EditCategoryPageProps) {
+  await requireAdmin();
+
   const { id } = await params;
 
   let category;

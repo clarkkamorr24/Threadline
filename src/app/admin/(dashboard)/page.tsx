@@ -17,6 +17,7 @@ import { getCatalogStats } from '@/services/adminProductService';
 import { listAllOrders } from '@/services/orderService';
 import { getUserStats } from '@/services/userService';
 import { formatMoney } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -34,6 +35,8 @@ function deltaLabel(current: number, previous: number): { text: string; positive
 }
 
 export default async function AdminDashboardPage() {
+  await requireAdmin();
+
   const [catalog, users, revenue, topProducts, recentOrders] = await Promise.all([
     getCatalogStats(),
     getUserStats(),

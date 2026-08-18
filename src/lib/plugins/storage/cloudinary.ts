@@ -91,6 +91,7 @@ export const cloudinaryStoragePlugin: StoragePlugin = {
     const timestamp = Math.floor(Date.now() / 1000);
 
     const signedParams = {
+      allowed_formats: 'jpg,jpeg,png,webp,avif',
       overwrite: 'false',
       public_id: publicId,
       timestamp,
@@ -109,6 +110,7 @@ export const cloudinaryStoragePlugin: StoragePlugin = {
           signature,
           public_id: publicId,
           overwrite: 'false',
+          allowed_formats: 'jpg,jpeg,png,webp,avif',
         },
         headers: {},
         publicUrl: cloudinary.url(publicId, { secure: true }),

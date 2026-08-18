@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants/routes';
 import { ProductForm } from '@/features/admin-products/ui/product-form';
 import type { CreateProductInput } from '@/features/admin-products/model/schema';
 import { listCategories } from '@/services/productService';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'New product · Admin',
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function NewProductPage() {
+  await requireAdmin();
+
   const categories = await listCategories();
   if (categories.length === 0) {
     return (

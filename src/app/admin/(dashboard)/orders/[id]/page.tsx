@@ -14,6 +14,7 @@ import { isAppError } from '@/lib/errors';
 import { getOrderForAdmin } from '@/services/orderService';
 import { formatDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Order · Admin',
@@ -39,6 +40,8 @@ function customerInitials(name: string | null, email: string): string {
 }
 
 export default async function AdminOrderDetailPage({ params }: AdminOrderDetailPageProps) {
+  await requireAdmin();
+
   const { id } = await params;
 
   let order;

@@ -9,6 +9,7 @@ import { isAppError } from '@/lib/errors';
 import { getProductForEdit } from '@/services/adminProductService';
 import { listCategories } from '@/services/productService';
 import { toMajorUnits } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Edit product · Admin',
@@ -21,6 +22,8 @@ interface EditProductPageProps {
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
+  await requireAdmin();
+
   const { id } = await params;
 
   let product;

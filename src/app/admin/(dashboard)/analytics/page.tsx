@@ -8,6 +8,7 @@ import { getCatalogStats } from '@/services/adminProductService';
 import { getInventorySummary } from '@/services/adminInventoryService';
 import { PercentBar } from '@/widgets/admin/percent-bar';
 import { formatMoney } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Analytics',
@@ -16,6 +17,8 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function AdminAnalyticsPage() {
+  await requireAdmin();
+
   const [catalog, revenue, byCategory, byPayment, inventory] = await Promise.all([
     getCatalogStats(),
     getMonthlyRevenue(12),

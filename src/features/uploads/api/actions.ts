@@ -5,6 +5,7 @@ import { requireAdmin, requireUser } from '@/lib/auth/session';
 import { StorageError } from '@/lib/errors';
 import { getStoragePlugin } from '@/lib/plugins/storage/registry';
 import type { UploadTicket } from '@/lib/plugins/storage/types';
+import { enforceRateLimit } from '@/lib/rateLimit';
 import { createAction } from '@/lib/serverAction';
 
 const UPLOAD_FOLDERS = ['products', 'categories', 'avatars'] as const;
@@ -33,6 +34,7 @@ export const createUploadTicketAction = createAction(
   uploadTicketSchema,
   async (input): Promise<UploadTicket> => {
     await authorizeFolder(input.folder);
+    await enforceRateLimit({ bucket: 'storage.uploadTicket', limit: 60, windowMs: 60_000 });
 
     const storage = getStoragePlugin();
 

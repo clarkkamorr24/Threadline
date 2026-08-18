@@ -10,6 +10,7 @@ import { isAppError } from '@/lib/errors';
 import { getOrderForAdmin } from '@/services/orderService';
 import { formatDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Invoice · Admin',
@@ -22,6 +23,8 @@ interface InvoicePageProps {
 }
 
 export default async function InvoicePage({ params }: InvoicePageProps) {
+  await requireAdmin();
+
   const { id } = await params;
 
   let order;

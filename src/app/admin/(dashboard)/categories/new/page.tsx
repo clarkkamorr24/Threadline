@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ROUTES } from '@/constants/routes';
 import { CategoryForm } from '@/features/admin-categories/ui/category-form';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'New category · Admin',
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function NewCategoryPage() {
+export default async function NewCategoryPage() {
+  await requireAdmin();
+
   return (
     <div className="flex flex-col gap-6">
       <header>

@@ -26,6 +26,7 @@ import { OrderStatusSelect } from '@/features/admin-orders/ui/order-status-selec
 import { listAllOrders } from '@/services/orderService';
 import { formatShortDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Orders · Admin',
@@ -46,6 +47,8 @@ function parseStatus(value: string | undefined): OrderStatusValue | null {
 }
 
 export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
+  await requireAdmin();
+
   const params = await searchParams;
   const listQuery = parseAdminListQuery(params);
   const activeStatus = parseStatus(params.status);

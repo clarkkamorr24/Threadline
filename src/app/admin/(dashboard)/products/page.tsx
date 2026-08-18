@@ -23,6 +23,7 @@ import type { ProductStatusValue } from '@/entities/product/model/types';
 import { DeleteProductButton } from '@/features/admin-products/ui/delete-product-button';
 import { listAdminProducts } from '@/services/adminProductService';
 import { formatMoney } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Products · Admin',
@@ -47,6 +48,8 @@ function parseStatus(value: string | undefined): ProductStatusValue | null {
 }
 
 export default async function AdminProductsPage({ searchParams }: AdminProductsPageProps) {
+  await requireAdmin();
+
   const params = await searchParams;
   const listQuery = parseAdminListQuery(params);
 

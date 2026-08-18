@@ -14,6 +14,7 @@ import {
 import { ROUTES } from '@/constants/routes';
 import { DeleteCategoryButton } from '@/features/admin-categories/ui/delete-category-button';
 import { listAdminCategories } from '@/services/adminCategoryService';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Categories · Admin',
@@ -22,6 +23,8 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function AdminCategoriesPage() {
+  await requireAdmin();
+
   const categories = await listAdminCategories();
 
   return (

@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { db } from '@/lib/db';
+import { enforceRateLimit } from '@/lib/rateLimit';
 import { createAction } from '@/lib/serverAction';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
@@ -46,6 +47,8 @@ export const describeSignInMethodAction = createAction(
   'auth.describeSignInMethod',
   lookupSchema,
   async (input): Promise<SignInMethodHint> => {
+    await enforceRateLimit({ bucket: 'auth.signInMethod', limit: 10, windowMs: 60_000 });
+
     const profile = await db.user.findUnique({
       where: { email: input.email },
       select: { signInProviders: true },

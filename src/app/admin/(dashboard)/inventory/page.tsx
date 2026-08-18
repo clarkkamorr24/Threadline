@@ -14,6 +14,7 @@ import {
 import type { InventorySort, SortDirection } from '@/services/adminInventoryService';
 import { cn } from '@/lib/utils';
 import { formatMoney } from '@/utils/money';
+import { requireAdmin } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
   title: 'Inventory',
@@ -36,6 +37,8 @@ function parseDirection(value: string | undefined): SortDirection {
 }
 
 export default async function AdminInventoryPage({ searchParams }: AdminInventoryPageProps) {
+  await requireAdmin();
+
   const params = await searchParams;
   const listQuery = parseAdminListQuery(params);
   const sort = parseSort(params.sort);
