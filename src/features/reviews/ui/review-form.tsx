@@ -80,7 +80,7 @@ export function ReviewForm({
 
   if (!isAuthenticated) {
     return (
-      <Button asChild variant="outline" className="mt-5 w-full justify-center">
+      <Button asChild variant="outline" className="my-5 w-full justify-center">
         <a href={signInHref}>Sign in to review</a>
       </Button>
     );
@@ -88,7 +88,7 @@ export function ReviewForm({
 
   if (!hasReceived) {
     return (
-      <p className="border-line text-ink-55 mt-5 border-t pt-4 text-[13px] leading-[1.6]">
+      <p className="border-line text-ink-55 my-5 border-t pt-4 text-[13px] leading-[1.6]">
         Reviews are open to customers who have received this piece. Yours will unlock once your
         order is marked delivered.
       </p>

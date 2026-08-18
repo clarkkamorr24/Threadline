@@ -88,9 +88,7 @@ export function NotificationBell({
             >
               Mark all as read
             </button>
-          ) : (
-            <span className="text-ink-55 font-mono text-[11px]">{feed.total} total</span>
-          )}
+          ) : null }
         </div>
 
         {feed.items.length === 0 ? (

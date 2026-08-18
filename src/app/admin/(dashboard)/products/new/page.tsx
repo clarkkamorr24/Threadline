@@ -14,9 +14,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function NewProductPage() {
   const categories = await listCategories();
-  const [firstCategory] = categories;
-
-  if (!firstCategory) {
+  if (categories.length === 0) {
     return (
       <Alert variant="warning">
         <AlertDescription>
@@ -34,7 +32,7 @@ export default async function NewProductPage() {
     basePrice: 0,
     status: 'DRAFT',
     featured: false,
-    categoryIds: [firstCategory.id],
+    categoryIds: [],
     variants: [
       { id: null, size: '', color: '', sku: '', stock: 0, priceOverride: null, images: [] },
     ],

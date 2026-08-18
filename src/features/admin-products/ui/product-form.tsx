@@ -35,6 +35,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ROUTES } from '@/constants/routes';
 import type { CategoryModel } from '@/entities/product/model/types';
+import { cn } from '@/lib/utils';
 import { PRODUCT_STATUSES } from '@/entities/product/model/types';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/useToast';
@@ -54,7 +55,7 @@ function describeSelection(
     .map((category) => category.name);
 
   if (names.length === 0) {
-    return 'Choose categories';
+    return 'Select category';
   }
 
   if (names.length <= 3) {
@@ -279,7 +280,6 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
                             value={Number.isNaN(field.value) ? '' : field.value}
                           />
                         </FormControl>
-                        <FormDescription>Used when the product has no variants.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -319,7 +319,12 @@ export function ProductForm({ categories, productId, defaultValues }: ProductFor
                               variant="outline"
                               className="w-full justify-between font-normal"
                             >
-                              <span className="truncate">
+                              <span
+                                className={cn(
+                                  'truncate',
+                                  field.value.length === 0 && 'text-muted-foreground',
+                                )}
+                              >
                                 {describeSelection(categories, field.value)}
                               </span>
                               <ChevronDown aria-hidden="true" className="opacity-60" />
