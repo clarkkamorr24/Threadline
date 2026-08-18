@@ -16,8 +16,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
+import { checkEmailRegisteredAction } from '../api/actions';
 import { useAuthActions } from '../model/useAuthActions';
 import { forgotPasswordSchema, type ForgotPasswordInput } from '../model/schema';
+
+const NOT_REGISTERED = 'This email is not registered. Please try another email.';
 
 export function ForgotPasswordForm() {
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -31,6 +34,18 @@ export function ForgotPasswordForm() {
   });
 
   async function onSubmit(values: ForgotPasswordInput): Promise<void> {
+    const lookup = await checkEmailRegisteredAction({ email: values.email });
+
+    if (!lookup.success) {
+      form.setError('email', { message: lookup.error.message });
+      return;
+    }
+
+    if (!lookup.data.registered) {
+      form.setError('email', { message: NOT_REGISTERED });
+      return;
+    }
+
     const ok = await requestPasswordReset(values.email);
 
     if (ok) {
@@ -48,8 +63,7 @@ export function ForgotPasswordForm() {
           Check your inbox
         </h1>
         <p className="text-ink-70 mb-7 text-[15px] leading-[1.6]">
-          If an account exists for that email, we&apos;ve sent a link to reset your password. The
-          link expires after a short while.
+          We&apos;ve sent a link to reset your password. The link expires after a short while.
         </p>
         <Link
           href={ROUTES.signIn}

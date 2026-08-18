@@ -71,3 +71,18 @@ export const describeSignInMethodAction = createAction(
     };
   },
 );
+
+export const checkEmailRegisteredAction = createAction(
+  'auth.checkEmailRegistered',
+  lookupSchema,
+  async (input): Promise<{ registered: boolean }> => {
+    await enforceRateLimit({ bucket: 'auth.emailExists', limit: 8, windowMs: 60_000 });
+
+    const profile = await db.user.findUnique({
+      where: { email: input.email },
+      select: { id: true },
+    });
+
+    return { registered: profile !== null };
+  },
+);
