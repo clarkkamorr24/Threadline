@@ -1,11 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Wallet } from 'lucide-react';
+import { CreditCard, Wallet } from 'lucide-react';
 import { paymentAsset, paymentMethodLabel } from '@/entities/order/model/payment';
 import { cn } from '@/lib/utils';
 
+const CARD_METHODS = ['visa', 'mastercard', 'amex', 'discover', 'diners', 'jcb', 'unionpay'];
+
 const PAYMENT_ICONS: Readonly<Record<string, typeof Wallet>> = {
+  ...Object.fromEntries(CARD_METHODS.map((brand) => [brand, CreditCard])),
+  card: CreditCard,
+  link: CreditCard,
   gcash: Wallet,
   paymaya: Wallet,
 };

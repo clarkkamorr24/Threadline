@@ -1,11 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { AppError, ConflictError, UnauthorizedError } from '@/lib/errors';
-import type {
-  AuthCredentials,
-  AuthOutcome,
-  AuthSignUpInput,
-  CredentialsAuthPlugin,
-} from './types';
+import type { AuthCredentials, AuthOutcome, AuthSignUpInput, CredentialsAuthPlugin } from './types';
 
 export const credentialsAuthPlugin: CredentialsAuthPlugin = {
   id: 'credentials',

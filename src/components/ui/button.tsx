@@ -36,9 +36,7 @@ const buttonVariants = cva(
   },
 );
 
-interface ButtonProps
-  extends ComponentProps<'button'>,
-    VariantProps<typeof buttonVariants> {
+interface ButtonProps extends ComponentProps<'button'>, VariantProps<typeof buttonVariants> {
   /** Renders the child element instead of a <button>, e.g. to style a Link. */
   readonly asChild?: boolean;
   /** Shows a spinner and blocks interaction while an action is in flight. */

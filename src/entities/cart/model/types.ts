@@ -48,10 +48,7 @@ export const EMPTY_CART: Cart = {
   hasStockIssues: false,
 };
 
-export function formatVariantLabel(
-  size: string | null,
-  color: string | null,
-): string {
+export function formatVariantLabel(size: string | null, color: string | null): string {
   return [size, color].filter(Boolean).join(' · ');
 }
 

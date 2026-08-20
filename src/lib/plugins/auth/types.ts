@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export const AUTH_PROVIDER_IDS = ['credentials', 'github', 'google', 'azure'] as const;
+export const AUTH_PROVIDER_IDS = ['credentials', 'google'] as const;
 
 export type AuthProviderId = (typeof AUTH_PROVIDER_IDS)[number];
 

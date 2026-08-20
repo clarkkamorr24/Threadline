@@ -2,12 +2,7 @@ export const STORAGE_PROVIDER_IDS = ['url', 'cloudinary'] as const;
 
 export type StorageProviderId = (typeof STORAGE_PROVIDER_IDS)[number];
 
-export const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/avif',
-] as const;
+export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'] as const;
 
 export type AllowedImageType = (typeof ALLOWED_IMAGE_TYPES)[number];
 

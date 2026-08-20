@@ -16,13 +16,7 @@ interface EmptyStateProps {
  * admin tables. Having one component means an empty list is never rendered as
  * a blank area by accident, and the wording stays consistent.
  */
-export function EmptyState({
-  icon: Icon,
-  title,
-  description,
-  action,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div
       className={cn(

@@ -223,7 +223,7 @@ export function CheckoutForm({
                           <span className="flex-1">
                             <span className="block text-sm font-semibold">{method.label}</span>
                             <span className="text-ink-55 block font-mono text-[11px]">
-                              Redirects to {method.label} to authorise payment
+                              Redirects to Stripe to authorise payment
                             </span>
                           </span>
                         </button>

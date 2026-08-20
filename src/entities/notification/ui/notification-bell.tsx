@@ -88,7 +88,7 @@ export function NotificationBell({
             >
               Mark all as read
             </button>
-          ) : null }
+          ) : null}
         </div>
 
         {feed.items.length === 0 ? (

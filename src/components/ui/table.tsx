@@ -29,15 +29,16 @@ export function TableBody({ className, ...props }: ComponentProps<'tbody'>) {
 }
 
 export function TableFooter({ className, ...props }: ComponentProps<'tfoot'>) {
-  return (
-    <tfoot className={cn('bg-muted/50 border-t font-medium', className)} {...props} />
-  );
+  return <tfoot className={cn('bg-muted/50 border-t font-medium', className)} {...props} />;
 }
 
 export function TableRow({ className, ...props }: ComponentProps<'tr'>) {
   return (
     <tr
-      className={cn('hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors', className)}
+      className={cn(
+        'hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors',
+        className,
+      )}
       {...props}
     />
   );
@@ -57,7 +58,12 @@ export function TableHead({ className, ...props }: ComponentProps<'th'>) {
 }
 
 export function TableCell({ className, ...props }: ComponentProps<'td'>) {
-  return <td className={cn('border-line border-b px-4.5 py-3.75 align-middle text-sm', className)} {...props} />;
+  return (
+    <td
+      className={cn('border-line border-b px-4.5 py-3.75 align-middle text-sm', className)}
+      {...props}
+    />
+  );
 }
 
 export function TableCaption({ className, ...props }: ComponentProps<'caption'>) {

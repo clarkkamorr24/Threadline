@@ -453,10 +453,17 @@ export async function attachPaymentReference(
   });
 }
 
-export async function markOrderPaid(reference: string): Promise<boolean> {
+export async function markOrderPaid(
+  reference: string,
+  chargedMethod: string | null = null,
+): Promise<boolean> {
   const result = await db.order.updateMany({
     where: { paymentReference: reference, status: 'PENDING' },
-    data: { status: 'PROCESSING', paidAt: new Date() },
+    data: {
+      status: 'PROCESSING',
+      paidAt: new Date(),
+      ...(chargedMethod ? { paymentMethod: chargedMethod } : {}),
+    },
   });
 
   return result.count > 0;
@@ -479,17 +486,17 @@ export async function confirmPendingPayment(userId: string, orderId: string): Pr
   }
 
   try {
-    const status = await plugin.getStatus(order.paymentReference);
+    const resolution = await plugin.getStatus(order.paymentReference);
 
-    if (status !== 'paid') {
+    if (resolution.status !== 'paid') {
       return false;
     }
+
+    return markOrderPaid(order.paymentReference, resolution.method);
   } catch (error) {
     console.error('[orderService] Could not confirm payment on return:', error);
     return false;
   }
-
-  return markOrderPaid(order.paymentReference);
 }
 
 export async function updateOrderStatus(

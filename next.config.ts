@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-const OAUTH_AVATAR_HOSTS = ['lh3.googleusercontent.com', 'avatars.githubusercontent.com'] as const;
+const OAUTH_AVATAR_HOSTS = ['lh3.googleusercontent.com'] as const;
 
 function buildRemotePatterns(): NonNullable<NextConfig['images']>['remotePatterns'] {
   const configured = (process.env.NEXT_PUBLIC_IMAGE_HOSTS ?? '')
@@ -63,7 +63,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '2mb',
     },
   },
-  serverExternalPackages: ['@prisma/adapter-pg', 'pg', 'cloudinary'],
+  serverExternalPackages: ['@prisma/adapter-pg', 'pg', 'cloudinary', 'stripe'],
 };
 
 export default nextConfig;

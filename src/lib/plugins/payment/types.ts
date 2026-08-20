@@ -1,10 +1,10 @@
 import type { OrderStatusValue } from '@/entities/order/model/types';
 
-export const PAYMENT_PROVIDER_IDS = ['paymongo'] as const;
+export const PAYMENT_PROVIDER_IDS = ['stripe'] as const;
 
 export type PaymentProviderId = (typeof PAYMENT_PROVIDER_IDS)[number];
 
-export const PAYMENT_METHOD_IDS = ['gcash', 'paymaya'] as const;
+export const PAYMENT_METHOD_IDS = ['card'] as const;
 
 export type PaymentMethodId = (typeof PAYMENT_METHOD_IDS)[number];
 
@@ -12,6 +12,14 @@ export interface PaymentMethodOption {
   readonly id: PaymentMethodId;
   readonly label: string;
   readonly logoSrc: string;
+}
+
+export interface PaymentLineItem {
+  readonly name: string;
+  readonly description: string | null;
+  readonly imageUrl: string | null;
+  readonly unitPriceCents: number;
+  readonly quantity: number;
 }
 
 export interface PaymentIntentInput {
@@ -23,6 +31,9 @@ export interface PaymentIntentInput {
   readonly customerPhone: string | null;
   readonly method: PaymentMethodId | null;
   readonly returnUrl: string;
+  readonly items: readonly PaymentLineItem[];
+  readonly shippingCents: number;
+  readonly taxCents: number;
 }
 
 export interface PaymentIntent {
@@ -35,6 +46,16 @@ export interface PaymentIntent {
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
+/**
+ * `method` is what the provider actually charged (a card brand such as `visa`),
+ * which is only known once the customer has paid. It replaces the method the
+ * customer picked at checkout, which is the broader category (`card`).
+ */
+export interface PaymentResolution {
+  readonly status: PaymentStatus;
+  readonly method: string | null;
+}
+
 export interface PaymentWebhookEvent {
   readonly reference: string;
   readonly status: PaymentStatus;
@@ -46,6 +67,6 @@ export interface PaymentPlugin {
   isEnabled(): boolean;
   availableMethods(): readonly PaymentMethodOption[];
   createIntent(input: PaymentIntentInput): Promise<PaymentIntent>;
-  getStatus(reference: string): Promise<PaymentStatus>;
+  getStatus(reference: string): Promise<PaymentResolution>;
   parseWebhook(rawBody: string, signatureHeader: string | null): PaymentWebhookEvent | null;
 }

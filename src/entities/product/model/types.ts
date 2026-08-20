@@ -87,9 +87,6 @@ export interface Paginated<TItem> {
   readonly totalPages: number;
 }
 
-export function formatVariantLabel(
-  size: string | null,
-  color: string | null,
-): string {
+export function formatVariantLabel(size: string | null, color: string | null): string {
   return [size, color].filter(Boolean).join(' · ') || 'Default';
 }

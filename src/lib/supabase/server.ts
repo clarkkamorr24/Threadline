@@ -23,7 +23,7 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient> {
               cookieStore.set(name, value, options);
             }
           } catch {
-           //
+            //
           }
         },
       },
@@ -56,15 +56,11 @@ export function createSupabaseRouteClient(
 export function createSupabaseAdminClient(): SupabaseClient {
   const { SUPABASE_SERVICE_ROLE_KEY } = getServerEnv();
 
-  return createServerClient(
-    clientEnv.NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY,
-    {
-      cookies: {
-        getAll: () => [],
-        setAll: () => undefined,
-      },
-      auth: { persistSession: false, autoRefreshToken: false },
+  return createServerClient(clientEnv.NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    cookies: {
+      getAll: () => [],
+      setAll: () => undefined,
     },
-  );
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }

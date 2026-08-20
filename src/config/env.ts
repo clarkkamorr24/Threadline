@@ -1,16 +1,12 @@
 import { z } from 'zod';
 
-const booleanFromString = z
-  .enum(['true', 'false'])
-  .transform((value) => value === 'true');
+const booleanFromString = z.enum(['true', 'false']).transform((value) => value === 'true');
 
 const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.string().url(),
-  NEXT_PUBLIC_AUTH_GITHUB_ENABLED: booleanFromString.default('false'),
   NEXT_PUBLIC_AUTH_GOOGLE_ENABLED: booleanFromString.default('false'),
-  NEXT_PUBLIC_AUTH_AZURE_ENABLED: booleanFromString.default('false'),
   NEXT_PUBLIC_STORAGE_PROVIDER: z.enum(['url', 'cloudinary']).default('url'),
 });
 
@@ -29,8 +25,8 @@ const serverSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
-  PAYMONGO_SECRET_KEY: z.string().optional(),
-  PAYMONGO_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 });
 
 export type ClientEnv = Readonly<z.infer<typeof clientSchema>>;
@@ -59,9 +55,7 @@ export const clientEnv: ClientEnv = parseOrThrow(
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-    NEXT_PUBLIC_AUTH_GITHUB_ENABLED: process.env.NEXT_PUBLIC_AUTH_GITHUB_ENABLED,
     NEXT_PUBLIC_AUTH_GOOGLE_ENABLED: process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENABLED,
-    NEXT_PUBLIC_AUTH_AZURE_ENABLED: process.env.NEXT_PUBLIC_AUTH_AZURE_ENABLED,
     NEXT_PUBLIC_STORAGE_PROVIDER: process.env.NEXT_PUBLIC_STORAGE_PROVIDER,
   },
   'client',

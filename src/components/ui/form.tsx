@@ -4,12 +4,7 @@ import { createContext, useContext, useId } from 'react';
 import type { ComponentProps } from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { Controller, FormProvider, useFormContext, useFormState } from 'react-hook-form';
-import type {
-  ControllerProps,
-  FieldPath,
-  FieldValues,
-  UseFormReturn,
-} from 'react-hook-form';
+import type { ControllerProps, FieldPath, FieldValues, UseFormReturn } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 

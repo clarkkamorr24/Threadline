@@ -35,8 +35,7 @@ const sheetVariants = cva(
 );
 
 interface SheetContentProps
-  extends ComponentProps<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
+  extends ComponentProps<typeof SheetPrimitive.Content>, VariantProps<typeof sheetVariants> {}
 
 export function SheetContent({ className, children, side, ...props }: SheetContentProps) {
   return (

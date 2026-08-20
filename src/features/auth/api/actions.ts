@@ -8,8 +8,6 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 const OAUTH_LABELS: Readonly<Record<string, string>> = {
   google: 'Google',
-  github: 'GitHub',
-  azure: 'Microsoft',
 };
 
 const lookupSchema = z.object({

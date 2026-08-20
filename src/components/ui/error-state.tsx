@@ -17,7 +17,12 @@ interface ErrorStateProps {
  * error normalization in `lib/errors.ts` — whatever reaches here is safe to
  * display verbatim.
  */
-export function ErrorState({ title = 'Something went wrong', message, onRetry, className }: ErrorStateProps) {
+export function ErrorState({
+  title = 'Something went wrong',
+  message,
+  onRetry,
+  className,
+}: ErrorStateProps) {
   return (
     <div
       role="alert"

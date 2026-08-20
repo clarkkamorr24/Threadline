@@ -1,6 +1,5 @@
 'use client';
 
-import { Github } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
 import type { AuthProviderId } from '@/lib/plugins/auth';
@@ -28,21 +27,8 @@ function GoogleIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function MicrosoftIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="#F25022" d="M0 0h11.4v11.4H0z" />
-      <path fill="#7FBA00" d="M12.6 0H24v11.4H12.6z" />
-      <path fill="#00A4EF" d="M0 12.6h11.4V24H0z" />
-      <path fill="#FFB900" d="M12.6 12.6H24V24H12.6z" />
-    </svg>
-  );
-}
-
 const PROVIDER_ICONS: Partial<Record<AuthProviderId, ComponentType<SVGProps<SVGSVGElement>>>> = {
-  github: Github,
   google: GoogleIcon,
-  azure: MicrosoftIcon,
 };
 
 interface OAuthButtonsProps {

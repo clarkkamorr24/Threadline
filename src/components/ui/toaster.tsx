@@ -55,7 +55,7 @@ export function Toaster() {
             }}
             className={cn(
               'group pointer-events-auto relative flex w-full items-start gap-3 rounded-lg border p-4 pr-10 shadow-lg',
-              'data-[state=open]:animate-[--animate-in] data-[state=closed]:animate-[--animate-out]',
+              'data-[state=closed]:animate-[--animate-out] data-[state=open]:animate-[--animate-in]',
               VARIANT_STYLES[toast.variant],
             )}
           >
@@ -83,7 +83,7 @@ export function Toaster() {
         );
       })}
 
-      <ToastPrimitive.Viewport className="pointer-events-none fixed bottom-0 right-0 z-100 flex w-full max-w-sm flex-col gap-2 p-4 outline-none" />
+      <ToastPrimitive.Viewport className="pointer-events-none fixed right-0 bottom-0 z-100 flex w-full max-w-sm flex-col gap-2 p-4 outline-none" />
     </ToastPrimitive.Provider>
   );
 }

@@ -1,13 +1,11 @@
 import 'server-only';
-import { paymongoPaymentPlugin } from './paymongo';
+import { stripePaymentPlugin } from './stripe';
 import type { PaymentPlugin } from './types';
 
 export function getPaymentPlugin(): PaymentPlugin {
-  if (!paymongoPaymentPlugin.isEnabled()) {
-    throw new Error(
-      'PayMongo is not configured. Set PAYMONGO_SECRET_KEY to accept payments.',
-    );
+  if (!stripePaymentPlugin.isEnabled()) {
+    throw new Error('Stripe is not configured. Set STRIPE_SECRET_KEY to accept payments.');
   }
 
-  return paymongoPaymentPlugin;
+  return stripePaymentPlugin;
 }

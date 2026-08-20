@@ -42,6 +42,15 @@ export const placeOrderAction = createAction(
         customerPhone: address.phone,
         method: paymentMethod,
         returnUrl: `${clientEnv.NEXT_PUBLIC_SITE_URL}${ROUTES.orderConfirmation(order.id)}`,
+        shippingCents: order.shippingCents,
+        taxCents: order.taxCents,
+        items: order.items.map((item) => ({
+          name: item.productName,
+          description: [item.color, item.size].filter(Boolean).join(' · ') || null,
+          imageUrl: item.imageUrl,
+          unitPriceCents: item.unitPriceCents,
+          quantity: item.quantity,
+        })),
       });
 
       await attachPaymentReference(order.id, {
