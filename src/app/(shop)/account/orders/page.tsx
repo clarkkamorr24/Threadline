@@ -136,25 +136,25 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       {formatMoney(order.totalCents)}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      {order.status === 'PROCESSING' ? (
-                        <OrderActions
-                          orderId={order.id}
-                          status={order.status}
-                          className="border-line-strong hover:border-foreground h-auto rounded-none px-4 py-2.25 text-[13px]"
-                        />
-                      ) : null}
+                    <Link
+                      href={ROUTES.order(order.id)}
+                      className="border-line-strong hover:border-foreground border px-4 py-2.25 text-[13px] transition-colors"
+                    >
+                      {activeTab === 'cancelled' ? 'View' : 'Track'}
+                    </Link>
 
-                      <Link
-                        href={ROUTES.order(order.id)}
-                        className="border-line-strong hover:border-foreground border px-4 py-2.25 text-[13px] transition-colors"
-                      >
-                        {activeTab === 'cancelled' ? 'View' : 'Track'}
-                      </Link>
-                    </div>
+
+
+
+
+
+
+
+
+
                   </div>
 
-                  {order.status === 'PENDING' ? (
+                  {order.status === 'PENDING' || order.status === 'PROCESSING' ? (
                     <div className="border-line border-t px-5 py-3.5">
                       <OrderActions orderId={order.id} status={order.status} size="sm" />
                     </div>
