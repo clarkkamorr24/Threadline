@@ -21,6 +21,7 @@ interface OrderActionsProps {
   readonly orderId: string;
   readonly status: OrderStatusValue;
   readonly size?: 'default' | 'sm';
+  readonly className?: string;
 }
 
 const CANCEL_FAILURE: Readonly<Record<string, string>> = {
@@ -28,7 +29,7 @@ const CANCEL_FAILURE: Readonly<Record<string, string>> = {
   'too-late': 'This order has already shipped, so it can no longer be cancelled.',
 };
 
-export function OrderActions({ orderId, status, size = 'default' }: OrderActionsProps) {
+export function OrderActions({ orderId, status, size = 'default', className }: OrderActionsProps) {
   const router = useRouter();
   const toast = useToast();
   const [isPending, startTransition] = useTransition();
@@ -93,6 +94,7 @@ export function OrderActions({ orderId, status, size = 'default' }: OrderActions
           <Button
             type="button"
             size={size}
+            className={className}
             onClick={continuePayment}
             isLoading={isPending && action === 'pay'}
             disabled={isPending}
@@ -106,6 +108,7 @@ export function OrderActions({ orderId, status, size = 'default' }: OrderActions
             type="button"
             size={size}
             variant="outline"
+            className={className}
             onClick={() => setIsConfirming(true)}
             disabled={isPending}
           >
