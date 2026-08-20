@@ -115,7 +115,6 @@ const PRODUCTS: readonly SeedProduct[] = [
     variants: [
       { size: 'M', color: 'Navy', sku: 'TL-TOP-002-M-NVY', stock: 10 },
       { size: 'L', color: 'Navy', sku: 'TL-TOP-002-L-NVY', stock: 6 },
-      // Price override, to exercise the fallback rule.
       { size: 'M', color: 'Oatmeal', sku: 'TL-TOP-002-M-OAT', stock: 3, priceOverrideCents: 425000 },
     ],
   },
@@ -209,7 +208,6 @@ const PRODUCTS: readonly SeedProduct[] = [
     featured: false,
     categorySlugs: ['accessories'],
     images: [`${IMAGE_BASE}-1624222247344-550fb60583dc?w=1200&q=80`],
-    // Size-only variants — colour stays null, which the model permits.
     variants: [
       { size: '32', color: 'Tan', sku: 'TL-ACC-002-32', stock: 20 },
       { size: '34', color: 'Tan', sku: 'TL-ACC-002-34', stock: 25 },

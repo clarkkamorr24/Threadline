@@ -6,6 +6,7 @@ import type {
   ProductStatusValue,
 } from '@/entities/product/model/types';
 import type { ProductWriteModel } from '@/features/admin-products/model/schema';
+import { REVENUE_ORDER_STATUSES } from '@/entities/order/model/types';
 import { db } from '@/lib/db';
 import { ConflictError, NotFoundError } from '@/lib/errors';
 import { getStoragePlugin } from '@/lib/plugins/storage/registry';
@@ -344,7 +345,7 @@ export async function getCatalogStats(): Promise<CatalogStats> {
     }),
     db.order.count(),
     db.order.aggregate({
-      where: { status: { not: 'CANCELLED' } },
+      where: { status: { in: [...REVENUE_ORDER_STATUSES] } },
       _sum: { totalCents: true },
     }),
   ]);

@@ -19,7 +19,7 @@ import {
 } from '@/features/admin-table/model/query';
 import { AdminPagination } from '@/features/admin-table/ui/admin-pagination';
 import { AdminSearch } from '@/features/admin-table/ui/admin-search';
-import { ORDER_STATUSES } from '@/entities/order/model/types';
+import { ADMIN_VISIBLE_ORDER_STATUSES } from '@/entities/order/model/types';
 import type { OrderStatusValue } from '@/entities/order/model/types';
 import { PaymentMark } from '@/entities/order/ui/payment-mark';
 import { OrderStatusSelect } from '@/features/admin-orders/ui/order-status-select';
@@ -41,7 +41,7 @@ interface AdminOrdersPageProps {
 function parseStatus(value: string | undefined): OrderStatusValue | null {
   const upper = value?.trim().toUpperCase();
 
-  return upper && (ORDER_STATUSES as readonly string[]).includes(upper)
+  return upper && (ADMIN_VISIBLE_ORDER_STATUSES as readonly string[]).includes(upper)
     ? (upper as OrderStatusValue)
     : null;
 }
@@ -60,7 +60,8 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
       <header>
         <h1 className="font-display text-[22px] font-extrabold">Orders</h1>
         <p className="text-ink-55 text-sm">
-          {result.total} order{result.total === 1 ? '' : 's'}.
+          {result.total} order{result.total === 1 ? '' : 's'}. Unpaid checkouts are not listed
+          here.
         </p>
       </header>
 
@@ -79,7 +80,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
             All
           </Link>
         </Button>
-        {ORDER_STATUSES.map((status) => (
+        {ADMIN_VISIBLE_ORDER_STATUSES.map((status) => (
           <Button
             key={status}
             asChild

@@ -148,7 +148,6 @@ export function VariantEditor({
     return value[group.indices[0] ?? 0]?.images ?? [];
   }
 
-  /** Images belong to the colour, so every size in the group carries the same set. */
   function setGroupImages(group: ColorGroup, images: readonly DraftImage[]): void {
     const members = new Set(group.indices);
 

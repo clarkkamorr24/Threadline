@@ -63,5 +63,7 @@ export interface PaymentPlugin {
   availableMethods(): readonly PaymentMethodOption[];
   createIntent(input: PaymentIntentInput): Promise<PaymentIntent>;
   getStatus(reference: string): Promise<PaymentResolution>;
+  resumeIntent(reference: string): Promise<string | null>;
+  cancelIntent(reference: string): Promise<void>;
   parseWebhook(rawBody: string, signatureHeader: string | null): PaymentWebhookEvent | null;
 }

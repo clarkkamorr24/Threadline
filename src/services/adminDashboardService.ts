@@ -1,5 +1,6 @@
 import 'server-only';
 import { paymentMethodLabel } from '@/entities/order/model/payment';
+import { REVENUE_ORDER_STATUSES } from '@/entities/order/model/types';
 import { db } from '@/lib/db';
 
 export interface MonthlyRevenuePoint {
@@ -23,7 +24,7 @@ export async function getMonthlyRevenue(months = 12): Promise<readonly MonthlyRe
   const rows = await db.$queryRaw<{ month: Date; revenue: bigint | null }[]>`
     SELECT date_trunc('month', "createdAt") AS month, SUM("totalCents") AS revenue
     FROM "orders"
-    WHERE "status" <> 'CANCELLED'
+    WHERE "status"::text = ANY(${[...REVENUE_ORDER_STATUSES]})
       AND "createdAt" >= date_trunc('month', CURRENT_DATE) - make_interval(months => ${months - 1})
     GROUP BY 1
     ORDER BY 1`;
@@ -71,7 +72,7 @@ export async function getTopProducts(limit = 5): Promise<readonly TopProductRow[
            SUM(oi."quantity" * oi."unitPriceCents") AS revenue
     FROM "order_items" oi
     JOIN "orders" o ON o."id" = oi."orderId"
-    WHERE o."status" <> 'CANCELLED'
+    WHERE o."status"::text = ANY(${[...REVENUE_ORDER_STATUSES]})
     GROUP BY oi."productId", oi."productName", oi."productSlug"
     ORDER BY revenue DESC
     LIMIT ${limit}`;
@@ -99,7 +100,7 @@ export async function getRevenueByCategory(): Promise<readonly RevenueSlice[]> {
     JOIN "orders" o ON o."id" = oi."orderId"
     JOIN "_CategoryToProduct" cp ON cp."B" = oi."productId"
     JOIN "categories" c ON c."id" = cp."A"
-    WHERE o."status" <> 'CANCELLED'
+    WHERE o."status"::text = ANY(${[...REVENUE_ORDER_STATUSES]})
     GROUP BY c."name"
     ORDER BY revenue DESC`;
 
@@ -110,7 +111,7 @@ export async function getRevenueByPaymentMethod(): Promise<readonly RevenueSlice
   const rows = await db.$queryRaw<{ label: string | null; revenue: bigint }[]>`
     SELECT "paymentMethod" AS label, SUM("totalCents") AS revenue
     FROM "orders"
-    WHERE "status" <> 'CANCELLED'
+    WHERE "status"::text = ANY(${[...REVENUE_ORDER_STATUSES]})
     GROUP BY "paymentMethod"
     ORDER BY revenue DESC`;
     

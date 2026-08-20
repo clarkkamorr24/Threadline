@@ -2,9 +2,12 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ORDER_HISTORY_MAX, ORDER_HISTORY_STEP } from '@/constants/catalog';
 import { ROUTES } from '@/constants/routes';
+import { ORDER_HISTORY_TABS, resolveHistoryTab } from '@/entities/order/model/types';
 import { OrderStatusBadge } from '@/entities/order/ui/order-status-badge';
+import { OrderActions } from '@/features/orders/ui/order-actions';
 import { requireUserOrRedirect } from '@/lib/auth/session';
 import { listOrders } from '@/services/orderService';
+import { cn } from '@/lib/utils';
 import { formatShortDateTime } from '@/utils/datetime';
 import { formatMoney } from '@/utils/money';
 
@@ -15,7 +18,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 interface OrdersPageProps {
-  readonly searchParams: Promise<{ show?: string }>;
+  readonly searchParams: Promise<{ show?: string; tab?: string }>;
 }
 
 function parseShow(value: string | undefined): number {
@@ -28,16 +31,31 @@ function parseShow(value: string | undefined): number {
   return Math.min(parsed, ORDER_HISTORY_MAX);
 }
 
+const EMPTY_COPY: Readonly<Record<string, string>> = {
+  orders: 'Orders you place will appear here.',
+  pending: 'No unfinished payments. Anything you start but do not pay for will wait here.',
+  cancelled: 'No cancelled orders.',
+};
+
 export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const user = await requireUserOrRedirect(ROUTES.orders);
-  const { show: rawShow } = await searchParams;
+  const { show: rawShow, tab: rawTab } = await searchParams;
 
   const show = parseShow(rawShow);
-  const orders = await listOrders(user.id, 1, show);
+  const activeTab = resolveHistoryTab(rawTab);
+  const statuses = ORDER_HISTORY_TABS.find((tab) => tab.id === activeTab)?.statuses ?? [];
+
+  const [orders, ...counts] = await Promise.all([
+    listOrders(user.id, 1, show, statuses),
+    ...ORDER_HISTORY_TABS.map((tab) => listOrders(user.id, 1, 1, tab.statuses)),
+  ]);
 
   const shown = orders.items.length;
   const hasMore = shown < orders.total;
   const atCap = !hasMore && orders.total > ORDER_HISTORY_STEP;
+
+  const hrefFor = (tabId: string): string =>
+    tabId === 'orders' ? ROUTES.orders : `${ROUTES.orders}?tab=${tabId}`;
 
   return (
     <div>
@@ -50,18 +68,53 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         ) : null}
       </div>
 
+      <nav aria-label="Order status" className="border-line mb-5 flex gap-1 border-b">
+        {ORDER_HISTORY_TABS.map((tab, index) => {
+          const isActive = tab.id === activeTab;
+          const count = counts[index]?.total ?? 0;
+
+          return (
+            <Link
+              key={tab.id}
+              href={hrefFor(tab.id)}
+              aria-current={isActive ? 'page' : undefined}
+              className={cn(
+                '-mb-px border-b-2 px-3.5 py-2.5 text-[13px] transition-colors',
+                isActive
+                  ? 'border-foreground text-foreground font-semibold'
+                  : 'text-ink-55 hover:text-foreground border-transparent',
+              )}
+            >
+              {tab.label}
+              {count > 0 ? (
+                <span className="text-ink-55 ml-1.5 font-mono text-[11px]">{count}</span>
+              ) : null}
+            </Link>
+          );
+        })}
+      </nav>
+
       {orders.items.length === 0 ? (
         <div className="border-line border px-5 py-16 text-center">
-          <p className="text-ink-70">Orders you place will appear here.</p>
-          <Link
-            href={ROUTES.products}
-            className="bg-primary text-primary-foreground mt-4 inline-block px-6.5 py-3 text-sm font-medium"
-          >
-            Start shopping
-          </Link>
+          <p className="text-ink-70">{EMPTY_COPY[activeTab]}</p>
+          {activeTab === 'orders' ? (
+            <Link
+              href={ROUTES.products}
+              className="bg-primary text-primary-foreground mt-4 inline-block px-6.5 py-3 text-sm font-medium"
+            >
+              Start shopping
+            </Link>
+          ) : null}
         </div>
       ) : (
         <>
+          {activeTab === 'pending' ? (
+            <p className="border-status-processing bg-status-processing/8 text-ink-70 mb-4 border px-4 py-3 text-[13px] leading-[1.6]">
+              These payments were never completed, so the orders will not ship. Finish paying, or
+              cancel to release the items.
+            </p>
+          ) : null}
+
           <div className="border-line max-h-220 overflow-y-auto overscroll-contain border">
             <ul>
               {orders.items.map((order) => (
@@ -87,9 +140,15 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                       href={ROUTES.order(order.id)}
                       className="border-line-strong hover:border-foreground border px-4 py-2.25 text-[13px] transition-colors"
                     >
-                      Track
+                      {activeTab === 'cancelled' ? 'View' : 'Track'}
                     </Link>
                   </div>
+
+                  {order.status === 'PENDING' || order.status === 'PROCESSING' ? (
+                    <div className="border-line border-t px-5 py-3.5">
+                      <OrderActions orderId={order.id} status={order.status} size="sm" />
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -99,7 +158,10 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             <div className="mt-6 flex justify-center">
               <Link
                 scroll={false}
-                href={`${ROUTES.orders}?show=${Math.min(show + ORDER_HISTORY_STEP, ORDER_HISTORY_MAX)}`}
+                href={`${hrefFor(activeTab)}${activeTab === 'orders' ? '?' : '&'}show=${Math.min(
+                  show + ORDER_HISTORY_STEP,
+                  ORDER_HISTORY_MAX,
+                )}`}
                 className="border-line-strong hover:border-foreground border px-6.5 py-3 text-sm font-medium transition-colors"
               >
                 See more orders

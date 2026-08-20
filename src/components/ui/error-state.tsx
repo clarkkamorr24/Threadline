@@ -6,17 +6,11 @@ import { cn } from '@/lib/utils';
 
 interface ErrorStateProps {
   readonly title?: string;
-  /** Already user-safe: services translate internal failures before this point. */
   readonly message: string;
   readonly onRetry?: () => void;
   readonly className?: string;
 }
 
-/**
- * Consistent presentation for a failed data fetch or mutation. Pairs with the
- * error normalization in `lib/errors.ts` — whatever reaches here is safe to
- * display verbatim.
- */
 export function ErrorState({
   title = 'Something went wrong',
   message,

@@ -6,16 +6,10 @@ interface EmptyStateProps {
   readonly icon: LucideIcon;
   readonly title: string;
   readonly description: string;
-  /** Optional call to action, e.g. "Browse products". */
   readonly action?: ReactNode;
   readonly className?: string;
 }
 
-/**
- * The single empty-state presentation used across the catalog, cart, orders and
- * admin tables. Having one component means an empty list is never rendered as
- * a blank area by accident, and the wording stays consistent.
- */
 export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div

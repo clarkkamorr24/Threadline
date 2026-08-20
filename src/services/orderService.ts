@@ -10,8 +10,9 @@ import type {
   OrderSummary,
   ShippingAddress,
 } from '@/entities/order/model/types';
-import { canTransition } from '@/entities/order/model/types';
+import { ADMIN_VISIBLE_ORDER_STATUSES, canTransition } from '@/entities/order/model/types';
 import type { Paginated } from '@/entities/product/model/types';
+import { STORE_CURRENCY } from '@/constants/store';
 import { db } from '@/lib/db';
 import {
   ConflictError,
@@ -310,8 +311,12 @@ export async function listOrders(
   userId: string,
   page: number,
   pageSize: number,
+  statuses?: readonly OrderStatusValue[],
 ): Promise<Paginated<OrderSummary>> {
-  const where = { userId } satisfies Prisma.OrderWhereInput;
+  const where: Prisma.OrderWhereInput = {
+    userId,
+    ...(statuses && statuses.length > 0 ? { status: { in: [...statuses] } } : {}),
+  };
 
   const [rows, total] = await Promise.all([
     db.order.findMany({
@@ -368,7 +373,9 @@ export interface AdminOrderQuery {
 }
 
 export async function listAllOrders(query: AdminOrderQuery): Promise<Paginated<AdminOrderRow>> {
-  const conditions: Prisma.OrderWhereInput[] = [];
+  const conditions: Prisma.OrderWhereInput[] = [
+    { status: { in: [...ADMIN_VISIBLE_ORDER_STATUSES] } },
+  ];
 
   if (query.status) {
     conditions.push({ status: query.status });
@@ -533,4 +540,118 @@ export async function updateOrderStatus(
   await notifyOrderStatusChanged(updated.userId, updated.id, updated.orderNumber, nextStatus);
 
   return toAdminOrderDetail(updated);
+}
+
+export async function resumeOrderPayment(
+  userId: string,
+  orderId: string,
+  returnUrl: string,
+): Promise<string | null> {
+  const order = await db.order.findFirst({
+    where: { id: orderId, userId, status: 'PENDING' },
+    select: {
+      ...adminOrderDetailSelect,
+      user: { select: { name: true, email: true, avatarUrl: true } },
+    },
+  });
+
+  if (!order) {
+    return null;
+  }
+
+  const plugin = getPaymentPlugin();
+
+  if (order.paymentReference && order.paymentProvider === plugin.id) {
+    const existing = await plugin.resumeIntent(order.paymentReference);
+
+    if (existing) {
+      return existing;
+    }
+  }
+
+  const address = order.shippingAddress as unknown as ShippingAddress;
+
+  const intent = await plugin.createIntent({
+    orderReference: order.orderNumber,
+    amountCents: order.totalCents,
+    currency: STORE_CURRENCY,
+    customerEmail: order.user.email,
+    customerName: address.fullName,
+    customerPhone: address.phone,
+    method: null,
+    returnUrl,
+    shippingCents: order.shippingCents,
+    taxCents: order.taxCents,
+    items: order.items.map((item) => ({
+      name: item.productName,
+      description: [item.variantColor, item.variantSize].filter(Boolean).join(' · ') || null,
+      imageUrl: item.imageUrl,
+      unitPriceCents: item.unitPriceCents,
+      quantity: item.quantity,
+    })),
+  });
+
+  await attachPaymentReference(order.id, {
+    provider: intent.providerId,
+    method: null,
+    reference: intent.reference,
+  });
+
+  return intent.redirectUrl;
+}
+
+export type CancelOrderOutcome = 'cancelled' | 'not-found' | 'too-late';
+
+export async function cancelOrderByCustomer(
+  userId: string,
+  orderId: string,
+): Promise<CancelOrderOutcome> {
+  const existing = await db.order.findFirst({
+    where: { id: orderId, userId },
+    select: { id: true, status: true, paymentProvider: true, paymentReference: true },
+  });
+
+  if (!existing) {
+    return 'not-found';
+  }
+
+  if (!canTransition(existing.status as OrderStatusValue, 'CANCELLED')) {
+    return 'too-late';
+  }
+
+  await db.$transaction(async (tx) => {
+    const order = await tx.order.findFirst({
+      where: { id: orderId, userId, status: existing.status },
+      select: { items: { select: { variantId: true, quantity: true } } },
+    });
+
+    if (!order) {
+      return;
+    }
+
+    for (const item of order.items) {
+      if (item.variantId) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    }
+
+    await tx.order.update({ where: { id: orderId }, data: { status: 'CANCELLED' } });
+  });
+
+  if (existing.paymentReference) {
+    try {
+      const plugin = getPaymentPlugin();
+
+      if (plugin.id === existing.paymentProvider) {
+        await plugin.cancelIntent(existing.paymentReference);
+      }
+    } catch (error) {
+      console.warn('[orderService] Could not close the payment session:', error);
+    }
+  }
+
+  return 'cancelled';
 }

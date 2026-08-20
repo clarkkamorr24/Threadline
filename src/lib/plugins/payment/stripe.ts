@@ -65,12 +65,6 @@ function sumOf(lines: readonly Stripe.Checkout.SessionCreateParams.LineItem[]): 
   );
 }
 
-/**
- * Itemising is only safe while the parts still add up to the order total, so
- * the sum is checked rather than assumed. Anything unexpected falls back to a
- * single line for the exact amount: a plainer page is far better than charging
- * a figure the customer never agreed to.
- */
 function resolveLineItems(
   input: PaymentIntentInput,
 ): Stripe.Checkout.SessionCreateParams.LineItem[] {
@@ -103,10 +97,6 @@ function resolveLineItems(
 
 const MAX_LINE_ITEMS = 100;
 
-/**
- * Reports the card brand when Stripe charged a card, falling back to the
- * payment method type for anything else (for example `link`).
- */
 function readChargedMethod(session: Stripe.Checkout.Session): string | null {
   const intent = session.payment_intent;
 
@@ -220,6 +210,29 @@ export const stripePaymentPlugin: PaymentPlugin = {
     }
   },
 
+  async resumeIntent(reference: string): Promise<string | null> {
+    try {
+      const session = await getClient().checkout.sessions.retrieve(reference);
+
+      return session.status === 'open' ? (session.url ?? null) : null;
+    } catch (error) {
+      console.warn('[payment:stripe] Could not resume session', reference, error);
+      return null;
+    }
+  },
+
+  async cancelIntent(reference: string): Promise<void> {
+    try {
+      const session = await getClient().checkout.sessions.retrieve(reference);
+
+      if (session.status === 'open') {
+        await getClient().checkout.sessions.expire(reference);
+      }
+    } catch (error) {
+      console.warn('[payment:stripe] Could not expire session', reference, error);
+    }
+  },
+
   parseWebhook(rawBody: string, signatureHeader: string | null): PaymentWebhookEvent | null {
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -235,8 +248,6 @@ export const stripePaymentPlugin: PaymentPlugin = {
     let event: Stripe.Event;
 
     try {
-      // constructEvent verifies the HMAC and enforces a timestamp tolerance,
-      // so a captured request cannot be replayed later.
       event = getClient().webhooks.constructEvent(rawBody, signatureHeader, secret);
     } catch (error) {
       console.error(

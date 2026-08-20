@@ -6,6 +6,7 @@ import { ImageOff } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ROUTES } from '@/constants/routes';
 import { OrderStatusBadge } from '@/entities/order/ui/order-status-badge';
+import { OrderActions, PendingPaymentPanel } from '@/features/orders/ui/order-actions';
 import { requireUserOrRedirect } from '@/lib/auth/session';
 import { isAppError } from '@/lib/errors';
 import { confirmPendingPayment, getOrderById } from '@/services/orderService';
@@ -59,6 +60,18 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
         </div>
         <OrderStatusBadge status={order.status} />
       </header>
+
+      {order.status === 'PENDING' ? (
+        <div className="mb-8">
+          <PendingPaymentPanel orderId={order.id} />
+        </div>
+      ) : null}
+
+      {order.status === 'PROCESSING' ? (
+        <div className="mb-8">
+          <OrderActions orderId={order.id} status={order.status} />
+        </div>
+      ) : null}
 
       <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
         <section aria-label="Items">
