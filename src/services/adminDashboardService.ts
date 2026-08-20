@@ -113,10 +113,7 @@ export async function getRevenueByPaymentMethod(): Promise<readonly RevenueSlice
     WHERE "status" <> 'CANCELLED'
     GROUP BY "paymentMethod"
     ORDER BY revenue DESC`;
-
-  // Only a null method means no payment was ever attached; every known method
-  // resolves through the shared label map so a new provider cannot silently
-  // land in the "Unpaid" bucket.
+    
   return rows.map((row) => ({
     label: paymentMethodLabel(row.label, null) ?? 'Unpaid',
     revenueCents: Number(row.revenue),

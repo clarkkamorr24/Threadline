@@ -161,15 +161,6 @@ function toPaymentError(error: unknown, fallback: string): PaymentError {
   return new PaymentError(fallback);
 }
 
-/**
- * Stripe Checkout is used rather than Elements: the card form stays on Stripe's
- * domain, which keeps card data out of this application entirely, and it fits
- * the redirect shape the plugin contract already expresses.
- *
- * The Checkout Session id is the stored reference. It exists as soon as the
- * session is created, whereas the payment intent is not attached until the
- * customer completes the form.
- */
 export const stripePaymentPlugin: PaymentPlugin = {
   id: 'stripe',
   label: 'Stripe',

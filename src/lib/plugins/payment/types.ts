@@ -46,11 +46,6 @@ export interface PaymentIntent {
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
-/**
- * `method` is what the provider actually charged (a card brand such as `visa`),
- * which is only known once the customer has paid. It replaces the method the
- * customer picked at checkout, which is the broader category (`card`).
- */
 export interface PaymentResolution {
   readonly status: PaymentStatus;
   readonly method: string | null;
