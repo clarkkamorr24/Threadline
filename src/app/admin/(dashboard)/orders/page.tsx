@@ -60,8 +60,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
       <header>
         <h1 className="font-display text-[22px] font-extrabold">Orders</h1>
         <p className="text-ink-55 text-sm">
-          {result.total} order{result.total === 1 ? '' : 's'}. Unpaid checkouts are not listed
-          here.
+          {result.total} order{result.total === 1 ? '' : 's'}.
         </p>
       </header>
 
