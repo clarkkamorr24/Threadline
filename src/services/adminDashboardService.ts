@@ -114,7 +114,7 @@ export async function getRevenueByPaymentMethod(): Promise<readonly RevenueSlice
     WHERE "status"::text = ANY(${[...REVENUE_ORDER_STATUSES]})
     GROUP BY "paymentMethod"
     ORDER BY revenue DESC`;
-    
+
   return rows.map((row) => ({
     label: paymentMethodLabel(row.label, null) ?? 'Unpaid',
     revenueCents: Number(row.revenue),

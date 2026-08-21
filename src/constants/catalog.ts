@@ -6,6 +6,7 @@ export const MAX_PAGE_SIZE = 60;
 
 export const SEARCH_DEBOUNCE_MS = 300;
 export const MIN_SEARCH_LENGTH = 2;
+export const NEW_PRODUCT_DAYS = 14;
 
 export const MAX_CART_ITEM_QUANTITY = 20;
 export const MAX_VARIANT_IMAGES = 6;

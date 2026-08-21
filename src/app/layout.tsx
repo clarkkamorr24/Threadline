@@ -34,7 +34,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={archivo.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={archivo.variable}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body className="flex min-h-dvh flex-col">
         <Providers>
           {children}

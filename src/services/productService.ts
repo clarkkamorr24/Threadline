@@ -10,6 +10,7 @@ import type {
   ProductSummary,
   ProductVariantModel,
 } from '@/entities/product/model/types';
+import { NEW_PRODUCT_DAYS } from '@/constants/catalog';
 import { db } from '@/lib/db';
 import { NotFoundError } from '@/lib/errors';
 
@@ -31,9 +32,12 @@ const productSummarySelect = {
   name: true,
   slug: true,
   basePriceCents: true,
+  createdAt: true,
   categories: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
   variants: { select: variantSelect, orderBy: { position: 'asc' } },
 } satisfies Prisma.ProductSelect;
+
+const NEW_PRODUCT_WINDOW_MS = NEW_PRODUCT_DAYS * 24 * 60 * 60 * 1000;
 
 const productDetailSelect = {
   ...productSummarySelect,
@@ -79,6 +83,7 @@ function toProductSummary(row: ProductSummaryRow): ProductSummary {
     categories: row.categories,
     colors: distinct(variants.map((variant) => variant.color)),
     defaultVariantId: variants.find((variant) => variant.inStock)?.id ?? null,
+    isNew: Date.now() - row.createdAt.getTime() < NEW_PRODUCT_WINDOW_MS,
   };
 }
 

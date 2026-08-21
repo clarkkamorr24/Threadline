@@ -8,6 +8,7 @@ import { CatalogSort } from '@/features/catalog/ui/catalog-sort';
 import { parseProductQuery } from '@/features/catalog/model/searchParams';
 import type { RawSearchParams } from '@/features/catalog/model/searchParams';
 import { getCurrentUser } from '@/lib/auth/session';
+import { listFavoriteProductIds } from '@/services/favoriteService';
 import { listCategories, listProducts, listVariantFacets } from '@/services/productService';
 
 export const metadata: Metadata = {
@@ -31,6 +32,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     listVariantFacets(),
     getCurrentUser(),
   ]);
+
+  // One lookup for the whole grid rather than one per card.
+  const canFavorite = user?.role === 'USER';
+  const favoritedProductIds = canFavorite ? await listFavoriteProductIds(user.id) : undefined;
 
   const activeCategory = query.categorySlug
     ? categories.find((category) => category.slug === query.categorySlug)
@@ -88,6 +93,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <ProductGrid
             products={result.items}
             isAuthenticated={user !== null}
+            canFavorite={canFavorite}
+            favoritedProductIds={favoritedProductIds}
             emptyTitle={hasFilters ? 'No products match those filters' : 'No products yet'}
             emptyDescription={
               hasFilters

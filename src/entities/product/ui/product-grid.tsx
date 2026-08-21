@@ -9,6 +9,8 @@ const PRIORITY_IMAGE_COUNT = 4;
 interface ProductGridProps {
   readonly products: readonly ProductSummary[];
   readonly isAuthenticated?: boolean;
+  readonly canFavorite?: boolean;
+  readonly favoritedProductIds?: ReadonlySet<string>;
   readonly columns?: 3 | 4;
   readonly emptyTitle?: string;
   readonly emptyDescription?: string;
@@ -18,6 +20,8 @@ interface ProductGridProps {
 export function ProductGrid({
   products,
   isAuthenticated = false,
+  canFavorite = false,
+  favoritedProductIds,
   columns = 3,
   emptyTitle = 'No products match those filters',
   emptyDescription = 'Try removing a filter or two.',
@@ -52,6 +56,8 @@ export function ProductGrid({
           <ProductCard
             product={product}
             isAuthenticated={isAuthenticated}
+            canFavorite={canFavorite}
+            isFavorited={favoritedProductIds?.has(product.id) ?? false}
             priority={index < PRIORITY_IMAGE_COUNT}
           />
         </li>

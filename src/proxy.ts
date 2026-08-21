@@ -44,6 +44,10 @@ export default async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`${request.method} ${pathname}`);
+  }
+
   if (pathname === ADMIN_LOGIN_PATH) {
     return response;
   }

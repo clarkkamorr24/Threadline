@@ -1,6 +1,7 @@
 import 'server-only';
 import type { Prisma } from '@/generated/prisma/client';
 import type { ProductSummary } from '@/entities/product/model/types';
+import { NEW_PRODUCT_DAYS } from '@/constants/catalog';
 import { db } from '@/lib/db';
 import { NotFoundError } from '@/lib/errors';
 
@@ -21,6 +22,7 @@ const favoriteInclude = {
       name: true,
       slug: true,
       basePriceCents: true,
+      createdAt: true,
       categories: { select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } },
       variants: {
         select: {
@@ -82,6 +84,8 @@ export async function listFavorites(userId: string): Promise<readonly FavoriteIt
         categories: row.product.categories,
         colors: [...new Set(row.product.variants.map((variant) => variant.color))],
         defaultVariantId: row.product.variants.find((variant) => variant.stock > 0)?.id ?? null,
+        isNew:
+          Date.now() - row.product.createdAt.getTime() < NEW_PRODUCT_DAYS * 24 * 60 * 60 * 1000,
       },
     };
   });

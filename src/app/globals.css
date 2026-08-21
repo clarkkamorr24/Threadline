@@ -153,6 +153,7 @@
   --animate-in: enter 150ms ease-out;
   --animate-out: exit 120ms ease-in;
   --animate-marquee: marquee 38s linear infinite;
+  --animate-loader: loader-sweep 1.15s ease-in-out infinite;
 }
 
 @layer base {
@@ -231,6 +232,22 @@
   .invoice-sheet * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+}
+
+@keyframes loader-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-bar {
+    width: 100%;
+    transform: none;
   }
 }
 

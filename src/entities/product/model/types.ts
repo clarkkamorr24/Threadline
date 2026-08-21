@@ -38,6 +38,7 @@ export interface ProductSummary {
   readonly categories: readonly Pick<CategoryModel, 'id' | 'name' | 'slug'>[];
   readonly colors: readonly string[];
   readonly defaultVariantId: string | null;
+  readonly isNew: boolean;
 }
 
 export interface ProductDetail extends ProductSummary {

@@ -3,6 +3,7 @@ import { Eye } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 import type { ProductSummary } from '@/entities/product/model/types';
 import { ProductMedia } from '@/entities/product/ui/product-media';
+import { FavoriteButton } from '@/features/favorites/ui/favorite-button';
 import { QuickAddButton } from '@/features/cart/ui/quick-add-button';
 import { colorToHex } from '@/utils/colors';
 import { formatMoney } from '@/utils/money';
@@ -10,12 +11,16 @@ import { formatMoney } from '@/utils/money';
 interface ProductCardProps {
   readonly product: ProductSummary;
   readonly isAuthenticated?: boolean;
+  readonly canFavorite?: boolean;
+  readonly isFavorited?: boolean;
   readonly priority?: boolean;
 }
 
 export function ProductCard({
   product,
   isAuthenticated = false,
+  canFavorite = false,
+  isFavorited = false,
   priority = false,
 }: ProductCardProps) {
   const href = ROUTES.product(product.slug);
@@ -38,7 +43,20 @@ export function ProductCard({
           <span className="bg-primary text-primary-foreground pointer-events-none absolute top-2.5 left-2.5 px-2.5 py-1 font-mono text-[10px] tracking-[0.07em] uppercase">
             Sold out
           </span>
+        ) : product.isNew ? (
+          <span className="bg-primary text-primary-foreground pointer-events-none absolute top-2.5 left-2.5 px-2.5 py-1 font-mono text-[10px] tracking-[0.07em] uppercase">
+            New
+          </span>
         ) : null}
+
+        <FavoriteButton
+          productId={product.id}
+          productName={product.name}
+          initialIsFavorited={isFavorited}
+          canFavorite={canFavorite}
+          isAuthenticated={isAuthenticated}
+          className="bg-background border-line absolute top-2.5 right-2.5 z-10 mt-0 size-8.5 rounded-none border"
+        />
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex translate-y-1.5 gap-px opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
           <QuickAddButton
