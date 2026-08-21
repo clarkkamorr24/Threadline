@@ -189,7 +189,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
         <div className="flex flex-col gap-2">
           <Label htmlFor="profile-email">Email</Label>
           <Input id="profile-email" value={user.email} disabled readOnly />
-          <p className="text-muted-foreground text-sm">Managed by your sign-in provider.</p>
         </div>
 
         <div>
